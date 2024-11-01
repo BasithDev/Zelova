@@ -1,7 +1,13 @@
+import { motion } from 'framer-motion';
 const Login = () => {
     return (
         <div className="bg-blue-500 h-screen flex justify-center items-center">
-            <div className="bg-white p-8 rounded-lg h-fit">
+            <motion.div 
+            initial={{ opacity: 0, scale:0.95 }}
+            animate={{ opacity: 1, scale:1 }}
+            exit={{ opacity: 0, scale:0.95 }}
+            transition={{ duration: 0.5 }}
+            className="bg-white p-8 rounded-lg h-fit">
             <h2 className="text-2xl font-semibold text-center mb-2">Login to Account</h2>
             <p className="text-center text-gray-600 mb-6">Please enter your email and password to continue</p>
             <form>
@@ -36,7 +42,7 @@ const Login = () => {
                     Sign In
                 </button>
             </form>
-        </div>
+        </motion.div>
         </div>
     )
 }

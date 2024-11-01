@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { FaUser } from "react-icons/fa";
 import { RiLockPasswordFill } from "react-icons/ri";
 import { FcGoogle } from "react-icons/fc";
@@ -7,7 +8,13 @@ const Login = () => {
             <div className="bg-orange-200 w-1/3 flex items-center justify-center rounded-r-xl">
                 <div className="text-9xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 text-transparent bg-clip-text">Z</div>
             </div>
-            <div className="w-2/3 flex flex-col justify-center items-center bg-white p-8 rounded-l-lg shadow-lg">
+            <motion.div 
+            className="w-2/3 flex flex-col justify-center items-center bg-white p-8 rounded-l-lg shadow-lg"
+            initial={{ opacity: 0, scale:0.95 }}
+            animate={{ opacity: 1, scale:1 }}
+            exit={{ opacity: 0, scale:0.95 }}
+            transition={{ duration: 0.5 }}
+            >
                 <h1 className="text-3xl font-bold mb-2">Welcome To <span className="text-orange-500">Zelova</span> <span className="text-green-600">Bussiness</span></h1>
                 <p className="text-gray-500 mb-8">Please Sign in using your zelova account to continue</p>
                 <div className="w-1/2 mb-6">
@@ -37,7 +44,7 @@ const Login = () => {
                         Sign In Using Google Account
                     </button>
                 </div>
-            </div>
+            </motion.div>
         </div>
     )
 }
