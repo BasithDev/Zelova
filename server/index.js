@@ -4,6 +4,10 @@ const cors = require('cors')
 const path = require('path')
 const connetDB = require('./config/db')
 
+const userAuthRoutes = require('./routes/user/authRoutes');
+const sellerAuthRoutes = require('./routes/seller/authRoutes');
+const adminAuthRoutes = require('./routes/admin/authRoutes');
+
 require('dotenv').config()
 
 const app = express()
@@ -19,5 +23,9 @@ app.use(cors({
 }))
 connetDB()
 const port = process.env.PORT
+
+app.use('/api/user/auth',userAuthRoutes)
+app.use('/api/seller/auth',sellerAuthRoutes)
+app.use('/api/admin/auth',adminAuthRoutes)
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))

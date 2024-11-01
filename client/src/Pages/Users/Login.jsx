@@ -47,7 +47,7 @@ const Login = () => {
                     </button>
                     <div className="text-center">
                         <span className="text-gray-500">Create New Account ? </span>
-                        <Link to={'/register'}><a href="#" className="text-blue-500 underline">Sign Up</a></Link>
+                        <Link to={'/register'}><span className="text-blue-500 underline">Sign Up</span></Link>
                     </div>
                 </div>
             </motion.div>
