@@ -1,6 +1,12 @@
+//imports for helpers
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import UserLayout from './Components/Layouts/UserLayout';
 import AdminLayout from './Components/Layouts/AdminLayout'
+import Cookies from 'js-cookie';
+
+//route imports
+import AuthRoute from './Routers/AuthRoute'
+import ProtectedRoute from './Routers/ProtectedRoute'
 
 //imports for user
 import Home from './Pages/Users/Home';
@@ -15,37 +21,48 @@ import Requests from './Pages/Admins/Requests';
 
 //imports for vendor
 import VendorLayout from './Components/Layouts/VendorLayout'
-import VendorLogin from './Pages/Seller/Login'
 import AddItem from './Pages/Seller/AddItem'
 function App() {
-
+  const isAuthenticated = Boolean(Cookies.get('user_token'));
+  const isAdminAuthenticated  = Boolean(Cookies.get('admin_token'))
   return (
     <Router>
       <Routes>
 
-        {/* User Routes*/}
-        <Route path='/' element={<UserLayout />}>
-          <Route index element={<Home />} />
+        {/* Public Routes (only accessible if NOT authenticated) */}
+        <Route element={<AuthRoute isAuthenticated={isAuthenticated} forAdmin={false}/>}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/otp" element={<Otp />} />
+          
         </Route>
 
-        <Route path='/login' element={<Login />} />
-        <Route path='/register' element={<Register />} />
-        <Route path='/otp' element={<Otp />} />
+        <Route element={<AuthRoute isAuthenticated={isAdminAuthenticated} forAdmin={true}/>}>
+          <Route path="/admin/login" element={<AdminLogin />} />
+        </Route>
+
+        {/* User Routes*/}
+        <Route element={<ProtectedRoute isAuthenticated={isAuthenticated} forAdmin={false}/>}>
+          <Route path="/" element={<UserLayout />}>
+            <Route index element={<Home />} />
+          </Route>
+        </Route>
+
 
         {/* Admin Routes*/}
-        <Route path='/admin' element={<AdminLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path='requests' element={<Requests/>}/>
+        <Route element={<ProtectedRoute isAuthenticated={isAdminAuthenticated} forAdmin={true}/>}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="requests" element={<Requests />} />
+          </Route>
         </Route>
-
-        <Route path='/admin/login' element={<AdminLogin />} />
 
         {/* Vendor Routes*/}
-        <Route path='/vendor' element={<VendorLayout />}>
-          <Route path='additem' element={<AddItem/>} />
+        <Route element={<ProtectedRoute isAuthenticated={isAuthenticated} forAdmin={false}/>}>
+          <Route path="/vendor" element={<VendorLayout />}>
+            <Route path="additem" element={<AddItem />} />
+          </Route>
         </Route>
-
-        <Route path='/vendor/login' element={<VendorLogin/>} />
       </Routes>
     </Router>
   )
