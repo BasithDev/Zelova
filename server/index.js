@@ -28,4 +28,4 @@ app.use('/api/user/auth',userAuthRoutes)
 app.use('/api/seller/auth',sellerAuthRoutes)
 app.use('/api/admin/auth',adminAuthRoutes)
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`))
+app.listen(port, () => console.log(`Server is listening on port ${port}!`))

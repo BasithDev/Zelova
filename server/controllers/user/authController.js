@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 const Otp = require('../../models/otp')
 const { sendOTPEmail } = require('../../config/mailer');
 const OTP_COOLDOWN_PERIOD_MS = 30000;
+const jwt = require('jsonwebtoken');
+
 //code for registering user and checking if the user already existing with same mailID
 exports.registerUser = async (req, res) => {
     try {
@@ -38,7 +40,7 @@ exports.registerUser = async (req, res) => {
         });
     }
 };
-
+//to verify the user entered OTP and if success remvoe the otp from the db
 exports.verifyOTP = async (req, res) => {
     try {
         const { email, otp } = req.body;
@@ -49,7 +51,7 @@ exports.verifyOTP = async (req, res) => {
                 message: 'Invalid or expired OTP',
             });
         }
-        await Otp.deleteOne({ email });
+        await Otp.deleteMany({ email });
         return res.status(200).json({
             status: 'Success',
             message: 'OTP verified successfully',
@@ -62,7 +64,11 @@ exports.verifyOTP = async (req, res) => {
         });
     }
 };
-
+/*
+resend the OTP if the send the same OTP if it hasn't expried 
+else generate new one 
+and Request cooldown also handleded
+*/
 exports.resendOTP = async (req, res) => {
     try {
         const { email } = req.body;
@@ -72,10 +78,9 @@ exports.resendOTP = async (req, res) => {
             const now = Date.now();
             const timeSinceLastRequest = now - new Date(otpRecord.lastRequested).getTime();
             if (timeSinceLastRequest < OTP_COOLDOWN_PERIOD_MS) {
-                const secondsLeft = Math.ceil((OTP_COOLDOWN_PERIOD_MS - timeSinceLastRequest) / 1000);
                 return res.status(429).json({
                     status: 'Failed',
-                    message: `Please wait ${secondsLeft} seconds before requesting another OTP.`,
+                    message: `Please wait for some time before requesting another OTP.`,
                 });
             }
             otpRecord.lastRequested = now;
@@ -102,3 +107,34 @@ exports.resendOTP = async (req, res) => {
         });
     }
 };
+
+exports.loginUser =async (req,res)=>{
+    const {email,password} = req.body
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(401).json({ message: "No User Found" });
+        }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: "Invalid credentials" });
+        }
+        const payload = {
+            userId: user._id,
+            isVendor: user.isVendor,
+            status: user.status
+        };
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+        res.cookie('user_token', token, {
+            maxAge: 3600000,
+        });
+        return res.status(200).json({ 
+            status:"Success",
+            message: "Login successful" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ 
+            status:"Failed",
+            message: "Server error" });
+    }
+}
