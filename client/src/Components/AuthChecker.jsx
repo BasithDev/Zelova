@@ -10,7 +10,6 @@ const AuthChecker = () => {
     useEffect(() => {
         const userToken = Cookies.get('user_token');
         const adminToken = Cookies.get('admin_token');
-        console.log(adminToken)
 
         if (userToken) {
             dispatch(setUserAuth({ token: userToken }));
