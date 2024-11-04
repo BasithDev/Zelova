@@ -8,19 +8,24 @@ import PrimaryBtn from '../../Components/Buttons/PrimaryBtn';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
+import { useDispatch } from 'react-redux';
+import { setUserAuth } from '../../Redux/slices/authSlice';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const handleLogin = async () => {
         try {
-            await axios.post(
+            const response = await axios.post(
                 'http://localhost:3000/api/user/auth/login',
                 { email, password },
                 { withCredentials: true }
             );
+            const { token } = response.data;
+            dispatch(setUserAuth({ token }));
             navigate('/');
         } catch (error) {
             if (error.response) {
@@ -30,6 +35,10 @@ const Login = () => {
             }
             console.error("Login error:", error);
         }
+    };
+
+    const handleGoogleLogin = () => {
+        window.location.href = 'http://localhost:3000/api/user/auth/google';
     };
 
     return (
@@ -85,7 +94,9 @@ const Login = () => {
                         <span className="px-2 text-gray-500">OR</span>
                         <hr className="w-full border-gray-300" />
                     </div>
-                    <button className="w-full bg-white border border-gray-300 hover:bg-gray-100 transition-all duration-200 text-gray-700 py-2 rounded-lg flex items-center justify-center mb-4">
+                    <button
+                        onClick={handleGoogleLogin}
+                        className="w-full bg-white border border-gray-300 hover:bg-gray-100 transition-all duration-200 text-gray-700 py-2 rounded-lg flex items-center justify-center mb-4">
                         <FcGoogle className="mr-2 text-2xl" />
                         Sign In Using Google Account
                     </button>
