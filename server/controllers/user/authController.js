@@ -121,8 +121,6 @@ exports.loginUser =async (req,res)=>{
         }
         const payload = {
             userId: user._id,
-            isVendor: user.isVendor,
-            status: user.status
         };
         const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
         res.cookie('user_token', token, {
@@ -131,6 +129,8 @@ exports.loginUser =async (req,res)=>{
         return res.status(200).json({ 
             status:"Success",
             token:token,
+            isVendor: user.isVendor,
+            status: user.status,
             message: "Login successful" });
     } catch (error) {
         console.error(error);
