@@ -5,8 +5,8 @@ const path = require('path')
 const connetDB = require('./config/db')
 
 const userAuthRoutes = require('./routes/user/authRoutes');
-const sellerAuthRoutes = require('./routes/seller/authRoutes');
 const adminAuthRoutes = require('./routes/admin/authRoutes');
+const adminMangaeRoutes = require('./routes/admin/manageRoutes')
 
 require('dotenv').config()
 
@@ -25,7 +25,7 @@ connetDB()
 const port = process.env.PORT
 
 app.use('/api/user/auth',userAuthRoutes)
-app.use('/api/seller/auth',sellerAuthRoutes)
 app.use('/api/admin/auth',adminAuthRoutes)
+app.use('/api/admin/manage',adminMangaeRoutes)
 
 app.listen(port, () => console.log(`Server is listening on port ${port}!`))

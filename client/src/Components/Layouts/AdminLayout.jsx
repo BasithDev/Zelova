@@ -1,8 +1,9 @@
-import { Outlet } from "react-router-dom"
+import { Outlet, useNavigate } from "react-router-dom"
 import { LuUsers } from "react-icons/lu";
 import { MdDashboard } from "react-icons/md";
 
 const AdminLayout = () => {
+  const navigate = useNavigate()
   return (
     <div className="flex">
     <aside className="w-1/5 fixed border-r-2 h-screen p-2">
@@ -13,11 +14,15 @@ const AdminLayout = () => {
         <MdDashboard className="text-3xl" />
         <p className="text-3xl font-semibold">Dashboard</p>
       </div>
-      <div className="flex items-center gap-1 px-2 py-1 bg-gray-300 text-gray-500 hover:bg-gray-400 hover:text-gray-600 transition-all duration-200 cursor-pointer rounded-md mt-3">
+      <div
+      onClick={()=>navigate('/admin/user-manage')}
+      className="flex items-center gap-1 px-2 py-1 bg-gray-300 text-gray-500 hover:bg-gray-400 hover:text-gray-600 transition-all duration-200 cursor-pointer rounded-md mt-3">
         <LuUsers className="text-3xl" />
         <p className="text-3xl font-semibold">Users</p>
       </div>
-      <div className="flex items-center gap-1 px-2 py-1 bg-gray-300 text-gray-500 hover:bg-gray-400 hover:text-gray-600 transition-all duration-200 cursor-pointer rounded-md mt-3">
+      <div 
+      onClick={()=>navigate('/admin/vendor-manage')}
+      className="flex items-center gap-1 px-2 py-1 bg-gray-300 text-gray-500 hover:bg-gray-400 hover:text-gray-600 transition-all duration-200 cursor-pointer rounded-md mt-3">
         <LuUsers className="text-3xl" />
         <p className="text-3xl font-semibold">Vendors</p>
       </div>
