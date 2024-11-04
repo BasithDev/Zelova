@@ -1,30 +1,42 @@
 import { createSlice } from '@reduxjs/toolkit';
 import Cookies from 'js-cookie';
 
+// Initialize state based on cookies
+const userToken = Cookies.get('user_token');
+const adminToken = Cookies.get('admin_token');
+
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
-    isAuthenticated: false,
-    userRole: null, // 'user', 'admin'
-    token: null,
+    user: {
+      isAuthenticated: !!userToken,
+      token: userToken || null,
+    },
+    admin: {
+      isAuthenticated: !!adminToken,
+      token: adminToken || null,
+    },
+    userRole: userToken ? 'user' : adminToken ? 'admin' : null,
   },
   reducers: {
     setUserAuth(state, action) {
-      state.isAuthenticated = true;
+      state.user.isAuthenticated = true;
+      state.user.token = action.payload.token;
       state.userRole = 'user';
-      state.token = action.payload.token;
       Cookies.set('user_token', action.payload.token);
     },
     setAdminAuth(state, action) {
-      state.isAuthenticated = true;
+      state.admin.isAuthenticated = true;
+      state.admin.token = action.payload.token;
       state.userRole = 'admin';
-      state.token = action.payload.token;
       Cookies.set('admin_token', action.payload.token);
     },
     logout(state) {
-      state.isAuthenticated = false;
+      state.user.isAuthenticated = false;
+      state.user.token = null;
+      state.admin.isAuthenticated = false;
+      state.admin.token = null;
       state.userRole = null;
-      state.token = null;
       Cookies.remove('user_token');
       Cookies.remove('admin_token');
     },
