@@ -1,5 +1,6 @@
 // Imports for helpers
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import UserLayout from './Components/Layouts/UserLayout';
 import AdminLayout from './Components/Layouts/AdminLayout';
 import VendorLayout from './Components/Layouts/VendorLayout';
@@ -18,12 +19,18 @@ import Otp from './Pages/Users/Otp';
 import AdminLogin from './Pages/Admins/Login';
 import Dashboard from './Pages/Admins/Dashboard';
 import Requests from './Pages/Admins/Requests';
+import UserManagement from './Pages/Admins/UserManagement';
+import SellerManagement from './Pages/Admins/SellerManagement'
 
 // Imports for vendor
 import AddItem from './Pages/Seller/AddItem';
 
+const queryClient = new QueryClient();
+
+
 function App() {
   return (
+    <QueryClientProvider client={queryClient}>
     <Router>
       <AuthChecker />
       <Routes>
@@ -50,6 +57,8 @@ function App() {
         <Route element={<AdminProtectedRoute />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />
+            <Route path='user-manage' element={<UserManagement/>} />
+            <Route path='vendor-manage' element={<SellerManagement/>} />
             <Route path="requests" element={<Requests />} />
           </Route>
         </Route>
@@ -62,6 +71,7 @@ function App() {
         </Route>
       </Routes>
     </Router>
+    </QueryClientProvider>
   );
 }
 
