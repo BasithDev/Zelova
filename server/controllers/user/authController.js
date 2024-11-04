@@ -130,6 +130,7 @@ exports.loginUser =async (req,res)=>{
         });
         return res.status(200).json({ 
             status:"Success",
+            token:token,
             message: "Login successful" });
     } catch (error) {
         console.error(error);

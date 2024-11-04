@@ -16,11 +16,13 @@ exports.loginAdmin =async (req,res)=>{
             adminId: admin._id,
         };
         const token = jwt.sign(payload, process.env.JWT_ADMIN_SECRET, { expiresIn: '1h' });
+        console.log(token)
         res.cookie('admin_token', token, {
             maxAge: 3600000,
         });
         return res.status(200).json({ 
             status:"Success",
+            token:token,
             message: "Login successful" });
     } catch (error) {
         console.error(error);

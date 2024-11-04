@@ -4,6 +4,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import axios from 'axios';
+import { useDispatch } from 'react-redux';
+import { setAdminAuth } from '../../Redux/slices/authSlice'; // Adjust the import based on your structure
+import { useNavigate } from 'react-router-dom';
 
 // Validation schema using Yup
 const validationSchema = Yup.object().shape({
@@ -16,12 +19,16 @@ const validationSchema = Yup.object().shape({
 });
 
 const Login = () => {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const handleSubmit = async (values, { setSubmitting }) => {
         try {
             const response = await axios.post('http://localhost:3000/api/admin/auth/login', values, { withCredentials: true });
             if (response.status === 200) {
-                window.location.reload()
+                const { token } = response.data;
+                dispatch(setAdminAuth({token}));
+                navigate('/admin');
             }
         } catch (err) {
             if (err.response) {
@@ -30,7 +37,7 @@ const Login = () => {
                 toast.error('Server error. Please try again later.');
             }
         } finally {
-            setSubmitting(false); // Stop submitting state
+            setSubmitting(false);
         }
     };
 
@@ -76,13 +83,13 @@ const Login = () => {
                                 <ErrorMessage name="password" component="div" className="text-red-500 text-sm" />
                             </div>
                             <div className="mb-3 text-center">
-                                <a href="#" className="text-md text-gray-600 hover:underline">Forget Password?</a>
+                                <a href="/forgot-password" className="text-md text-gray-600 hover:underline">Forget Password?</a>
                             </div>
 
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="w-full bg-blue-500 text-white font-semibold text-2xl py-2 rounded-md hover:bg-blue-600 transition duration-200"
+                                className={`w-full text-white font-semibold text-2xl py-2 rounded-md hover:bg-blue-600 transition duration-200 ${isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-500'}`}
                             >
                                 Sign In
                             </button>
