@@ -1,4 +1,5 @@
 import { FaTicketAlt, FaEdit, FaKey, FaStore, FaPalette, FaSignOutAlt } from "react-icons/fa";
+import PropTypes from "prop-types";
 
 const Profile = () => {
   return (
@@ -34,5 +35,12 @@ const ProfileOption = ({ icon, color, label }) => (
     <span className="text-gray-600 font-medium">{label}</span>
   </div>
 );
+
+// Define prop types for the ProfileOption component
+ProfileOption.propTypes = {
+  icon: PropTypes.element.isRequired,
+  color: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired,
+};
 
 export default Profile;
