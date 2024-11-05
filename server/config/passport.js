@@ -17,19 +17,15 @@ passport.use(
             fullname: profile.displayName,
             email: profile.emails[0].value,
             profilePicture: profile.photos[0].value,
-            password: null, 
+            password: null,
           });
         }
-        return done(null, user);
+        done(null, user);
       } catch (error) {
-        return done(error, false);
+        done(error);
       }
     }
   )
 );
-passport.serializeUser((user, done) => done(null, user.id));
-passport.deserializeUser(async (id, done) => {
-  const user = await User.findById(id);
-  done(null, user);
-});
+
 module.exports = passport;
