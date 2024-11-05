@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate,useLocation } from 'react-router-dom';
 import { FaUser } from "react-icons/fa";
 import { RiLockPasswordFill } from "react-icons/ri";
 import { FcGoogle } from "react-icons/fc";
@@ -21,6 +21,14 @@ const Login = () => {
     const [token, setToken] = useState('')
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        if (params.get('isVendor') === 'true') {
+            setShowRolePopup(true);
+        }
+    }, [location]);
 
     const handleLogin = async () => {
         try {
@@ -33,7 +41,7 @@ const Login = () => {
             setToken(token)
 
             if (isVendor) {
-                setShowRolePopup(true); // Show the role selection popup
+                setShowRolePopup(true);
             } else {
                 dispatch(setUserAuth({ token }));
                 navigate('/');
@@ -49,7 +57,7 @@ const Login = () => {
         if (role === 'vendor') {
             console.log('working')
             dispatch(setUserAuth({ token }));
-            navigate('/vendor/additem'); // Redirect to vendor dashboard
+            navigate('/vendor/additem');
         } else {
             dispatch(setUserAuth({ token }));
             navigate('/');

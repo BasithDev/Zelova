@@ -14,6 +14,8 @@ import Home from './Pages/Users/Home';
 import Login from './Pages/Users/Login';
 import Register from './Pages/Users/Register';
 import Otp from './Pages/Users/Otp';
+import RoleManagement from './Pages/Users/RoleManagement'
+import Profile from './Pages/Users/Profile';
 
 // Imports for admin
 import AdminLogin from './Pages/Admins/Login';
@@ -21,6 +23,7 @@ import Dashboard from './Pages/Admins/Dashboard';
 import Requests from './Pages/Admins/Requests';
 import UserManagement from './Pages/Admins/UserManagement';
 import SellerManagement from './Pages/Admins/SellerManagement'
+import AdminProfile from './Pages/Admins/Profile'
 
 // Imports for vendor
 import AddItem from './Pages/Seller/AddItem';
@@ -41,6 +44,9 @@ function App() {
           <Route path="/otp" element={<Otp />} />
         </Route>
 
+        <Route path='role-select' element={<RoleManagement/>}/>
+
+
         {/* Public Route for Admin (only accessible if NOT authenticated) */}
         <Route element={<AdminPublicRoute />}>
           <Route path="/admin/login" element={<AdminLogin />} />
@@ -50,6 +56,7 @@ function App() {
         <Route element={<UserProtectedRoute />}>
           <Route path="/" element={<UserLayout />}>
             <Route index element={<Home />} />
+            <Route path='profile' element={<Profile/>} />
           </Route>
         </Route>
 
@@ -59,6 +66,7 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path='user-manage' element={<UserManagement/>} />
             <Route path='vendor-manage' element={<SellerManagement/>} />
+            <Route path='profile' element={<AdminProfile/>} />
             <Route path="requests" element={<Requests />} />
           </Route>
         </Route>

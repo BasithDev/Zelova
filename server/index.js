@@ -6,7 +6,8 @@ const connetDB = require('./config/db')
 
 const userAuthRoutes = require('./routes/user/authRoutes');
 const adminAuthRoutes = require('./routes/admin/authRoutes');
-const adminMangaeRoutes = require('./routes/admin/manageRoutes')
+const adminMangaeRoutes = require('./routes/admin/manageRoutes');
+const passport = require('passport');
 
 require('dotenv').config()
 
@@ -23,6 +24,8 @@ app.use(cors({
 }))
 connetDB()
 const port = process.env.PORT
+
+app.use(passport.initialize())
 
 app.use('/api/user/auth',userAuthRoutes)
 app.use('/api/admin/auth',adminAuthRoutes)
