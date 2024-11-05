@@ -1,11 +1,80 @@
-const User = require('../../models/user')
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const User = require('../../models/user');
 const Otp = require('../../models/otp')
 const { sendOTPEmail } = require('../../config/mailer');
-const OTP_COOLDOWN_PERIOD_MS = 30000;
-const jwt = require('jsonwebtoken');
 
-//code for registering user and checking if the user already existing with same mailID
+const OTP_COOLDOWN_PERIOD_MS = 30000;
+
+exports.login = async (req, res) => {
+    const { email, password } = req.body;
+    
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(401).json({ message: "User not found" });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: "Invalid credentials" });
+        }
+
+        const payload = {
+            userId: user._id,
+            isAdmin: user.isAdmin
+        };
+
+        const secret = user.isAdmin ? process.env.JWT_ADMIN_SECRET : process.env.JWT_SECRET;
+        const tokenName = user.isAdmin ? 'admin_token' : 'user_token';
+        
+        const token = jwt.sign(payload, secret, { expiresIn: '1h' });
+
+        res.cookie(tokenName, token, { maxAge: 3600000 });
+
+        return res.status(200).json({ 
+            status: "Success",
+            token: token,
+            message: "Login successful"
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ 
+            status: "Failed",
+            message: "Server error"
+        });
+    }
+};
+exports.logout = (req, res) => {
+    const { role } = req.body;
+    
+    try {
+        if (role === 'admin' && req.cookies.admin_token) {
+            res.clearCookie('admin_token');
+            return res.status(200).json({
+                status: "Success",
+                message: "Admin logout successful"
+            });
+        } else if (role === 'user' && req.cookies.user_token) {
+            res.clearCookie('user_token');
+            return res.status(200).json({
+                status: "Success",
+                message: "User logout successful"
+            });
+        } else {
+            return res.status(400).json({
+                status: "Failed",
+                message: "No active session found for the specified role"
+            });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            status: "Failed",
+            message: "Server error"
+        });
+    }
+};
 exports.registerUser = async (req, res) => {
     try {
         const { fullname, email, password, age, phoneNumber } = req.body;
@@ -40,7 +109,6 @@ exports.registerUser = async (req, res) => {
         });
     }
 };
-//to verify the user entered OTP and if success remvoe the otp from the db
 exports.verifyOTP = async (req, res) => {
     try {
         const { email, otp } = req.body;
@@ -64,11 +132,6 @@ exports.verifyOTP = async (req, res) => {
         });
     }
 };
-/*
-resend the OTP if the send the same OTP if it hasn't expried 
-else generate new one 
-and Request cooldown also handleded
-*/
 exports.resendOTP = async (req, res) => {
     try {
         const { email } = req.body;
@@ -107,52 +170,32 @@ exports.resendOTP = async (req, res) => {
         });
     }
 };
-//login and setting token in cookies
-exports.loginUser =async (req,res)=>{
-    const {email,password} = req.body
-    try {
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(401).json({ message: "No User Found" });
+exports.initiateGoogleLogin = (passport) => passport.authenticate('google', { scope: ['profile', 'email'] });
+exports.handleGoogleCallback = (passport) => (req, res, next) => {
+    passport.authenticate('google', { session: false }, (err, user) => {
+        if (err || !user) {
+            return res.status(401).json({ 
+              status:"Failed",
+              message: 'Authentication failed' });
         }
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(401).json({ message: "Invalid credentials" });
-        }
-        const payload = {
-            userId: user._id,
-        };
-        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.cookie('user_token', token, {
-            maxAge: 3600000,
-        });
-        return res.status(200).json({ 
-            status:"Success",
-            token:token,
-            isVendor: user.isVendor,
-            status: user.status,
-            message: "Login successful" });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ 
-            status:"Failed",
-            message: "Server error" });
-    }
-}
-//Logout and clearing the token from cookies
-exports.logoutUser = (req, res) => {
+        req.user = user;
+        next();
+    })(req, res, next);
+};
+exports.generateTokenAndRedirect = (req, res) => {
     try {
-        res.clearCookie('user_token');
-        
-        return res.status(200).json({
-            status: "Success",
-            message: "Logout successful"
-        });
+        const token = jwt.sign(
+            { userId: req.user._id, isVendor: req.user.isVendor, status: req.user.status },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+        res.cookie('user_token', token, {maxAge: 3600000});
+        const redirectUrl = req.user.isVendor
+            ? 'http://localhost:5173/role-select'
+            : 'http://localhost:5173/';
+        res.redirect(redirectUrl);
     } catch (error) {
-        console.error("Error logging out:", error);
-        res.status(500).json({
-            status: "Failed",
-            message: "Server error"
-        });
+        console.error('Token generation error:', error);
+        res.status(500).json({ message: 'Server error during token generation' });
     }
 };

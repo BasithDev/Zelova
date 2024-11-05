@@ -4,9 +4,8 @@ const cors = require('cors')
 const path = require('path')
 const connetDB = require('./config/db')
 
-const userAuthRoutes = require('./routes/user/authRoutes');
-const adminAuthRoutes = require('./routes/admin/authRoutes');
-const adminMangaeRoutes = require('./routes/admin/manageRoutes');
+const authRouter = require('./routes/auth/authRoutes')
+
 const passport = require('passport');
 
 require('dotenv').config()
@@ -27,8 +26,6 @@ const port = process.env.PORT
 
 app.use(passport.initialize())
 
-app.use('/api/user/auth',userAuthRoutes)
-app.use('/api/admin/auth',adminAuthRoutes)
-app.use('/api/admin/manage',adminMangaeRoutes)
+app.use('/api/auth',authRouter)
 
 app.listen(port, () => console.log(`Server is listening on port ${port}!`))
