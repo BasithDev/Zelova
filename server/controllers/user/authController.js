@@ -107,7 +107,7 @@ exports.resendOTP = async (req, res) => {
         });
     }
 };
-
+//login and setting token in cookies
 exports.loginUser =async (req,res)=>{
     const {email,password} = req.body
     try {
@@ -139,3 +139,20 @@ exports.loginUser =async (req,res)=>{
             message: "Server error" });
     }
 }
+//Logout and clearing the token from cookies
+exports.logoutUser = (req, res) => {
+    try {
+        res.clearCookie('user_token');
+        
+        return res.status(200).json({
+            status: "Success",
+            message: "Logout successful"
+        });
+    } catch (error) {
+        console.error("Error logging out:", error);
+        res.status(500).json({
+            status: "Failed",
+            message: "Server error"
+        });
+    }
+};

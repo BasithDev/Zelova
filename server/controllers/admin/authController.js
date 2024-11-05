@@ -30,3 +30,18 @@ exports.loginAdmin =async (req,res)=>{
             message: "Server error" });
     }
 }
+exports.logoutAdmin = (req, res) => {
+    try {
+        res.clearCookie('admin_token');
+        return res.status(200).json({
+            status: "Success",
+            message: "Logout successful"
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            status: "Failed",
+            message: "Server error"
+        });
+    }
+};
