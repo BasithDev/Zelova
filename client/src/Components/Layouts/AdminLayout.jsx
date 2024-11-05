@@ -10,7 +10,9 @@ const AdminLayout = () => {
       <div className="text-center">
         <p className="text-orange-400 font-bold text-3xl">Zelova <span className="text-blue-500 text-xl">Admin</span></p>
       </div>
-      <div className="flex items-center gap-1 px-2 py-1 bg-blue-500 text-white rounded-md mt-3">
+      <div 
+      onClick={()=>navigate('/admin')}
+      className="flex items-center gap-1 px-2 py-1 bg-blue-500 text-white rounded-md mt-3 cursor-pointer">
         <MdDashboard className="text-3xl" />
         <p className="text-3xl font-semibold">Dashboard</p>
       </div>
@@ -42,7 +44,9 @@ const AdminLayout = () => {
         <LuUsers className="text-3xl" />
         <p className="text-3xl font-semibold">Send Mail</p>
       </div>
-      <div className="flex items-center gap-1 px-2 py-1 bg-gray-300 text-gray-500 hover:bg-gray-400 hover:text-gray-600 transition-all duration-200 cursor-pointer rounded-md mt-3">
+      <div 
+      onClick={()=>navigate('/admin/profile')}
+      className="flex items-center gap-1 px-2 py-1 bg-gray-300 text-gray-500 hover:bg-gray-400 hover:text-gray-600 transition-all duration-200 cursor-pointer rounded-md mt-3">
         <LuUsers className="text-3xl" />
         <p className="text-3xl font-semibold">Profile</p>
       </div>
