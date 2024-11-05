@@ -1,8 +1,9 @@
 import { FaBell, FaSearch, FaKey, FaEdit, FaPalette, FaEnvelopeOpenText, FaSignOutAlt } from "react-icons/fa";
+import PropTypes from "prop-types";
 
 const Profile = () => {
   return (
-    <div className=" bg-gray-100 h-screen">
+    <div className="bg-gray-100 h-screen">
       <div className="flex bg-white justify-between border-b-2 p-3 items-center mb-3">
         <div className="relative w-1/2">
           <input
@@ -51,5 +52,11 @@ const ProfileOption = ({ icon, color, label }) => (
     <span className="text-gray-600 font-medium">{label}</span>
   </div>
 );
+
+ProfileOption.propTypes = {
+  icon: PropTypes.element.isRequired,
+  color: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired,
+};
 
 export default Profile;
