@@ -27,7 +27,6 @@ exports.login = async (req, res) => {
 
         const secret = user.isAdmin ? process.env.JWT_ADMIN_SECRET : process.env.JWT_SECRET;
         const tokenName = user.isAdmin ? 'admin_token' : 'user_token';
-        
         const token = jwt.sign(payload, secret, { expiresIn: '1h' });
 
         res.cookie(tokenName, token, { maxAge: 3600000 });
@@ -35,6 +34,8 @@ exports.login = async (req, res) => {
         return res.status(200).json({ 
             status: "Success",
             token: token,
+            isVendor:user.isVendor,
+            isAdmin:user.isAdmin,
             message: "Login successful"
         });
     } catch (error) {
@@ -190,6 +191,10 @@ exports.generateTokenAndRedirect = (req, res) => {
             { expiresIn: '1h' }
         );
         res.cookie('user_token', token, {maxAge: 3600000});
+        res.set({
+            'Cache-Control': 'no-store',
+            'Pragma': 'no-cache',
+        });
         const redirectUrl = req.user.isVendor
             ? 'http://localhost:5173/role-select'
             : 'http://localhost:5173/';

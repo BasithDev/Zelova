@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useState , useEffect} from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import * as Yup from 'yup';
-import axios from 'axios';
 import { BeatLoader } from 'react-spinners';
+import { registerUser } from '../../Services/apiServices';
 
 import { RiLockPasswordFill } from "react-icons/ri";
 import { FaUser } from "react-icons/fa";
@@ -16,10 +16,25 @@ import { FaCalendarAlt } from "react-icons/fa";
 import { FaPhoneAlt } from "react-icons/fa";
 
 import PrimaryBtn from '../../Components/Buttons/PrimaryBtn';
+import { useSelector } from 'react-redux';
 
 const Register = () => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+
+    const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+
+    console.log(isAuthenticated)
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate('/', { replace: true });
+        }
+    }, [isAuthenticated, navigate]);
+
+    const handleGoogleLogin = () => {
+        window.location.href  = 'http://localhost:3000/api/auth/google';
+    };
 
     const formik = useFormik({
         initialValues: {
@@ -43,12 +58,10 @@ const Register = () => {
                 .required('Phone number is required')
         }),
         onSubmit: async (values) => {
+            setLoading(true);
             try {
-                setLoading(true);
-                await axios.post('http://localhost:3000/api/user/auth/register', values, { withCredentials: true });
+                await registerUser(values);
                 navigate('/otp', { state: { emailForOtp: values.email } });
-            } catch (error) {
-                toast.error(error.response?.data?.message || 'Server error');
             } finally {
                 setLoading(false);
             }
@@ -116,10 +129,12 @@ const Register = () => {
                     <div className="flex-grow border-t border-gray-300"></div>
                 </div>
                 
-                <button className="bg-white border border-gray-300 hover:bg-gray-100 transition-all duration-200 text-gray-700 w-full py-2 rounded-md flex items-center justify-center">
-                    <FcGoogle className="mr-2 text-2xl" />
-                    Sign In Using Google Account
-                </button>
+                <button
+                        onClick={handleGoogleLogin}
+                        className="w-full bg-white border border-gray-300 hover:bg-gray-100 transition-all duration-200 text-gray-700 py-2 rounded-lg flex items-center justify-center mb-4">
+                        <FcGoogle className="mr-2 text-2xl" />
+                        Sign In Using Google Account
+                    </button>
                 
                 <Link to={'/login'}>
                     <p className="text-center text-gray-500 mt-4">Already registered? <span className='underline text-blue-500'>Sign In</span></p>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import {verifyOTP,resendOTP} from '../../Services/apiServices'
 import PrimaryBtn from '../../Components/Buttons/PrimaryBtn';
 import { motion } from 'framer-motion';
 import { toast, ToastContainer } from 'react-toastify';
@@ -28,25 +28,16 @@ const Otp = () => {
     }, [cooldown]);
 
     const handleVerifyOtp = async () => {
-        try {
-            const response = await axios.post('http://localhost:3000/api/user/auth/verify-otp', { email, otp });
+        const response = await verifyOTP({ email, otp });
             toast.success(response.data.message);
             navigate('/login');
-        } catch (err) {
-            toast.error(err.response?.data?.message || 'Verification failed');
-        }
     };
 
     const handleResendOtp = async () => {
         if (cooldown > 0) return;
-
-        try {
-            const response = await axios.post('http://localhost:3000/api/user/auth/resend-otp', { email });
-            toast.success(response.data.message);
-            setCooldown(30);
-        } catch (err) {
-            toast.error(err.response?.data?.message || 'Error resending OTP');
-        }
+        const response = await resendOTP({ email });
+        toast.success(response.data.message);
+        setCooldown(30);
     };
 
     return (

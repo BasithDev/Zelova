@@ -1,9 +1,11 @@
 import { createSlice } from '@reduxjs/toolkit';
 import Cookies from 'js-cookie';
 
-// Initialize state based on cookies
 const userToken = Cookies.get('user_token');
 const adminToken = Cookies.get('admin_token');
+const isVendor = Cookies.get('is_vendor') === 'true';
+const userRole = userToken ? (isVendor ? 'vendor' : 'user') : null;
+const adminRole = false
 
 const authSlice = createSlice({
   name: 'auth',
@@ -11,37 +13,54 @@ const authSlice = createSlice({
     user: {
       isAuthenticated: !!userToken,
       token: userToken || null,
+      isVendor: isVendor,
     },
     admin: {
       isAuthenticated: !!adminToken,
       token: adminToken || null,
     },
-    userRole: userToken ? 'user' : adminToken ? 'admin' : null,
+    userRole: userRole,
+    adminRole:adminRole
   },
   reducers: {
     setUserAuth(state, action) {
       state.user.isAuthenticated = true;
       state.user.token = action.payload.token;
-      state.userRole = 'user';
+      state.user.isVendor = action.payload.isVendor || false; 
+      state.userRole = action.payload.isVendor ? 'vendor' : 'user';
+      
       Cookies.set('user_token', action.payload.token);
+      Cookies.set('is_vendor', action.payload.isVendor ? 'true' : 'false');
     },
     setAdminAuth(state, action) {
       state.admin.isAuthenticated = true;
       state.admin.token = action.payload.token;
-      state.userRole = 'admin';
+      state.adminRole = true
       Cookies.set('admin_token', action.payload.token);
     },
-    logout(state) {
+    logoutUser(state) {
       state.user.isAuthenticated = false;
       state.user.token = null;
-      state.admin.isAuthenticated = false;
-      state.admin.token = null;
+      state.user.isVendor = false;
       state.userRole = null;
       Cookies.remove('user_token');
+      Cookies.remove('is_vendor');
+    },
+    logoutAdmin(state) {
+      state.admin.isAuthenticated = false;
+      state.admin.token = null;
+      state.adminRole = false;
       Cookies.remove('admin_token');
     },
+    setRole(state, action) {
+      if (state.user.isAuthenticated) {
+        state.userRole = action.payload.role;
+        state.user.isVendor = action.payload.role === 'vendor';
+        Cookies.set('is_vendor', state.user.isVendor ? 'true' : 'false');
+      }
+    }
   },
 });
 
-export const { setUserAuth, setAdminAuth, logout } = authSlice.actions;
+export const { setUserAuth, setAdminAuth, logoutUser, logoutAdmin, setRole } = authSlice.actions;
 export default authSlice.reducer;
