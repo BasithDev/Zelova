@@ -3,7 +3,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import axios from 'axios';
+import {loginUser} from '../../Services/apiServices'
 import { useDispatch } from 'react-redux';
 import { setAdminAuth } from '../../Redux/slices/authSlice'; // Adjust the import based on your structure
 import { useNavigate } from 'react-router-dom';
@@ -24,18 +24,20 @@ const Login = () => {
 
     const handleSubmit = async (values, { setSubmitting }) => {
         try {
-            const response = await axios.post('http://localhost:3000/api/admin/auth/login', values, { withCredentials: true });
+            const response = await loginUser(values);
             if (response.status === 200) {
-                const { token } = response.data;
-                dispatch(setAdminAuth({token}));
-                navigate('/admin');
+                const { token, isAdmin } = response.data;
+                
+                if (isAdmin) {
+                    dispatch(setAdminAuth({ token }));
+                    navigate('/admin'); // Only navigate if the user is an admin
+                } else {
+                    toast.error("You're not authorized to access this page.");
+                }
             }
-        } catch (err) {
-            if (err.response) {
-                toast.error(err.response.data.message);
-            } else {
-                toast.error('Server error. Please try again later.');
-            }
+        } catch (error) {
+            console.error('Login error:', error);
+            // Interceptors handle error toasts automatically
         } finally {
             setSubmitting(false);
         }

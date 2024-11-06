@@ -7,21 +7,20 @@ import { useState } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch } from 'react-redux';
-import { logout } from '../../Redux/slices/authSlice';
 const UserLayout = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch();
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-    const handleLogout = async () => {
-        try {
-            await axios.post("http://localhost:3000/api/user/auth/logout", {}, { withCredentials: true });
-            dispatch(logout());
-            navigate("/login");
-        } catch (error) {
-            console.error("Logout failed", error);
-        }
-    };
+    // const handleLogout = async () => {
+    //     try {
+    //         await axios.post("http://localhost:3000/api/user/auth/logout", {}, { withCredentials: true });
+    //         dispatch(logout());
+    //         navigate("/login");
+    //     } catch (error) {
+    //         console.error("Logout failed", error);
+    //     }
+    // };
     return (
         <div className="flex">
             <aside className="w-1/5 border-r-2 h-screen text-center">
