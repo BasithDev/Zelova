@@ -22,6 +22,7 @@ exports.login = async (req, res) => {
 
         const payload = {
             userId: user._id,
+            isVendor:user.isVendor,
             isAdmin: user.isAdmin
         };
 
@@ -196,8 +197,8 @@ exports.generateTokenAndRedirect = (req, res) => {
             'Pragma': 'no-cache',
         });
         const redirectUrl = req.user.isVendor
-            ? 'http://localhost:5173/role-select'
-            : 'http://localhost:5173/';
+            ? `${process.env.APP_URL}/role-select`
+            : process.env.APP_URL;
         res.redirect(redirectUrl);
     } catch (error) {
         console.error('Token generation error:', error);

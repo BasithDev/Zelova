@@ -21,10 +21,10 @@ const Login = () => {
         try {
             const response = await loginUser({ email, password });
             const { token, isVendor } = response.data;
-    
+            console.log(isVendor)
             if (isVendor) {
                 dispatch(setUserAuth({ token, isVendor }));
-                navigate('/role-select');
+                navigate('/role-select' , {replace:true});
             } else {
                 dispatch(setUserAuth({ token }));
                 navigate('/');

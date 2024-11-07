@@ -2,24 +2,26 @@ import { Outlet, useNavigate } from "react-router-dom"
 import { LuUsers } from "react-icons/lu";
 import { MdDashboard } from "react-icons/md";
 import { useState } from "react";
-import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch } from 'react-redux';
+import { logout } from "../../Services/apiServices";
+import {logoutAdmin} from '../../Redux/slices/authSlice'
 
 const AdminLayout = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  // const handleLogout = async () => {
-  //   try {
-  //     await axios.post("http://localhost:3000/api/admin/auth/logout", {}, { withCredentials: true });
-  //     dispatch(logout());
-  //     navigate("/admin/login");
-  //   } catch (error) {
-  //     console.error("Logout failed", error);
-  //   }
-  // };
+  const handleLogout = async () => {
+    try {
+      const role = 'admin'
+      await logout(role)
+      dispatch(logoutAdmin());
+      navigate("/admin/login");
+    } catch (error) {
+      console.log(error)
+    }
+  };
 
   return (
     <div className="flex">
