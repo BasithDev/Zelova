@@ -3,7 +3,7 @@ import Cookies from 'js-cookie';
 
 const userToken = Cookies.get('user_token');
 const adminToken = Cookies.get('admin_token');
-const isVendor = Cookies.get('is_vendor') === 'true';
+const isVendor = Cookies.get('is_vendor') === true;
 const userRole = userToken ? (isVendor ? 'vendor' : 'user') : null;
 const adminRole = false
 
@@ -30,7 +30,7 @@ const authSlice = createSlice({
       state.userRole = action.payload.isVendor ? 'vendor' : 'user';
       
       Cookies.set('user_token', action.payload.token);
-      Cookies.set('is_vendor', action.payload.isVendor ? 'true' : 'false');
+      Cookies.set('is_vendor', action.payload.isVendor ? true : false);
     },
     setAdminAuth(state, action) {
       state.admin.isAuthenticated = true;
@@ -43,20 +43,18 @@ const authSlice = createSlice({
       state.user.token = null;
       state.user.isVendor = false;
       state.userRole = null;
-      Cookies.remove('user_token');
       Cookies.remove('is_vendor');
     },
     logoutAdmin(state) {
       state.admin.isAuthenticated = false;
       state.admin.token = null;
       state.adminRole = false;
-      Cookies.remove('admin_token');
     },
     setRole(state, action) {
       if (state.user.isAuthenticated) {
         state.userRole = action.payload.role;
         state.user.isVendor = action.payload.role === 'vendor';
-        Cookies.set('is_vendor', state.user.isVendor ? 'true' : 'false');
+        Cookies.set('is_vendor', state.user.isVendor ? true : false);
       }
     }
   },

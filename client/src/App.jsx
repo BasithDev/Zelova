@@ -41,7 +41,6 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/otp" element={<Otp />} />
-              <Route path="/role-select" element={<RoleManagement />} />
             </Route>
 
             {/* Public Admin Routes */}
@@ -51,6 +50,7 @@ function App() {
 
             {/* User Routes */}
             <Route element={<UserProtectedRoute />}>
+            <Route path="/role-select" element={<RoleManagement />} />
               <Route path="/" element={<UserLayout />}>
                 <Route index element={<Home />} />
                 <Route path="profile" element={<Profile />} />

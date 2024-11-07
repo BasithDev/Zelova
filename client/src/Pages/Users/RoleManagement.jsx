@@ -1,15 +1,20 @@
 import { motion } from 'framer-motion';
 import { FcShop, FcBusinessman } from 'react-icons/fc';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux'; // Import useDispatch
+import { setRole } from '../../Redux/slices/authSlice'; // Import setRole action
 
 const RoleManagement = () => {
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleRoleSelection = (role) => {
+    dispatch(setRole({ role }));
+
     if (role === 'vendor') {
-      navigate('/vendor/additem',{ replace: true }); // Redirect to vendor page
+      navigate('/vendor/additem', { replace: true });
     } else {
-      navigate('/',{ replace: true }); // Redirect to home page for normal user
+      navigate('/', { replace: true });
     }
   };
 

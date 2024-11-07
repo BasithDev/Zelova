@@ -4,23 +4,25 @@ import { FaHeart, FaUser } from "react-icons/fa";
 import { BiSolidPurchaseTag } from "react-icons/bi";
 import { IoMdLogOut } from "react-icons/io";
 import { useState } from "react";
-import axios from "axios";
+import { logout } from "../../Services/apiServices";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch } from 'react-redux';
+import { logoutUser } from "../../Redux/slices/authSlice";
 const UserLayout = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch();
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-    // const handleLogout = async () => {
-    //     try {
-    //         await axios.post("http://localhost:3000/api/user/auth/logout", {}, { withCredentials: true });
-    //         dispatch(logout());
-    //         navigate("/login");
-    //     } catch (error) {
-    //         console.error("Logout failed", error);
-    //     }
-    // };
+    const handleLogout = async () => {
+        try {
+          const role = 'user'
+          await logout(role)
+          dispatch(logoutUser());
+          navigate("/admin/login");
+        } catch (error) {
+            console.log(error)
+        }
+      };
     return (
         <div className="flex">
             <aside className="w-1/5 border-r-2 h-screen text-center">

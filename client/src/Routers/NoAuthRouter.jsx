@@ -24,7 +24,7 @@ export function UserNoAuthRoute({ children }) {
 
   if (isUserAuthenticated) {
     if (userRole === 'vendor') {
-      return <Navigate to="/vendor" replace />;
+      return <Navigate to="/role-select" replace />;
     }
     return <Navigate to="/" replace />;
   }
