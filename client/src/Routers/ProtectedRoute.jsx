@@ -38,7 +38,7 @@ UserRoleProtectedRoute.propTypes = {
   allowedRoles: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
-export function AdminRoleProtectedRoute({ allowedRoles }) {
+export function AdminRoleProtectedRoute() {
   const isAdminAuthenticated = useSelector((state) => state.auth.admin.isAuthenticated);
   const adminRole = useSelector((state) => state.auth.adminRole);
 
@@ -46,13 +46,9 @@ export function AdminRoleProtectedRoute({ allowedRoles }) {
     return <Navigate to="/admin/login" replace />;
   }
 
-  if (isAdminAuthenticated && allowedRoles.includes('admin') && adminRole) {
+  if (isAdminAuthenticated && adminRole) {
     return <Outlet />;
   }
 
   return <Navigate to="/admin" replace />;
 }
-
-AdminRoleProtectedRoute.propTypes = {
-  allowedRoles: PropTypes.arrayOf(PropTypes.string).isRequired,
-};
