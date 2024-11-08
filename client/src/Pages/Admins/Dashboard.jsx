@@ -1,31 +1,15 @@
-import { IoMdLogOut } from "react-icons/io";
-import { FaSearch } from "react-icons/fa";
 import { LuUsers } from "react-icons/lu";
 import { TfiPackage } from "react-icons/tfi";
 import { AiOutlineStock } from "react-icons/ai";
 import { GiProfit } from "react-icons/gi";
-import { FaBell } from "react-icons/fa";
+import AdminSearchBar from "../../Components/SearchBar/AdminSearchBar";
+
 const Dashboard = () => {
+
     return (
         <div className="py-3">
 
-            <div className="flex justify-between border-b-2 p-3 items-center mb-6 ">
-                <div className="relative w-1/3">
-                    <input type="text" placeholder="Search" className="pl-10 pr-4 py-3 w-full rounded-full border border-gray-300 bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl" />
-                </div>
-                <div className="flex items-center space-x-4">
-                    <FaBell className="text-yellow-500 text-2xl" />
-                    <div className="flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
-                        <div>
-                            <p className="font-semibold">Max</p>
-                            <p className="text-sm text-gray-500">Admin</p>
-                        </div>
-                    </div>
-                    <IoMdLogOut className="text-3xl" />
-                </div>
-            </div>
+            <AdminSearchBar/>
 
             <h1 className="text-2xl px-3 font-bold mb-6">Dashboard</h1>
 

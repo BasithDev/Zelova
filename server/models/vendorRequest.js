@@ -11,16 +11,13 @@ const vendorRequestSchema = new Schema({
     required: true,
     trim: true,
   },
-  location: {
-    type: {
-      type: String,
-      enum: ["Point"],
-      default: "Point",
-    },
-    coordinates: {
-      type: [Number],
-      required: true,
-    },
+  description: {
+    type: String,
+    trim: true,
+  },
+  address: {
+    type: String,
+    trim: true,
   },
   license: {
     type: String,
@@ -29,6 +26,7 @@ const vendorRequestSchema = new Schema({
   },
   status: {
     type: String,
+    trim: true,
   },
 }, {
   timestamps: true,
