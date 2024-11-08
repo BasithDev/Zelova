@@ -1,54 +1,85 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import UserLayout from './Components/Layouts/UserLayout';
-import AdminLayout from './Components/Layouts/AdminLayout'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
-//imports for user
+import UserLayout from './Components/Layouts/UserLayout';
+import AdminLayout from './Components/Layouts/AdminLayout';
+import VendorLayout from './Components/Layouts/VendorLayout';
+import AuthChecker from './Components/AuthChecker';
+import { UserProtectedRoute} from './Routers/ProtectedRoute';
+import { AdminNoAuthRoute , UserNoAuthRoute} from './Routers/NoAuthRouter';
+import {AdminRoleProtectedRoute , UserRoleProtectedRoute} from './Routers/ProtectedRoute'
+
 import Home from './Pages/Users/Home';
 import Login from './Pages/Users/Login';
-import Register from './Pages/Users/Register'
+import Register from './Pages/Users/Register';
 import Otp from './Pages/Users/Otp';
+import RoleManagement from './Pages/Users/RoleManagement';
+import Profile from './Pages/Users/Profile';
+import RequestVendorPage from './Pages/Users/RequestVendor';
 
-//imports for admin
-import AdminLogin from './Pages/Admins/Login'
+import AdminLogin from './Pages/Admins/Login';
 import Dashboard from './Pages/Admins/Dashboard';
 import Requests from './Pages/Admins/Requests';
+import UserManagement from './Pages/Admins/UserManagement';
+import SellerManagement from './Pages/Admins/SellerManagement';
+import AdminProfile from './Pages/Admins/Profile';
 
-//imports for vendor
-import VendorLayout from './Components/Layouts/VendorLayout'
-import VendorLogin from './Pages/Seller/Login'
-import AddItem from './Pages/Seller/AddItem'
+import AddItem from './Pages/Seller/AddItem';
+
+const queryClient = new QueryClient();
+
 function App() {
-
   return (
-    <Router>
-      <Routes>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <AuthChecker />
+          <Routes>
+            {/* Public User Routes */}
+            <Route element={<UserNoAuthRoute />}>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/otp" element={<Otp />} />
+            </Route>
 
-        {/* User Routes*/}
-        <Route path='/' element={<UserLayout />}>
-          <Route index element={<Home />} />
-        </Route>
+            {/* Public Admin Routes */}
+            <Route element={<AdminNoAuthRoute />}>
+              <Route path="/admin/login" element={<AdminLogin />} />
+            </Route>
 
-        <Route path='/login' element={<Login />} />
-        <Route path='/register' element={<Register />} />
-        <Route path='/otp' element={<Otp />} />
+            {/* User Routes */}
+            <Route element={<UserProtectedRoute />}>
+            <Route path="/role-select" element={<RoleManagement />} />
+              <Route path="/" element={<UserLayout />}>
+                <Route index element={<Home />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="request-vendor" element={<RequestVendorPage />} />
+              </Route>
+            </Route>
 
-        {/* Admin Routes*/}
-        <Route path='/admin' element={<AdminLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path='requests' element={<Requests/>}/>
-        </Route>
+            {/* Admin Routes */}
+            <Route element={<AdminRoleProtectedRoute />}>
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="user-manage" element={<UserManagement />} />
+                <Route path="vendor-manage" element={<SellerManagement />} />
+                <Route path="profile" element={<AdminProfile />} />
+                <Route path="requests" element={<Requests />} />
+              </Route>
+            </Route>
 
-        <Route path='/admin/login' element={<AdminLogin />} />
-
-        {/* Vendor Routes*/}
-        <Route path='/vendor' element={<VendorLayout />}>
-          <Route path='additem' element={<AddItem/>} />
-        </Route>
-
-        <Route path='/vendor/login' element={<VendorLogin/>} />
-      </Routes>
-    </Router>
-  )
+            {/* Vendor Routes */}
+            <Route element={<UserRoleProtectedRoute allowedRoles={['vendor']} />}>
+              <Route path="/vendor" element={<VendorLayout />}>
+                <Route path="additem" element={<AddItem />} />
+              </Route>
+            </Route>
+          </Routes>
+        </Router>
+      </QueryClientProvider>
+    </GoogleOAuthProvider>
+  );
 }
 
-export default App
+export default App;
