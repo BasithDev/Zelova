@@ -5,12 +5,20 @@ import PrimaryBtn from '../../Components/Buttons/PrimaryBtn';
 import Cropper from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
 import { motion, AnimatePresence } from 'framer-motion';
+import {submitVendorReq,uploadToCloud} from '../../Services/apiServices'
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+import { BeatLoader } from 'react-spinners';
 
 const RequestVendorPage = () => {
   const [image, setImage] = useState(null);
   const [error, setError] = useState('');
   const [croppedImage, setCroppedImage] = useState(null);
   const [isCropperOpen, setIsCropperOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const MySwal = withReactContent(Swal);
+
 
   const cropperRef = useRef(null);
 
@@ -25,11 +33,74 @@ const RequestVendorPage = () => {
       address: Yup.string().required('Address is required'),
       description: Yup.string().required('Description is required'),
     }),
-    onSubmit: (values) => {
-      console.log('Form values:', values);
-      console.log('Cropped Image:', croppedImage);
+    onSubmit: async (values) => {
+      try {
+        setIsSubmitting(true)
+        const uploadedImage = await uploadImageToCloud(croppedImage)
+
+        await submitVendorReq({
+          restaurantName: values.restaurantName,
+          address: values.address,
+          description: values.description,
+          license: uploadedImage.secure_url,
+        })
+        MySwal.fire({
+          title: <p className="text-2xl font-semibold">Request Submitted!</p>,
+    text: "Your vendor request was successfully submitted.",
+    icon: "success",
+    iconColor: "#10B981",
+    showConfirmButton: true,
+    confirmButtonText: "OK",
+    background: '#f3f4f6',
+    color: '#111827',
+    buttonsStyling: false,
+    customClass: {
+      popup: 'rounded-lg p-6 shadow-lg',
+      confirmButton: 'bg-green-500 text-white font-semibold px-4 py-2 rounded-md hover:bg-green-600 transition duration-200',
+      cancelButton: 'bg-red-500 text-white font-semibold px-4 py-2 rounded-md hover:bg-red-600 transition duration-200',
+    },
+        });
+      } catch (error) {
+        console.error('Error submitting form:', error);
+        MySwal.fire({
+          title: <p className="text-2xl font-semibold">Request Failed</p>,
+    text: "There was an error submitting your vendor request. Please try again.",
+    icon: "error",
+    iconColor: "#EF4444",
+    showConfirmButton: true,
+    confirmButtonText: "Retry",
+    background: '#fef2f2',
+    color: '#7f1d1d',
+    buttonsStyling: false,
+    customClass: {
+      popup: 'rounded-3xl p-6 shadow-xl',
+      confirmButton: 'bg-red-500 text-white font-semibold px-4 py-2 rounded-md hover:bg-red-600 transition duration-200',
+    },
+        });
+      } finally{
+        setIsSubmitting(false);
+      }
     },
   });
+  
+  const uploadImageToCloud = async (croppedImage) => {
+    const uploadPreset = 'zelova_img_cloud_preset';
+
+    const formData = new FormData();
+
+    const response = await fetch(croppedImage);
+    const blob = await response.blob();
+    formData.append('file',blob, 'lic.jpg');
+    formData.append('upload_preset', uploadPreset);
+
+    try {
+      const response = await uploadToCloud( formData );
+      return response.data;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw new Error('Image upload failed');
+    }
+  };
 
   const onImageChange = (e) => {
     const file = e.target.files[0];
@@ -51,8 +122,11 @@ const RequestVendorPage = () => {
     if (cropperInstance) {
       const croppedCanvas = cropperInstance.getCroppedCanvas();
       if (croppedCanvas) {
-        setCroppedImage(croppedCanvas.toDataURL());
-        setIsCropperOpen(false);
+        croppedCanvas.toBlob((blob) => {
+          const croppedImageUrl = URL.createObjectURL(blob);
+          setCroppedImage(croppedImageUrl); // Set the Blob URL
+          setIsCropperOpen(false);
+        }, 'image/jpeg');
       }
     }
   };
@@ -147,7 +221,9 @@ const RequestVendorPage = () => {
           )}
         </div>
 
-        <PrimaryBtn text="Submit Request" className="py-2 font-bold text-2xl w-full" />
+        <PrimaryBtn 
+        text={isSubmitting ? <BeatLoader color="#FFF" size={10} /> : "Submit Request"}
+        className="py-2 font-bold text-2xl w-full" />
       </form>
       <AnimatePresence>
         {isCropperOpen && (

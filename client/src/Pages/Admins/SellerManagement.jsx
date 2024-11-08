@@ -1,11 +1,11 @@
-import { FaBell, FaSearch } from "react-icons/fa";
 import { LuUsers } from "react-icons/lu";
 import { TfiPackage } from "react-icons/tfi";
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
+import AdminSearchBar from "../../Components/SearchBar/AdminSearchBar";
 
 const fetchvendors = async () => {
-    const { data } = await axios.get("http://localhost:3000/api/admin/manage/get-vendors");
+    const { data } = await axios.get("http://localhost:3000/api/admin/manage/vendors");
     return data;
   };
 
@@ -19,29 +19,10 @@ const vendorManagement = () => {
         cacheTime: 300000, // Data stays in cache for 5 minutes
       });
   return (
-    <div className="py-6 px-4 lg:px-8">
+    <div className="py-6 space-x-6">
 
-      <div className="flex justify-between items-center border-b-2 pb-4 mb-8">
-        <div className="relative w-full md:w-1/2 lg:w-1/3">
-          <input
-            type="text"
-            placeholder="Search"
-            className="pl-10 pr-4 py-3 w-full rounded-full border border-gray-300 bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl" />
-        </div>
-
-        <div className="flex items-center space-x-6">
-          <FaBell className="text-yellow-500 text-2xl" />
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
-            <div>
-              <p className="font-semibold">Max</p>
-              <p className="text-sm text-gray-500">Admin</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <AdminSearchBar/>
+      
       <h1 className="text-3xl font-bold mb-6">Vendor Management</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         <div className="flex items-center p-6 bg-gray-50 rounded-lg shadow-md hover:bg-white hover:shadow-lg transform transition duration-300">
