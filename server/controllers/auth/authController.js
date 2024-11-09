@@ -28,7 +28,7 @@ exports.login = async (req, res) => {
 
         const secret = user.isAdmin ? process.env.JWT_ADMIN_SECRET : process.env.JWT_SECRET;
         const tokenName = user.isAdmin ? 'admin_token' : 'user_token';
-        const token = jwt.sign(payload, secret, { expiresIn: '1h' });
+        const token = jwt.sign(payload, secret, { expiresIn: '24h' });
 
         res.cookie(tokenName, token, { maxAge: 3600000 });
 

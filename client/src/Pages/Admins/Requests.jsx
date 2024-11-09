@@ -1,21 +1,26 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation , useQueryClient} from '@tanstack/react-query';
 import axios from 'axios';
-import { useState , useRef } from 'react';
+import { useState, useRef } from 'react';
 import PropTypes from 'prop-types';
+import { toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import AdminSearchBar from "../../Components/SearchBar/AdminSearchBar";
 import { AnimatePresence, motion } from 'framer-motion';
-
+import { BeatLoader } from 'react-spinners';
+import { deleteImage } from '../../Services/apiServices';
 const fetchVendorApplications = async () => {
     const { data } = await axios.get("http://localhost:3000/api/admin/manage/requests");
     return data;
 };
 
 const Requests = () => {
-    const { data: applications, isLoading, isError } = useQuery({
+    const { data: applications, isLoading, isError, refetch } = useQuery({
         queryKey: ['vendorApplications'],
         queryFn: fetchVendorApplications,
         staleTime: 60000,
         cacheTime: 300000,
+        refetchInterval: 10000
     });
 
     if (isLoading) return <p>Loading...</p>;
@@ -23,12 +28,13 @@ const Requests = () => {
 
     return (
         <div className="pb-3 bg-gray-100 min-h-screen transition-all duration-300">
+            <ToastContainer position="top-right" />
             <AdminSearchBar />
             <h1 className="text-2xl mx-3 font-bold mb-4">Vendors Request</h1>
             <div className="space-y-4">
                 {applications && applications.length > 0 ? (
                     applications.map((application) => (
-                        <VendorApplicationCard key={application._id} application={application} />
+                        <VendorApplicationCard key={application._id} application={application} refetchApplications={refetch} />
                     ))
                 ) : (
                     <p className="text-center">No vendor applications available.</p>
@@ -39,8 +45,40 @@ const Requests = () => {
 };
 
 const VendorApplicationCard = ({ application }) => {
-    const [isExpanded, setIsExpanded] = useState(false);
 
+    
+    const [isExpanded, setIsExpanded] = useState(false);
+    const queryClient = useQueryClient();
+    const acceptMutation = useMutation({
+        mutationFn: async (requestId) => {
+            await axios.post(`http://localhost:3000/api/admin/manage/accept-vendor/${requestId}`);
+            await deleteImage({public_id:application.license.public_id})
+        },
+        onSuccess: async () => {
+            toast.success("Vendor request accepted!");
+            queryClient.setQueryData(['vendorApplications'], (oldApplications) => 
+                oldApplications.filter((app) => app._id !== application._id)
+            );
+        },
+        onError: () => {
+            toast.error("Error accepting vendor request.");
+        }
+    });
+    const denyMutation = useMutation({
+        mutationFn: async (applicationId) => {
+            await axios.post(`http://localhost:3000/api/admin/manage/deny-vendor/${applicationId}`);
+            await deleteImage({public_id:application.license.public_id})
+        },
+        onSuccess: async() => {
+            toast.success("Vendor request denied!");
+            queryClient.setQueryData(['vendorApplications'], (oldApplications) => 
+                oldApplications.filter((app) => app._id !== application._id)
+            );
+        },
+        onError: () => {
+            toast.error("Error denying vendor request.");
+        }
+    });
     const toggleDetails = () => setIsExpanded(!isExpanded);
 
     return (
@@ -66,11 +104,17 @@ const VendorApplicationCard = ({ application }) => {
                 >
                     {isExpanded ? "Close" : "View"}
                 </button>
-                <button className="font-semibold text-lg transition-all duration-300 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transform hover:scale-105">
-                    Accept
+                <button
+                    onClick={() => acceptMutation.mutate(application._id)}
+                    className="font-semibold text-lg transition-all duration-300 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transform hover:scale-105"
+                >
+                    {acceptMutation.isPending ? <BeatLoader color="#FFF" size={10} /> : "Accept"}
                 </button>
-                <button className="font-semibold text-lg transition-all duration-300 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transform hover:scale-105">
-                    Deny
+                <button
+                    onClick={() => denyMutation.mutate(application._id)}
+                    className="font-semibold text-lg transition-all duration-300 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transform hover:scale-105"
+                >
+                    {denyMutation.isPending ? <BeatLoader color="#FFF" size={10} /> : "Deny"}
                 </button>
             </div>
             <AnimatePresence>
@@ -83,7 +127,7 @@ const VendorApplicationCard = ({ application }) => {
                         className="mt-4 bg-gray-100 rounded-md shadow-xl p-4 w-full border-t border-gray-200"
                     >
                         <p><strong>License</strong></p>
-                        <ImageZoom src={application.license} alt="License Image" />
+                        <ImageZoom src={application.license.url} alt="License Image" />
                         <p><strong>Restaurant Name:</strong> {application.restaurantName}</p>
                         <p><strong>Address:</strong> {application.address}</p>
                         <p><strong>Description:</strong> {application.description}</p>
@@ -92,20 +136,6 @@ const VendorApplicationCard = ({ application }) => {
             </AnimatePresence>
         </motion.div>
     );
-};
-VendorApplicationCard.propTypes = {
-    application: PropTypes.shape({
-        _id: PropTypes.string.isRequired,
-        restaurantName: PropTypes.string.isRequired,
-        description: PropTypes.string,
-        address: PropTypes.string,
-        license: PropTypes.string.isRequired,
-        user: PropTypes.shape({
-            profilePhoto: PropTypes.string,
-            fullname: PropTypes.string.isRequired,
-            email: PropTypes.string.isRequired,
-        }).isRequired,
-    }).isRequired,
 };
 const ImageZoom = ({ src, alt }) => {
     const [isZoomed, setIsZoomed] = useState(false);
@@ -146,10 +176,24 @@ const ImageZoom = ({ src, alt }) => {
         </div>
     );
 };
+VendorApplicationCard.propTypes = {
+    application: PropTypes.shape({
+        _id: PropTypes.string.isRequired,
+        restaurantName: PropTypes.string.isRequired,
+        description: PropTypes.string,
+        address: PropTypes.string,
+        license: PropTypes.string.isRequired,
+        user: PropTypes.shape({
+            profilePhoto: PropTypes.string,
+            fullname: PropTypes.string.isRequired,
+            email: PropTypes.string.isRequired,
+        }).isRequired,
+    }).isRequired,
+    refetchApplications: PropTypes.func.isRequired,
+};
 
 ImageZoom.propTypes = {
     src: PropTypes.string.isRequired,
     alt: PropTypes.string.isRequired,
 };
-
 export default Requests;

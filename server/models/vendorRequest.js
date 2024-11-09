@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
+
 const vendorRequestSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
@@ -20,9 +21,16 @@ const vendorRequestSchema = new Schema({
     trim: true,
   },
   license: {
-    type: String,
-    required: true,
-    trim: true,
+    url: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    public_id: {
+      type: String,
+      required: true,
+      trim: true,
+    }
   },
   status: {
     type: String,
