@@ -42,7 +42,10 @@ const RequestVendorPage = () => {
           restaurantName: values.restaurantName,
           address: values.address,
           description: values.description,
-          license: uploadedImage.secure_url,
+          license: {
+            url: uploadedImage.secure_url,
+            public_id: uploadedImage.public_id,
+          }
         })
         MySwal.fire({
           title: <p className="text-2xl font-semibold">Request Submitted!</p>,

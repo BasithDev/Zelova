@@ -18,7 +18,7 @@ const UserLayout = () => {
           const role = 'user'
           await logout(role)
           dispatch(logoutUser());
-          navigate("/admin/login");
+          navigate("/login");
         } catch (error) {
             console.log(error)
         }
