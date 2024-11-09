@@ -2,25 +2,28 @@
 import { useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { useDispatch } from 'react-redux';
-import { setUserAuth, setAdminAuth, logoutAdmin , logoutUser } from '../Redux/slices/authSlice';
+import {jwtDecode} from 'jwt-decode';
+import { setUserAuth, logoutUser } from '../Redux/slices/authUserSlice';
 
 const AuthChecker = () => {
     const dispatch = useDispatch();
 
     useEffect(() => {
         const userToken = Cookies.get('user_token');
-        const adminToken = Cookies.get('admin_token');
+        const isVendor = Cookies.get('is_vendor') === 'true';
 
         if (userToken) {
-            dispatch(setUserAuth({ token: userToken }));
-        } else {
-            dispatch(logoutUser('user'));  // Clear user auth state if no user token
-        }
+            try {
+                const decodedToken = jwtDecode(userToken);
+                const userId = decodedToken.userId; // assuming `userId` is in the token payload
 
-        if (adminToken) {
-            dispatch(setAdminAuth({ token: adminToken }));
+                dispatch(setUserAuth({ token: userToken, isVendor, userId }));
+            } catch (error) {
+                console.error("Failed to decode token:", error);
+                dispatch(logoutUser()); // Log out if decoding fails
+            }
         } else {
-            dispatch(logoutAdmin('admin'));  // Clear admin auth state if no admin token
+            dispatch(logoutUser());  // Clear user auth state if no user token
         }
     }, [dispatch]);
 

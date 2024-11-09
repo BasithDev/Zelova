@@ -3,14 +3,24 @@ import { LuUsers } from "react-icons/lu";
 import { MdDashboard } from "react-icons/md";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useDispatch } from 'react-redux';
+import { useDispatch,useSelector } from 'react-redux';
 import { logout } from "../../Services/apiServices";
-import {logoutAdmin} from '../../Redux/slices/authSlice'
+import {logoutAdmin} from '../../Redux/slices/authAdminSlice'
+import { useEffect } from "react";
+import { fetchAdminData } from "../../Redux/slices/adminDataSlice";
 
 const AdminLayout = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const adminID = useSelector((state)=>state.authAdmin.adminId)
+
+  useEffect(() => {
+    if (adminID) {  // Check if adminID is available
+      dispatch(fetchAdminData(adminID));
+    }
+}, [dispatch,adminID]);
 
   const handleLogout = async () => {
     try {

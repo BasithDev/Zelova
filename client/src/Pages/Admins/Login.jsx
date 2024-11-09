@@ -5,7 +5,7 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import {loginUser} from '../../Services/apiServices'
 import { useDispatch } from 'react-redux';
-import { setAdminAuth } from '../../Redux/slices/authSlice'; // Adjust the import based on your structure
+import { setAdminAuth } from '../../Redux/slices/authAdminSlice';
 import { useNavigate } from 'react-router-dom';
 
 // Validation schema using Yup
@@ -26,18 +26,18 @@ const Login = () => {
         try {
             const response = await loginUser(values);
             if (response.status === 200) {
-                const { token, isAdmin } = response.data;
-                
+                const { Id,token, isAdmin } = response.data;
+                const adminId = Id
+                console.log(adminId)
                 if (isAdmin) {
-                    dispatch(setAdminAuth({ token }));
-                    navigate('/admin'); // Only navigate if the user is an admin
+                    dispatch(setAdminAuth({ adminId,token }));
+                    navigate('/admin');
                 } else {
                     toast.error("You're not authorized to access this page.");
                 }
             }
         } catch (error) {
             console.error('Login error:', error);
-            // Interceptors handle error toasts automatically
         } finally {
             setSubmitting(false);
         }
