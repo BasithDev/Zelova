@@ -34,6 +34,7 @@ exports.login = async (req, res) => {
 
         return res.status(200).json({ 
             status: "Success",
+            Id:user._id,
             token: token,
             isVendor:user.isVendor,
             isAdmin:user.isAdmin,
@@ -189,7 +190,7 @@ exports.generateTokenAndRedirect = (req, res) => {
         const token = jwt.sign(
             { userId: req.user._id, isVendor: req.user.isVendor, status: req.user.status },
             process.env.JWT_SECRET,
-            { expiresIn: '1h' }
+            { expiresIn: '24h' }
         );
         res.cookie('user_token', token, {maxAge: 3600000});
         res.set({

@@ -6,6 +6,7 @@ import UserLayout from './Components/Layouts/UserLayout';
 import AdminLayout from './Components/Layouts/AdminLayout';
 import VendorLayout from './Components/Layouts/VendorLayout';
 import AuthChecker from './Components/AuthChecker';
+import AdminAuthChecker from './Components/AdminAuthChecker'
 import { UserProtectedRoute} from './Routers/ProtectedRoute';
 import { AdminNoAuthRoute , UserNoAuthRoute} from './Routers/NoAuthRouter';
 import {AdminRoleProtectedRoute , UserRoleProtectedRoute} from './Routers/ProtectedRoute'
@@ -26,6 +27,7 @@ import SellerManagement from './Pages/Admins/SellerManagement';
 import AdminProfile from './Pages/Admins/Profile';
 
 import AddItem from './Pages/Seller/AddItem';
+import VendorHome from './Pages/Seller/VendorHome';
 
 const queryClient = new QueryClient();
 
@@ -35,6 +37,7 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <Router>
           <AuthChecker />
+          <AdminAuthChecker/>
           <Routes>
             {/* Public User Routes */}
             <Route element={<UserNoAuthRoute />}>
@@ -72,9 +75,11 @@ function App() {
             {/* Vendor Routes */}
             <Route element={<UserRoleProtectedRoute allowedRoles={['vendor']} />}>
               <Route path="/vendor" element={<VendorLayout />}>
-                <Route path="additem" element={<AddItem />} />
+              <Route index element={<VendorHome/>} />
+                <Route path="add-items" element={<AddItem />} />
               </Route>
             </Route>
+            
           </Routes>
         </Router>
       </QueryClientProvider>

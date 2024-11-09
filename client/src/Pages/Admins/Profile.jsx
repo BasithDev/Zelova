@@ -1,22 +1,36 @@
 import { FaKey, FaEdit, FaPalette, FaEnvelopeOpenText, FaSignOutAlt } from "react-icons/fa";
 import PropTypes from "prop-types";
 import AdminSearchBar from "../../Components/SearchBar/AdminSearchBar";
-
+import { useSelector } from "react-redux";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { fetchAdminData } from "../../Redux/slices/adminDataSlice";
 const Profile = () => {
+  const dispatch = useDispatch();
+  const adminData = useSelector((state) => state.adminData.data);
+  const adminID = useSelector((state) => state.authAdmin.adminId);
+
+  useEffect(() => {
+    if (adminID) {
+      dispatch(fetchAdminData(adminID));
+    }
+  }, [dispatch, adminID]);
+
+  if (!adminData) {
+    return <div>Loading...</div>; // Or use a spinner or another placeholder
+  }
+
   return (
     <div className="bg-gray-100 h-screen">
-      
-      <AdminSearchBar/>
-
+      <AdminSearchBar />
       <div className="bg-white rounded-lg p-6 w-full max-w-6xl mx-auto text-center shadow-md">
         <img
           src="https://placehold.co/100x100"
           alt="Admin Profile"
           className="rounded-full w-24 h-24 mb-4 border-4 border-blue-500 mx-auto"
         />
-        <h2 className="text-2xl font-semibold text-gray-800">Max</h2>
-        <p className="text-sm text-gray-500 mb-6">Admin</p>
-
+        <h2 className="text-2xl font-semibold text-gray-800">{adminData.fullname}</h2>
+        <p className="text-sm text-gray-500 mb-6">{adminData.email}</p>
         <div className="space-y-3">
           <ProfileOption icon={<FaKey />} color="text-blue-500" label="Reset Password" />
           <ProfileOption icon={<FaEdit />} color="text-orange-500" label="Edit Profile" />
