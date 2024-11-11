@@ -15,8 +15,7 @@ const UserLayout = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-
-    const userID = useSelector((state) => state.authUser.userId)
+    const userID = useSelector((state) => state.authUser.userId);
 
     const handleLogout = async () => {
         try {
@@ -30,35 +29,29 @@ const UserLayout = () => {
     };
 
     useEffect(() => {
-        const userId = userID
-        dispatch(fetchUserData(userId));
+        async function funTrigger() {
+            const userId = userID;
+            await dispatch(fetchUserData(userId));
+        }
+        funTrigger();
     }, [dispatch, userID]);
 
-    const userData = useSelector((state) => state.userData.data)
-    if(!userData){
-        return <>
-        
-        loading ..
-        
-        </>
-    }
-    const isVendor = userData?.isVendor || null
+    const userData = useSelector((state) => state.userData.data);
+    if (!userData) return <>loading ..</>;
 
-    if(isVendor){
-        Cookies.set('is_vendor','true')
-
+    const isVendor = userData?.isVendor || null;
+    if (isVendor) {
+        Cookies.set('is_vendor', 'true');
     }
 
     return (
-        <div className="flex h-screen">
-            <aside className="w-1/5 bg-gray-100 text-center shadow-lg flex flex-col justify-between">
+        <div className="flex">
+            <aside className="bg-gray-100 w-1/5 fixed text-center shadow-lg h-screen flex flex-col justify-between">
                 <div>
                     <p className="text-5xl font-semibold mt-3 mb-5 text-transparent bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text cursor-pointer">
                         Zelova
                     </p>
-
-                    {/* Navigation Links */}
-                    <nav className="space-y-3">
+                    <nav className="space-y-4">
                         <div
                             onClick={() => navigate('/')}
                             className="flex items-center gap-3 cursor-pointer p-3 mx-4 bg-gray-200 rounded-lg hover:bg-gray-300 transition-all"
@@ -101,12 +94,10 @@ const UserLayout = () => {
                             <img src="/src/assets/searchLove.png" alt="" className="w-6" />
                             <p className="text-lg font-semibold text-gray-500">Get Supplies</p>
                         </div>
-
-                        {/* Vendor Switch Option */}
                         {isVendor && (
                             <div
                                 onClick={() => navigate('/vendor')}
-                                className="flex items-center gap-3 cursor-pointer p-3 mx-4 mt-2 bg-blue-200 rounded-lg hover:bg-blue-300 transition-all"
+                                className="flex items-center cursor-pointer p-3 mx-4 bg-blue-200 rounded-lg hover:bg-blue-300 transition-all"
                             >
                                 <p className="text-lg font-semibold text-blue-600">Switch to Vendor</p>
                             </div>
@@ -114,8 +105,8 @@ const UserLayout = () => {
                     </nav>
                 </div>
 
-                {/* Profile and Logout */}
-                <div className="mb-6 mx-4">
+                {/* Profile and Logout at the Bottom */}
+                <div className="mb-3 mx-4 space-y-3">
                     <div
                         onClick={() => navigate('/profile')}
                         className="flex items-center gap-3 cursor-pointer p-3 bg-gray-200 rounded-lg hover:bg-gray-300 transition-all"
@@ -125,13 +116,12 @@ const UserLayout = () => {
                         ) : (
                             <FaUser className="text-2xl text-gray-600 bg-gray-300 p-1 rounded-full" />
                         )}
-
                         <p className="font-semibold text-gray-700">{userData?.fullname}</p>
                     </div>
 
                     <div
                         onClick={() => setShowLogoutConfirm(true)}
-                        className="flex items-center justify-center gap-2 cursor-pointer p-3 mt-3 border-2 border-red-500 text-red-600 rounded-lg transition-all hover:bg-red-100"
+                        className="flex items-center justify-center gap-2 cursor-pointer p-3 border-2 border-red-500 text-red-600 rounded-lg transition-all hover:bg-red-100"
                     >
                         <p className="font-semibold">Logout</p>
                         <IoMdLogOut className="text-xl" />
@@ -139,7 +129,7 @@ const UserLayout = () => {
                 </div>
             </aside>
 
-            <main className="w-full">
+            <main className="w-full ms-[20%]">
                 <Outlet />
             </main>
 

@@ -14,14 +14,14 @@ const AuthChecker = () => {
         if (adminToken) {
             try {
                 const decodedToken = jwtDecode(adminToken);
-                const adminId = decodedToken.userId; // assuming `userId` is in the token payload
+                const adminId = decodedToken.userId;
                 dispatch(setAdminAuth({ adminId,token: adminToken }));
             } catch (error) {
                 console.error("Failed to decode token:", error);
-                dispatch(logoutAdmin()); // Log out if decoding fails
+                dispatch(logoutAdmin());
             }
         } else {
-            dispatch(logoutAdmin());  // Clear user auth state if no user token
+            dispatch(logoutAdmin());
         }
     }, [dispatch]);
 

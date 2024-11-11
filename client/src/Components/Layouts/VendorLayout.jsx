@@ -31,7 +31,7 @@ const VendorLayout = () => {
             <aside className="w-1/5 fixed h-[100%] bg-gray-100 text-center shadow-lg flex flex-col justify-between">
                 <div>
                     <p className="text-5xl font-semibold mt-6 mb-10 text-transparent bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text cursor-pointer">
-                        Zelova
+                        Zelova <span></span>
                     </p>
 
                     {/* Navigation Links */}
@@ -96,7 +96,7 @@ const VendorLayout = () => {
                 </div>
             </aside>
 
-            <main className="w-full">
+            <main className="w-full ms-[20%]">
                 <Outlet />
             </main>
 

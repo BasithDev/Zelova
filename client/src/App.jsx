@@ -15,6 +15,7 @@ import Home from './Pages/Users/Home';
 import Login from './Pages/Users/Login';
 import Register from './Pages/Users/Register';
 import Otp from './Pages/Users/Otp';
+import EditUser from './Pages/Users/EditUser'
 import RoleManagement from './Pages/Users/RoleManagement';
 import Profile from './Pages/Users/Profile';
 import RequestVendorPage from './Pages/Users/RequestVendor';
@@ -57,6 +58,7 @@ function App() {
               <Route path="/" element={<UserLayout />}>
                 <Route index element={<Home />} />
                 <Route path="profile" element={<Profile />} />
+                <Route path="edit-user" element={<EditUser/>} />
                 <Route path="request-vendor" element={<RequestVendorPage />} />
               </Route>
             </Route>
