@@ -23,10 +23,10 @@ const Login = () => {
             const { Id,token, isVendor } = response.data;
             const userId = Id
             if (isVendor) {
-                dispatch(setUserAuth({  userId,token, isVendor }));
+                await dispatch(setUserAuth({  userId,token, isVendor }));
                 navigate('/role-select', { replace: true });
             } else {
-                dispatch(setUserAuth({ token }));
+                await dispatch(setUserAuth({  userId,token, isVendor }));
                 navigate('/');
             }
         } catch (error) {

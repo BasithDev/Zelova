@@ -41,7 +41,7 @@ const VendorHome = () => {
     };
 
     return (
-        <div className="flex ms-[20%] flex-col bg-gray-50">
+        <div className="flex flex-col bg-gray-50">
 
             {/* Today's Date - Top Right */}
             <div className="text-right p-6 text-xl font-semibold text-gray-700">

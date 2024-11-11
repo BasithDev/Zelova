@@ -10,5 +10,8 @@ export const logout = (role) => api.post('/auth/logout', { role });
 export const uploadToCloud = (data) => cloudinaryInstance.post(`/image/upload`,data)
 
 export const deleteImage = (data) => api.post('/admin/manage/delete-image',data)
+export const fetchVendorRequests = () => api.get('/admin/manage/requests')
+export const acceptVenodrRequests = (requestId) => api.post(`/admin/manage/accept-vendor/${requestId}`)
+export const denyVenodrRequests = (applicationId) => api.post(`/admin/manage/deny-vendor/${applicationId}`)
 
 export const submitVendorReq = (data) => api.post('/user/req-vendor',data)

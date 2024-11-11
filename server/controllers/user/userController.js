@@ -21,3 +21,7 @@ exports.getUserById = async (req, res) => {
         });
     }
 };
+
+exports.updateProfile = async (req,res) => {
+
+}

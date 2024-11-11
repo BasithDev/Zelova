@@ -1,5 +1,4 @@
 import { useQuery, useMutation , useQueryClient} from '@tanstack/react-query';
-import axios from 'axios';
 import { useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { toast } from 'react-toastify';
@@ -8,9 +7,10 @@ import 'react-toastify/dist/ReactToastify.css';
 import AdminSearchBar from "../../Components/SearchBar/AdminSearchBar";
 import { AnimatePresence, motion } from 'framer-motion';
 import { BeatLoader } from 'react-spinners';
-import { deleteImage } from '../../Services/apiServices';
+import { acceptVenodrRequests, deleteImage, denyVenodrRequests, fetchVendorRequests } from '../../Services/apiServices';
+
 const fetchVendorApplications = async () => {
-    const { data } = await axios.get("http://localhost:3000/api/admin/manage/requests");
+    const { data } = await fetchVendorRequests()
     return data;
 };
 
@@ -51,7 +51,7 @@ const VendorApplicationCard = ({ application }) => {
     const queryClient = useQueryClient();
     const acceptMutation = useMutation({
         mutationFn: async (requestId) => {
-            await axios.post(`http://localhost:3000/api/admin/manage/accept-vendor/${requestId}`);
+            await acceptVenodrRequests(requestId)
             await deleteImage({public_id:application.license.public_id})
         },
         onSuccess: async () => {
@@ -66,7 +66,7 @@ const VendorApplicationCard = ({ application }) => {
     });
     const denyMutation = useMutation({
         mutationFn: async (applicationId) => {
-            await axios.post(`http://localhost:3000/api/admin/manage/deny-vendor/${applicationId}`);
+            await denyVenodrRequests(applicationId)
             await deleteImage({public_id:application.license.public_id})
         },
         onSuccess: async() => {
@@ -139,43 +139,59 @@ const VendorApplicationCard = ({ application }) => {
 };
 const ImageZoom = ({ src, alt }) => {
     const [isZoomed, setIsZoomed] = useState(false);
-    const [backgroundPosition, setBackgroundPosition] = useState('0% 0%');
+    const [backgroundPosition, setBackgroundPosition] = useState('50% 50%');
     const imageRef = useRef(null);
 
-    const handleMouseEnter = () => setIsZoomed(true);
-    const handleMouseLeave = () => setIsZoomed(false);
+    // Toggle zoom view on click
+    const toggleZoom = () => setIsZoomed((prev) => !prev);
 
+    // Update background position based on mouse movement over the image
     const handleMouseMove = (e) => {
-        const { left, top, width, height } = imageRef.current.getBoundingClientRect();
-        const x = ((e.pageX - left) / width) * 100;
-        const y = ((e.pageY - top) / height) * 100;
+        const rect = imageRef.current.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
         setBackgroundPosition(`${x}% ${y}%`);
     };
 
     return (
         <div className="flex bg-white p-3 w-fit rounded-2xl space-x-4">
             <div
-                className="relative w-60 h-60 overflow-hidden border border-gray-300 rounded-lg"
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
+                className="relative w-96 h-96 overflow-hidden border border-gray-300 rounded-lg"
                 onMouseMove={handleMouseMove}
+                onClick={toggleZoom}
                 ref={imageRef}
+                style={{
+                    cursor: 'zoom-in',
+                    transition: 'transform 0.3s ease',
+                }}
             >
-                <img src={src} alt={alt} className="w-full h-full object-cover" />
+                <img
+                    src={src}
+                    alt={alt}
+                    className="w-full h-full object-cover"
+                    style={{
+                        transform: isZoomed ? 'scale(1.05)' : 'scale(1)',
+                        transition: 'transform 0.3s ease',
+                    }}
+                />
             </div>
             {isZoomed && (
                 <div
-                    className="w-60 h-60 border border-gray-300 rounded-lg shadow-lg overflow-hidden"
+                    className="w-96 h-96 border border-gray-300 rounded-lg shadow-lg overflow-hidden"
                     style={{
                         backgroundImage: `url(${src})`,
-                        backgroundSize: "200%",
-                        backgroundPosition,
+                        backgroundSize: "200%",  // Increased magnification for zoom
+                        backgroundPosition: backgroundPosition,
+                        backgroundRepeat: 'no-repeat',
+                        transition: 'background-position 0.1s ease',
                     }}
                 ></div>
             )}
         </div>
     );
 };
+
+
 VendorApplicationCard.propTypes = {
     application: PropTypes.shape({
         _id: PropTypes.string.isRequired,

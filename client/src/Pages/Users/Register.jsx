@@ -1,4 +1,4 @@
-import { useState , useEffect} from 'react';
+import { useState} from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
@@ -16,21 +16,10 @@ import { FaCalendarAlt } from "react-icons/fa";
 import { FaPhoneAlt } from "react-icons/fa";
 
 import PrimaryBtn from '../../Components/Buttons/PrimaryBtn';
-import { useSelector } from 'react-redux';
 
 const Register = () => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-
-    const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-
-    console.log(isAuthenticated)
-
-    useEffect(() => {
-        if (isAuthenticated) {
-            navigate('/', { replace: true });
-        }
-    }, [isAuthenticated, navigate]);
 
     const handleGoogleLogin = () => {
         window.location.href  = 'http://localhost:3000/api/auth/google';
