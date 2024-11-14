@@ -5,10 +5,11 @@ import PrimaryBtn from '../../Components/Buttons/PrimaryBtn';
 import Cropper from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
 import { motion, AnimatePresence } from 'framer-motion';
-import {submitVendorReq,uploadToCloud} from '../../Services/apiServices'
+import {submitVendorReq} from '../../Services/apiServices'
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import { BeatLoader } from 'react-spinners';
+import { uploadImageToCloud } from '../../Helpers/uploadImageToCloud';
 
 const RequestVendorPage = () => {
   const [image, setImage] = useState(null);
@@ -16,10 +17,7 @@ const RequestVendorPage = () => {
   const [croppedImage, setCroppedImage] = useState(null);
   const [isCropperOpen, setIsCropperOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const MySwal = withReactContent(Swal);
-
-
   const cropperRef = useRef(null);
 
   const formik = useFormik({
@@ -86,24 +84,6 @@ const RequestVendorPage = () => {
     },
   });
   
-  const uploadImageToCloud = async (croppedImage) => {
-    const uploadPreset = 'zelova_img_cloud_preset';
-
-    const formData = new FormData();
-
-    const response = await fetch(croppedImage);
-    const blob = await response.blob();
-    formData.append('file',blob, 'lic.jpg');
-    formData.append('upload_preset', uploadPreset);
-
-    try {
-      const response = await uploadToCloud( formData );
-      return response.data;
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      throw new Error('Image upload failed');
-    }
-  };
 
   const onImageChange = (e) => {
     const file = e.target.files[0];
@@ -134,6 +114,7 @@ const RequestVendorPage = () => {
     }
   };
 
+  
   return (
     <motion.div
       className={`${croppedImage?'h-fit':'h-screen'} p-6 bg-amber-50`}

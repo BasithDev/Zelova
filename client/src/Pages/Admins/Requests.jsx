@@ -139,20 +139,19 @@ const VendorApplicationCard = ({ application }) => {
 };
 const ImageZoom = ({ src, alt }) => {
     const [isZoomed, setIsZoomed] = useState(false);
+    const [isLoading,setIsLoading] = useState(true)
     const [backgroundPosition, setBackgroundPosition] = useState('50% 50%');
     const imageRef = useRef(null);
-
-    // Toggle zoom view on click
     const toggleZoom = () => setIsZoomed((prev) => !prev);
-
-    // Update background position based on mouse movement over the image
     const handleMouseMove = (e) => {
         const rect = imageRef.current.getBoundingClientRect();
         const x = ((e.clientX - rect.left) / rect.width) * 100;
         const y = ((e.clientY - rect.top) / rect.height) * 100;
         setBackgroundPosition(`${x}% ${y}%`);
     };
-
+    const handleImageLoad = () => {
+        setIsLoading(false); // Image has loaded, stop showing spinner
+    };
     return (
         <div className="flex bg-white p-3 w-fit rounded-2xl space-x-4">
             <div
@@ -165,9 +164,15 @@ const ImageZoom = ({ src, alt }) => {
                     transition: 'transform 0.3s ease',
                 }}
             >
+                {isLoading && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+                        <BeatLoader color="#555" />
+                    </div>
+                )}
                 <img
                     src={src}
                     alt={alt}
+                    onLoad={handleImageLoad}
                     className="w-full h-full object-cover"
                     style={{
                         transform: isZoomed ? 'scale(1.05)' : 'scale(1)',
@@ -190,7 +195,6 @@ const ImageZoom = ({ src, alt }) => {
         </div>
     );
 };
-
 
 VendorApplicationCard.propTypes = {
     application: PropTypes.shape({
