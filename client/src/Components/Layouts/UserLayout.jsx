@@ -1,4 +1,4 @@
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { MdHome } from "react-icons/md";
 import { FaHeart, FaUser } from "react-icons/fa";
 import { BiSolidPurchaseTag } from "react-icons/bi";
@@ -10,40 +10,57 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logoutUser } from "../../Redux/slices/authUserSlice";
 import { fetchUserData } from '../../Redux/slices/userDataSlice'
 import Cookies from 'js-cookie';
+import { MdStore } from "react-icons/md";
 
 const UserLayout = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const dispatch = useDispatch();
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const userID = useSelector((state) => state.authUser.userId);
+    const userData = useSelector((state) => state.userData.data);
+
+    useEffect(() => {
+        if (userID) {
+            dispatch(fetchUserData(userID));
+        }
+    }, [dispatch, userID]);
 
     const handleLogout = async () => {
         try {
             const role = 'user';
-            await logout(role);
             dispatch(logoutUser());
+            await logout(role);
             navigate("/login");
         } catch (error) {
             console.log(error);
         }
     };
-
-    useEffect(() => {
-        async function funTrigger() {
-            const userId = userID;
-            await dispatch(fetchUserData(userId));
-        }
-        funTrigger();
-    }, [dispatch, userID]);
-
-    const userData = useSelector((state) => state.userData.data);
     if (!userData) return <>loading ..</>;
-
     const isVendor = userData?.isVendor || null;
     if (isVendor) {
         Cookies.set('is_vendor', 'true');
     }
-
+    const navItems = [
+        { path: '/', label: 'Home', icon: <MdHome /> },
+        { path: '/favourites', label: 'Favourites', icon: <FaHeart /> },
+        { path: '/orders', label: 'Orders', icon: <BiSolidPurchaseTag /> },
+        { path: '/coins', label: 'Coins', icon: <p className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-yellow-500">Z</p> },
+        { path: '/share-supplies', label: 'Share Supplies', icon: <img src="/src/assets/shareSup.png" alt="Share" className="w-6" /> },
+        { path: '/get-supplies', label: 'Get Supplies', icon: <img src="/src/assets/searchLove.png" alt="Get" className="w-6" /> },
+    ];
+    const renderNavItem = ({ path, label, icon }) => (
+        <div
+            key={path}
+            onClick={() => navigate(path)}
+            className={`flex items-center gap-3 hover:scale-105 cursor-pointer p-3 mx-4 rounded-lg transition-all ${
+                location.pathname === path ? 'bg-orange-400 text-white hover:bg-orange-500' : 'bg-gray-200 text-gray-500 hover:bg-gray-300'
+            }`}
+        >
+            {icon}
+            <p className="text-lg font-semibold">{label}</p>
+        </div>
+    );
     return (
         <div className="flex">
             <aside className="bg-gray-100 w-1/5 fixed text-center shadow-lg h-screen flex flex-col justify-between">
@@ -52,64 +69,40 @@ const UserLayout = () => {
                         Zelova
                     </p>
                     <nav className="space-y-4">
-                        <div
-                            onClick={() => navigate('/')}
-                            className="flex items-center gap-3 cursor-pointer p-3 mx-4 bg-gray-200 rounded-lg hover:bg-gray-300 transition-all"
-                        >
-                            <MdHome className="text-2xl text-gray-500" />
-                            <p className="text-lg font-semibold text-gray-500">Home</p>
-                        </div>
-                        <div
-                            onClick={() => navigate('/favourites')}
-                            className="flex items-center gap-3 cursor-pointer p-3 mx-4 bg-gray-200 rounded-lg hover:bg-gray-300 transition-all"
-                        >
-                            <FaHeart className="text-2xl text-gray-500" />
-                            <p className="text-lg font-semibold text-gray-500">Favourites</p>
-                        </div>
-                        <div
-                            onClick={() => navigate('/orders')}
-                            className="flex items-center gap-3 cursor-pointer p-3 mx-4 bg-gray-200 rounded-lg hover:bg-gray-300 transition-all"
-                        >
-                            <BiSolidPurchaseTag className="text-2xl text-gray-500" />
-                            <p className="text-lg font-semibold text-gray-500">Orders</p>
-                        </div>
-                        <div
-                            onClick={() => navigate('/coins')}
-                            className="flex items-center gap-3 cursor-pointer p-3 mx-4 bg-gray-200 rounded-lg hover:bg-gray-300 transition-all"
-                        >
-                            <p className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-yellow-500">Z</p>
-                            <p className="text-lg font-semibold text-gray-500">Coins</p>
-                        </div>
-                        <div
-                            onClick={() => navigate('/share-supplies')}
-                            className="flex items-center gap-3 cursor-pointer p-3 mx-4 bg-gray-200 rounded-lg hover:bg-gray-300 transition-all"
-                        >
-                            <img src="/src/assets/shareSup.png" alt="" className="w-6" />
-                            <p className="text-lg font-semibold text-gray-500">Share Supplies</p>
-                        </div>
-                        <div
-                            onClick={() => navigate('/get-supplies')}
-                            className="flex items-center gap-3 cursor-pointer p-3 mx-4 bg-gray-200 rounded-lg hover:bg-gray-300 transition-all"
-                        >
-                            <img src="/src/assets/searchLove.png" alt="" className="w-6" />
-                            <p className="text-lg font-semibold text-gray-500">Get Supplies</p>
-                        </div>
+                        {navItems.map(renderNavItem)}
                         {isVendor && (
-                            <div
-                                onClick={() => navigate('/vendor')}
-                                className="flex items-center cursor-pointer p-3 mx-4 bg-blue-200 rounded-lg hover:bg-blue-300 transition-all"
+                            <motion.div
+                            onClick={() => navigate('/vendor')}
+                            className="flex hover:scale-105 items-center cursor-pointer p-3 mx-4 bg-blue-200 rounded-lg transition-all duration-300 hover:bg-blue-300"
+                            whileHover="hover"
+                        >
+                            <motion.p
+                                className="text-lg font-semibold text-blue-600"
+                                variants={{
+                                    hover: { opacity:0 },
+                                }}
+                                transition={{ type: "tween", duration: 0.4 }}
                             >
-                                <p className="text-lg font-semibold text-blue-600">Switch to Vendor</p>
-                            </div>
+                                <MdStore className="text-xl text-blue-600 mr-2" />
+                            </motion.p>
+
+                            <motion.p
+                                className="text-lg font-semibold text-blue-600"
+                                variants={{
+                                    hover: { x: 75 },
+                                }}
+                                transition={{ type: "tween", duration: 0.4 }}
+                            >
+                                Switch to Vendor
+                            </motion.p>
+                        </motion.div>
                         )}
                     </nav>
                 </div>
-
-                {/* Profile and Logout at the Bottom */}
                 <div className="mb-3 mx-4 space-y-3">
                     <div
                         onClick={() => navigate('/profile')}
-                        className="flex items-center gap-3 cursor-pointer p-3 bg-gray-200 rounded-lg hover:bg-gray-300 transition-all"
+                        className={`flex items-center gap-3 cursor-pointer p-3 ${location.pathname === '/profile' ? 'bg-orange-400 hover:bg-orange-500':'bg-gray-200 hover:bg-gray-300'} hover:scale-105 rounded-lg transition-all`}
                     >
                         {userData.profilePicture ? (
                             <img src={userData.profilePicture} alt="Profile" className="rounded-full w-8 h-8" />
@@ -121,19 +114,16 @@ const UserLayout = () => {
 
                     <div
                         onClick={() => setShowLogoutConfirm(true)}
-                        className="flex items-center justify-center gap-2 cursor-pointer p-3 border-2 border-red-500 text-red-600 rounded-lg transition-all hover:bg-red-100"
+                        className="flex hover:scale-105 items-center justify-center gap-2 cursor-pointer p-3 border-2 border-red-500 text-red-600 rounded-lg transition-all hover:bg-red-100"
                     >
                         <p className="font-semibold">Logout</p>
                         <IoMdLogOut className="text-xl" />
                     </div>
                 </div>
             </aside>
-
             <main className="w-full ms-[20%]">
                 <Outlet />
             </main>
-
-            {/* Logout Confirmation Modal */}
             <AnimatePresence>
                 {showLogoutConfirm && (
                     <motion.div
@@ -170,5 +160,4 @@ const UserLayout = () => {
         </div>
     );
 };
-
 export default UserLayout;

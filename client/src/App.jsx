@@ -29,6 +29,11 @@ import AdminProfile from './Pages/Admins/Profile';
 
 import AddItem from './Pages/Seller/AddItem';
 import VendorHome from './Pages/Seller/VendorHome';
+import EditId from './Pages/Users/EditId';
+import ResetPassword from './Pages/Users/ResetPassword';
+import ManageRestaurant from './Pages/Seller/ManageRestaurant';
+import Menu from './Pages/Seller/Menu';
+import Orders from './Pages/Seller/Orders';
 
 const queryClient = new QueryClient();
 
@@ -59,6 +64,8 @@ function App() {
                 <Route index element={<Home />} />
                 <Route path="profile" element={<Profile />} />
                 <Route path="edit-user" element={<EditUser/>} />
+                <Route path="change-id" element={<EditId/>} />
+                <Route path="reset-password" element={<ResetPassword/>}/>
                 <Route path="request-vendor" element={<RequestVendorPage />} />
               </Route>
             </Route>
@@ -79,6 +86,9 @@ function App() {
               <Route path="/vendor" element={<VendorLayout />}>
               <Route index element={<VendorHome/>} />
                 <Route path="add-items" element={<AddItem />} />
+                <Route path='manage-restaurant' element={<ManageRestaurant/>}/>
+                <Route path='menu' element={<Menu/>}/> 
+                <Route path='orders' element={<Orders/>}/> 
               </Route>
             </Route>
             

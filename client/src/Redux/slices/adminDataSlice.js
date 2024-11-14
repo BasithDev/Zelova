@@ -1,9 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-
+import {getAdmin} from '../../Services/apiServices'
 // Async thunk to fetch user data
 export const fetchAdminData = createAsyncThunk('adminData/fetchAdminData', async (adminId) => {
-  const response = await axios.get(`http://localhost:3000/api/admin/${adminId}`);
+  const response = await getAdmin(adminId)
   return response.data;
 });
 
