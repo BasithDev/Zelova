@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { logout } from "../../Services/apiServices";
 import { motion, AnimatePresence } from "framer-motion";
-import { useDispatch } from 'react-redux';
-import { logoutUser } from "../../Redux/slices/authUserSlice";
+import { useDispatch, useSelector } from 'react-redux';
+import { logoutUser } from "../../Redux/slices/user/authUserSlice";
 import PropTypes from 'prop-types'
 import { MdHome , MdPerson ,MdRestaurant,MdReceiptLong} from "react-icons/md";
 import { IoMdLogOut } from "react-icons/io";
 import { IoFastFoodOutline } from "react-icons/io5";
 import { BiFoodMenu } from "react-icons/bi";
+import { fetchRestaurantData } from "../../Redux/slices/seller/restaurantDataSlice";
 
 const NavItem = ({ icon: Icon, label, route }) => {
     const location = useLocation();
@@ -31,6 +32,13 @@ const VendorLayout = () => {
     const dispatch = useDispatch();
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const userId = useSelector((state) => state.authUser.userId);
+
+    useEffect(()=>{
+        if (userId) {
+            dispatch(fetchRestaurantData(userId))
+        }
+    })
 
     const handleLogout = async () => {
         setIsLoggingOut(true);

@@ -7,8 +7,8 @@ import { useState, useEffect } from "react";
 import { logout } from "../../Services/apiServices";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from 'react-redux';
-import { logoutUser } from "../../Redux/slices/authUserSlice";
-import { fetchUserData } from '../../Redux/slices/userDataSlice'
+import { logoutUser } from "../../Redux/slices/user/authUserSlice";
+import { fetchUserData } from '../../Redux/slices/user/userDataSlice'
 import Cookies from 'js-cookie';
 import { MdStore } from "react-icons/md";
 

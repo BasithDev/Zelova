@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { useDispatch } from 'react-redux';
 import {jwtDecode} from 'jwt-decode';
-import { setUserAuth, logoutUser } from '../Redux/slices/authUserSlice';
+import { setUserAuth, logoutUser } from '../Redux/slices/user/authUserSlice';
 
 const AuthChecker = () => {
     const dispatch = useDispatch();

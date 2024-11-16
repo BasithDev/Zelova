@@ -7,10 +7,8 @@ import AdminSearchBar from "../../Components/SearchBar/AdminSearchBar";
 const Dashboard = () => {
 
     return (
-        <div className="py-3">
-
+        <div>
             <AdminSearchBar/>
-
             <h1 className="text-2xl px-3 font-bold mb-6">Dashboard</h1>
 
             <div className="grid px-3 grid-cols-4 gap-6 mb-6">

@@ -81,6 +81,7 @@ const VendorApplicationCard = ({ application }) => {
     });
     const toggleDetails = () => setIsExpanded(!isExpanded);
 
+
     return (
         <motion.div 
             layout
@@ -90,7 +91,7 @@ const VendorApplicationCard = ({ application }) => {
             className="bg-white mx-3 p-4 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105 flex flex-col items-start"
         >
             <div className="flex items-center">
-                <img src={application.user.profilePhoto || "https://placehold.co/60x60"} alt={`Profile of ${application.user.fullname}`} className="w-16 h-16 rounded-full mr-4 border border-gray-300 shadow-sm" />
+                <img src={application.user.profilePicture || "https://placehold.co/60x60"} alt={`Profile of ${application.user.fullname}`} className="w-16 h-16 rounded-full mr-4 border border-gray-300 shadow-sm" />
                 <div className="flex-1">
                     <h2 className="text-xl font-semibold">{application.user.fullname}</h2>
                     <p className="text-gray-600">{application.restaurantName}</p>
@@ -204,7 +205,7 @@ VendorApplicationCard.propTypes = {
         address: PropTypes.string,
         license: PropTypes.string.isRequired,
         user: PropTypes.shape({
-            profilePhoto: PropTypes.string,
+            profilePicture: PropTypes.string,
             fullname: PropTypes.string.isRequired,
             email: PropTypes.string.isRequired,
         }).isRequired,

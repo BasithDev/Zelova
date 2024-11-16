@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { useEffect } from 'react';
 
 import UserLayout from './Components/Layouts/UserLayout';
 import AdminLayout from './Components/Layouts/AdminLayout';
@@ -38,6 +39,20 @@ import Orders from './Pages/Seller/Orders';
 const queryClient = new QueryClient();
 
 function App() {
+  useEffect(() => {
+    const scriptId = 'google-maps-script';
+    if (!document.getElementById(scriptId)) {
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GMAP_KEY}&loading=async&libraries=marker`;
+        script.id = scriptId;
+        script.async = true;
+        script.defer = true;
+        document.body.appendChild(script);
+        script.onerror = () => {
+            console.error('Failed to load the Google Maps script');
+        };
+    }
+}, []);
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <QueryClientProvider client={queryClient}>

@@ -5,7 +5,7 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import {loginUser} from '../../Services/apiServices'
 import { useDispatch } from 'react-redux';
-import { setAdminAuth } from '../../Redux/slices/authAdminSlice';
+import { setAdminAuth } from '../../Redux/slices/admin/authAdminSlice';
 import { useNavigate } from 'react-router-dom';
 
 // Validation schema using Yup
