@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { useDispatch } from 'react-redux';
 import {jwtDecode} from 'jwt-decode';
-import { setAdminAuth, logoutAdmin } from '../Redux/slices/authAdminSlice';
+import { setAdminAuth, logoutAdmin } from '../Redux/slices/admin/authAdminSlice';
 
 const AuthChecker = () => {
     const dispatch = useDispatch();

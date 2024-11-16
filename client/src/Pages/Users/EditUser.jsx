@@ -9,7 +9,7 @@ import { BeatLoader } from 'react-spinners';
 import { uploadImageToCloud } from '../../Helpers/uploadImageToCloud';
 import { IoIosCloseCircle } from "react-icons/io";
 import { deleteUserImage, updateUser } from '../../Services/apiServices';
-import { fetchUserData } from '../../Redux/slices/userDataSlice';
+import { fetchUserData } from '../../Redux/slices/user/userDataSlice';
 import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';

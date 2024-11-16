@@ -8,7 +8,7 @@ import PrimaryBtn from '../../Components/Buttons/PrimaryBtn';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useDispatch } from 'react-redux';
-import { setUserAuth } from '../../Redux/slices/authUserSlice';
+import { setUserAuth } from '../../Redux/slices/user/authUserSlice';
 import { loginUser } from '../../Services/apiServices';
 
 const Login = () => {

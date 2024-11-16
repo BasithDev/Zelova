@@ -7,7 +7,7 @@ import axios from 'axios';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
-import { fetchUserData } from '../../Redux/slices/userDataSlice'
+import { fetchUserData } from '../../Redux/slices/user/userDataSlice'
 
 const EditId = () => {
   const userData = useSelector(state => state.userData.data);

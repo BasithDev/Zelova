@@ -19,3 +19,9 @@ export const getUser = (userId) => api.get(`/user/${userId}`)
 export const updateUser = (data) => api.put('/user/update-profile',data)
 export const deleteUserImage = (data) => api.post('/user/delete-image',data)
 export const submitVendorReq = (data) => api.post('/user/req-vendor',data)
+
+export const getRestaurant = (userId) => api.get(`vendor/restaurant/${userId}`)
+export const updateRestaurantDetails = (userId, data) => api.put(`vendor/restaurant/${userId}/details`, data);
+export const openOrCloseShop = (userId, isActive) => api.patch(`vendor/restaurant/${userId}/status`, { isActive });
+export const updateRestaurantPic = (userId, image) => api.patch(`vendor/restaurant/${userId}/image`, { image });
+export const setLocation = (userId, locationData) => api.patch(`vendor/restaurant/${userId}/location`, locationData);

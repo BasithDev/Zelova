@@ -26,10 +26,21 @@ const UserManagement = () => {
   };
 
   return (
-    <div className="py-6 px-4 lg:px-8">
+    <div>
       <AdminSearchBar />
-      <h1 className="text-3xl font-bold mb-6">User Management</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      <motion.h1 
+      initial={{ opacity: 0.5 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1 }}
+      className="text-3xl px-3 font-bold mb-6">User Management</motion.h1>
+      <motion.div 
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        opacity: { duration: 0.5 },
+        y: { type: 'spring', stiffness: 100, damping: 20 },
+    }}
+      className="grid px-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         <div className="flex items-center p-6 bg-gray-50 rounded-lg shadow-md hover:bg-white hover:shadow-lg transform transition duration-300">
           <LuUsers className="text-4xl text-purple-500 mr-4" />
           <div>
@@ -44,8 +55,15 @@ const UserManagement = () => {
             <p className="text-2xl font-bold">0</p>
           </div>
         </div>
-      </div>
-      <div className="bg-white p-6 rounded-lg shadow">
+      </motion.div>
+      <motion.div 
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        opacity: { duration: 0.5 },    // Duration for fade-in
+        y: { type: 'spring', stiffness: 100, damping: 20 }, // Smooth spring animation for vertical movement
+    }}
+      className="bg-white p-6 mx-3 rounded-lg shadow">
         <h2 className="text-2xl font-semibold mb-4">Users</h2>
 
         {isLoading ? (
@@ -130,7 +148,7 @@ const UserManagement = () => {
         ) : (
           <p>No users available.</p>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 };
