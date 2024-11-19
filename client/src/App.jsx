@@ -27,6 +27,7 @@ import Requests from './Pages/Admins/Requests';
 import UserManagement from './Pages/Admins/UserManagement';
 import SellerManagement from './Pages/Admins/SellerManagement';
 import AdminProfile from './Pages/Admins/Profile';
+import ItemsAndCategoryMng from './Pages/Admins/ItemsAndCategoryMng'
 
 import AddItem from './Pages/Seller/AddItem';
 import VendorHome from './Pages/Seller/VendorHome';
@@ -93,17 +94,6 @@ function App() {
               </Route>
             </Route>
 
-            {/* Admin Routes */}
-            <Route element={<AdminRoleProtectedRoute />}>
-              <Route path="/admin" element={<AdminLayout />}>
-                <Route index element={<Dashboard />} />
-                <Route path="user-manage" element={<UserManagement />} />
-                <Route path="vendor-manage" element={<SellerManagement />} />
-                <Route path="profile" element={<AdminProfile />} />
-                <Route path="requests" element={<Requests />} />
-              </Route>
-            </Route>
-
             {/* Vendor Routes */}
             <Route element={<UserRoleProtectedRoute allowedRoles={['vendor']} />}>
               <Route path="/vendor" element={<VendorLayout />}>
@@ -112,6 +102,18 @@ function App() {
                 <Route path='manage-restaurant' element={<ManageRestaurant/>}/>
                 <Route path='menu' element={<Menu/>}/> 
                 <Route path='orders' element={<Orders/>}/> 
+              </Route>
+            </Route>
+
+            {/* Admin Routes */}
+            <Route element={<AdminRoleProtectedRoute />}>
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="user-manage" element={<UserManagement />} />
+                <Route path="vendor-manage" element={<SellerManagement />} />
+                <Route path="profile" element={<AdminProfile />} />
+                <Route path="requests" element={<Requests />} />
+                <Route path='items' element={<ItemsAndCategoryMng/>}/>
               </Route>
             </Route>
             

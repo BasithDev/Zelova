@@ -1,8 +1,11 @@
+const getRestaurantId = require('../../helpers/getRestaurantId');
 const Offers = require('../../models/offers');
 
 exports.addOffer = async (req, res) => {
     try {
-        const { offerName, requiredQuantity, discountAmount, restaurantId } = req.body;
+        const token = req.cookies.user_token
+        const restaurantId = getRestaurantId(token,process.env.JWT_SECRET)
+        const { offerName, requiredQuantity, discountAmount } = req.body;
         const newOffer = new Offers({ 
             offerName, 
             requiredQuantity, 
@@ -19,7 +22,8 @@ exports.addOffer = async (req, res) => {
 
 exports.getOffers = async (req, res) => {
     try {
-        const { restaurantId } = req.params;
+        const token = req.cookies.user_token
+        const restaurantId = getRestaurantId(token,process.env.JWT_SECRET)
         if (!restaurantId) {
             return res.status(400).json({ message: 'Restaurant ID is required.' });
         }

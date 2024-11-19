@@ -15,6 +15,11 @@ export const fetchVendorRequests = () => api.get('/admin/manage/requests')
 export const acceptVenodrRequests = (requestId) => api.post(`/admin/manage/accept-vendor/${requestId}`)
 export const denyVenodrRequests = (applicationId) => api.post(`/admin/manage/deny-vendor/${applicationId}`)
 export const blockUnblockUser = (userId,status) => api.patch(`/admin/manage/block-unblock-user/${userId}`,status)
+export const blockUnblockVendor = (vendorId,status) => api.patch(`/admin/manage/block-unblock-user/${vendorId}`,status)
+export const getCategoriesToMng = ()=>api.get('/admin/manage/categories')
+export const getSubCategoriesToMng = ()=>api.get('/admin/manage/subcategories')
+export const deleteCategory = (id)=>api.delete(`/admin/manage/category/delete/${id}`)
+export const deleteSubCategory = (id)=>api.delete(`/admin/manage/subcategory/delete/${id}`)
 
 export const getUser = (userId) => api.get(`/user/${userId}`)
 export const updateUser = (data) => api.put('/user/update-profile',data)
@@ -27,10 +32,12 @@ export const openOrCloseShop = (userId, isActive) => api.patch(`vendor/restauran
 export const updateRestaurantPic = (userId, data) => api.patch(`vendor/restaurant/${userId}/image`,data);
 export const setLocation = (userId, locationData) => api.patch(`vendor/restaurant/${userId}/location`, locationData);
 
+export const addProduct = (data) => api.post('vendor/product',data)
+
 export const addCategory = (data) => api.post('vendor/category/add',data)
 export const addSubCategory = (data) => api.post('vendor/subcategory/add',data)
 export const getCategories = ()=> api.get('/vendor/categories')
 
-export const getOffers = (resId)=> api.get(`/vendor/offers/${resId}`)
+export const getOffers = ()=> api.get(`/vendor/offer/`)
 export const addOffer = (data)=> api.post('/vendor/offer/add',data)
-export const deleteOffer = (offerId) => api.delete(`/vendor/offer/${offerId}`)
+export const deleteOffer = (offerId) => api.delete(`/vendor/offer/delete/${offerId}`)
