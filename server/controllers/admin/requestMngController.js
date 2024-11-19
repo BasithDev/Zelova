@@ -1,11 +1,13 @@
 const cloudinary = require('cloudinary').v2;
 const vendorRequest = require('../../models/vendorRequest');
 const User = require('../../models/user')
+const Restaurant = require('../../models/restaurant')
 const {sendEmail} = require('../../utils/emailService')
+
 exports.getVendorApplications = async (req, res) => {
     try {
         const applications = await vendorRequest.find()
-            .populate('userId', '_id email fullname profilePhoto')
+            .populate('userId')
             .lean();
         const formattedApplications = applications.map(app => ({
             ...app,
@@ -19,7 +21,6 @@ exports.getVendorApplications = async (req, res) => {
 };
 exports.acceptReq = async (req,res)=>{
     try {
-        console.log(req.params)
         const { id } = req.params;
         const requestId = id
         const request = await vendorRequest.findById(requestId).populate('userId');
@@ -31,6 +32,12 @@ exports.acceptReq = async (req,res)=>{
             { isVendor: true },
             { new: true }
         );
+        const newRestaurant = new Restaurant({
+            vendorId: user._id,
+            name: request.restaurantName,
+            description: request.description,
+        })
+        await newRestaurant.save();
         const subject = 'Vendor Request Approved';
         const message = `Hello ${user.fullname},\n\nCongratulations! Your vendor request has been approved. You can now log in as a vendor or continue as a regular user. Please re-login to begin using your vendor account.\n\nBest regards,\nZelova Team`;
         await sendEmail(user.email, subject, message);

@@ -89,7 +89,7 @@ const UserLayout = () => {
                             <motion.p
                                 className="text-lg font-semibold text-blue-600"
                                 variants={{
-                                    hover: { x: 75 },
+                                    hover: { x: "50%" },
                                 }}
                                 transition={{ type: "tween", duration: 0.4 }}
                             >

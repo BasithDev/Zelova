@@ -48,8 +48,8 @@ const AdminLayout = () => {
   const isActive = (path) => location.pathname === path ? "bg-blue-500 text-white" : "bg-gray-300 text-gray-500 hover:bg-gray-400 hover:text-gray-600";
 
   return (
-    <div className="flex w-full">
-      <aside className="w-64 fixed left-0 top-0 h-screen p-5 bg-gray-800 text-white shadow-lg">
+    <div className="flex h-screen w-full">
+      <aside className="w-64 hide-scrollbar h-screen overflow-y-auto left-0 top-0 p-5 bg-gray-800 text-white shadow-lg">
         <div className="text-center mb-10">
           <p className="text-orange-400 font-bold text-3xl">
             Zelova <span className="text-blue-500 text-xl">Admin</span>
@@ -76,7 +76,7 @@ const AdminLayout = () => {
         </div>
       </aside>
 
-      <main className="ml-64 w-full">
+      <main className="flex-1 h-screen overflow-y-auto">
         <Outlet />
       </main>
 

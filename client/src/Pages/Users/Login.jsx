@@ -20,13 +20,13 @@ const Login = () => {
     const handleLogin = async () => {
         try {
             const response = await loginUser({ email, password });
-            const { Id,token, isVendor } = response.data;
+            const { Id,token, isVendor,status } = response.data;
             const userId = Id
             if (isVendor) {
-                await dispatch(setUserAuth({  userId,token, isVendor }));
+                await dispatch(setUserAuth({  userId,token, isVendor, status }));
                 navigate('/role-select', { replace: true });
             } else {
-                await dispatch(setUserAuth({  userId,token, isVendor }));
+                await dispatch(setUserAuth({  userId,token, isVendor, status }));
                 navigate('/');
             }
         } catch (error) {

@@ -1,22 +1,36 @@
 import { LuUsers } from "react-icons/lu";
 import { TfiPackage } from "react-icons/tfi";
 import axios from 'axios';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AdminSearchBar from "../../Components/SearchBar/AdminSearchBar";
 import { AnimatePresence, motion } from "framer-motion";
 import React ,{ useState } from "react";
-
+import { blockUnblockUser } from "../../Services/apiServices";
+import { toast } from "react-toastify";
+import { ToastContainer } from 'react-toastify';
 const fetchUsers = async () => {
   const { data } = await axios.get("http://localhost:3000/api/admin/manage/users");
   return data;
 };
 
 const UserManagement = () => {
+  const queryClient = useQueryClient();
   const { data: users, isLoading, isError } = useQuery({
     queryKey: ['users'],
     queryFn: fetchUsers,
     staleTime: 60000,
     cacheTime: 300000,
+  });
+
+  const mutation = useMutation({
+    mutationFn: ({ userId, status }) => blockUnblockUser(userId, {status}),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries(['users']);
+      toast.success(res.data.message);
+    },
+    onError: (error) => {
+      console.log(error)
+    },
   });
 
   const [expandedUserId, setExpandedUserId] = useState(null);
@@ -25,8 +39,15 @@ const UserManagement = () => {
     setExpandedUserId(expandedUserId === userId ? null : userId);
   };
 
+  const handleBlockUnblock = (userId, currentStatus) => {
+    const newStatus = currentStatus === "blocked" ? "active" : "blocked";
+    mutation.mutate({ userId, status: newStatus });
+  };
+  
+
   return (
     <div>
+      <ToastContainer position="top-right" autoClose={2000} />
       <AdminSearchBar />
       <motion.h1 
       initial={{ opacity: 0.5 }}
@@ -89,8 +110,15 @@ const UserManagement = () => {
                     <td className="py-3 px-4">{user.email}</td>
                     <td className="py-3 px-4">{user.zCoins}</td>
                     <td className="py-3 px-4">
-                      <button className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition">
-                        Block
+                      <button 
+                      onClick={() => handleBlockUnblock(user._id, user.status)}
+                      className={`${
+                        user.status === "blocked"
+                          ? "bg-green-500 hover:bg-green-600"
+                          : "bg-red-500 hover:bg-red-600"
+                      } text-white px-3 py-1 rounded-md transition`}
+                      >
+                        {user.status === "blocked" ? "Unblock" : "Block"}
                       </button>
                     </td>
                     <td className="py-3 px-4">
