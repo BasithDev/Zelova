@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../../models/user');
+const Restaurant = require('../../models/restaurant')
 const Otp = require('../../models/otp')
 const { sendOTPEmail } = require('../../config/mailer');
 
@@ -27,17 +28,20 @@ exports.login = async (req, res) => {
             return res.status(401).json({ message: "Invalid credentials" });
         }
 
+        const restaurant = await Restaurant.findOne({ vendorId: user._id });
+
         const payload = {
             userId: user._id,
-            isVendor:user.isVendor,
-            isAdmin: user.isAdmin
+            isVendor: user.isVendor,
+            isAdmin: user.isAdmin,
+            restaurantId: restaurant ? restaurant._id : null
         };
 
         const secret = user.isAdmin ? process.env.JWT_ADMIN_SECRET : process.env.JWT_SECRET;
         const tokenName = user.isAdmin ? 'admin_token' : 'user_token';
-        const token = jwt.sign(payload, secret, { expiresIn: '24h' });
+        const token = jwt.sign(payload, secret, { expiresIn: '3h' });
 
-        res.cookie(tokenName, token, { maxAge: 3600000 });
+        res.cookie(tokenName, token, { maxAge: 10800000 });
 
         return res.status(200).json({ 
             status: "Success",

@@ -1,10 +1,13 @@
 import { LuUsers } from "react-icons/lu";
 import { TfiPackage } from "react-icons/tfi";
 import axios from 'axios';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery,useMutation, useQueryClient } from '@tanstack/react-query';
 import AdminSearchBar from "../../Components/SearchBar/AdminSearchBar";
 import React,{ useState } from 'react';
 import { AnimatePresence, motion } from "framer-motion";
+import { blockUnblockVendor } from "../../Services/apiServices";
+import { toast } from "react-toastify";
+import { ToastContainer } from 'react-toastify';
 
 const fetchVendors = async () => {
   const { data } = await axios.get("http://localhost:3000/api/admin/manage/vendors");
@@ -12,11 +15,23 @@ const fetchVendors = async () => {
 };
 
 const VendorManagement = () => {
+  const queryClient = useQueryClient();
   const { data: vendors, isLoading, isError } = useQuery({
     queryKey: ['vendors'],
     queryFn: fetchVendors,
     staleTime: 60000,
     cacheTime: 300000,
+  });
+
+  const mutation = useMutation({
+    mutationFn: ({ vendorId, status }) => blockUnblockVendor(vendorId, {status}),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries(['vendors']);
+      toast.success(res.data.message);
+    },
+    onError: (error) => {
+      console.log(error)
+    },
   });
 
   const [openVendor, setOpenVendor] = useState(null);
@@ -25,8 +40,14 @@ const VendorManagement = () => {
     setOpenVendor(openVendor === vendorId ? null : vendorId);
   };
 
+  const handleBlockUnblock = (vendorId, currentStatus) => {
+    const newStatus = currentStatus === "blocked" ? "active" : "blocked";
+    mutation.mutate({ vendorId, status: newStatus });
+  };
+
   return (
     <div>
+      <ToastContainer position="top-right" autoClose={2000} />
       <AdminSearchBar />
       <motion.h1 
       initial={{ opacity: 0.5 }}
@@ -91,8 +112,15 @@ const VendorManagement = () => {
                     <td className="py-3 px-4">{vendor.email}</td>
                     <td className="py-3 px-4">{vendor.zCoins}</td>
                     <td className="py-3 px-4">
-                      <button className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition">
-                        Block
+                    <button 
+                      onClick={() => handleBlockUnblock(vendor._id, vendor.status)}
+                      className={`${
+                        vendor.status === "blocked"
+                          ? "bg-green-500 hover:bg-green-600"
+                          : "bg-red-500 hover:bg-red-600"
+                      } text-white px-3 py-1 rounded-md transition`}
+                      >
+                        {vendor.status === "blocked" ? "Unblock" : "Block"}
                       </button>
                     </td>
                     <td className="py-3 px-4">
