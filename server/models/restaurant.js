@@ -23,9 +23,11 @@ const restaurantSchema = new Schema({
     },
     coordinates: {
       type: [Number],
-      required: true,
       index: "2dsphere",
     },
+  },
+  address:{
+    type: String,
   },
   image: {
     type: String,
@@ -34,24 +36,16 @@ const restaurantSchema = new Schema({
     type: Boolean,
     default: true,
   },
-  license: {
-    type: String,
-    required: true,
-    trim: true,
-  },
   openingTime: {
     type: String,
-    required: true,
     trim: true,
   },
   closingTime: {
     type: String,
-    required: true,
     trim: true,
   },
   phone: {
     type: String,
-    required: true,
     trim: true,
   },
   rating: {

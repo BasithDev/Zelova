@@ -57,7 +57,6 @@ exports.updateProfile = async (req, res) => {
 exports.deleteImage = async (req, res) => {
   try {
     const { public_id, userId } = req.body;
-    console.log(userId)
     if (!public_id || !userId) {
       return res.status(400).json({ message: "Public ID is required" });
     }
@@ -139,5 +138,20 @@ exports.resetPassword = async (req, res) => {
     console.log(error)
     console.error("Error updating password:", error);
     res.status(500).json({ status: 'Error', message: 'An error occurred while updating the password.' });
+  }
+};
+exports.getUserStatus = async (req, res) => {
+  try {
+      const userId = req.params.id;
+      const user = await User.findById(userId);
+
+      if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+      }
+
+      res.status(200).json({ status: user.status });
+  } catch (error) {
+      console.error('Error fetching user status:', error);
+      res.status(500).json({ message: 'Server error' });
   }
 };

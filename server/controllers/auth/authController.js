@@ -15,6 +15,13 @@ exports.login = async (req, res) => {
             return res.status(401).json({ message: "User not found" });
         }
 
+        if (user.status === "blocked") {
+            return res.status(403).json({ 
+                status: "Failed",
+                message: "Your account is blocked. Please contact support." 
+            });
+        }
+
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(401).json({ message: "Invalid credentials" });
@@ -38,6 +45,7 @@ exports.login = async (req, res) => {
             token: token,
             isVendor:user.isVendor,
             isAdmin:user.isAdmin,
+            status:user.status,
             message: "Login successful"
         });
     } catch (error) {
@@ -52,14 +60,12 @@ exports.logout = (req, res) => {
     const { role } = req.body;
     
     try {
-        if (role === 'admin' && req.cookies.admin_token) {
-            res.clearCookie('admin_token');
+        if (role === 'admin') {
             return res.status(200).json({
                 status: "Success",
                 message: "Admin logout successful"
             });
-        } else if (role === 'user' && req.cookies.user_token) {
-            res.clearCookie('user_token');
+        } else if (role === 'user') {
             return res.status(200).json({
                 status: "Success",
                 message: "User logout successful"
@@ -67,7 +73,7 @@ exports.logout = (req, res) => {
         } else {
             return res.status(400).json({
                 status: "Failed",
-                message: "No active session found for the specified role"
+                message: "Logged Out"
             });
         }
     } catch (error) {

@@ -107,7 +107,7 @@ const RequestVendorPage = () => {
       if (croppedCanvas) {
         croppedCanvas.toBlob((blob) => {
           const croppedImageUrl = URL.createObjectURL(blob);
-          setCroppedImage(croppedImageUrl); // Set the Blob URL
+          setCroppedImage(croppedImageUrl);
           setIsCropperOpen(false);
         }, 'image/jpeg');
       }

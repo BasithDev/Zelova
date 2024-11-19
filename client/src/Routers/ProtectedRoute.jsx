@@ -7,8 +7,11 @@ import Cookies from 'js-cookie';
 // User protected route, checking for authenticated user
 export function UserProtectedRoute({ children }) {
   const isUserAuthenticated = useSelector((state) => state.authUser.isAuthenticated);
+  const userStatus = useSelector((state) => state.authUser.status)
 
-  if (!isUserAuthenticated) {
+  if (!isUserAuthenticated || userStatus === 'blocked') {
+    Cookies.remove('user_token');
+    Cookies.remove('is_vendor');
     return <Navigate to="/login" replace />;
   }
 
@@ -22,10 +25,13 @@ UserProtectedRoute.propTypes = {
 export function UserRoleProtectedRoute({ allowedRoles }) {
   const isUserAuthenticated = useSelector((state) => state.authUser.isAuthenticated);
   const isVendor = useSelector((state) => state.authUser.isVendor) || Cookies.get('is_vendor')
+  const userStatus = useSelector((state) => state.authUser.status)
 
   const userRole = isVendor ? 'vendor' : 'user';
 
-  if (!isUserAuthenticated) {
+  if (!isUserAuthenticated || userStatus === 'blocked') {
+    Cookies.remove('user_token');
+    Cookies.remove('is_vendor');
     return <Navigate to="/login" replace />;
   }
 

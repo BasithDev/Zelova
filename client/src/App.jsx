@@ -38,21 +38,29 @@ import Orders from './Pages/Seller/Orders';
 
 const queryClient = new QueryClient();
 
-function App() {
+function useLoadGoogleMaps(callback) {
   useEffect(() => {
     const scriptId = 'google-maps-script';
     if (!document.getElementById(scriptId)) {
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GMAP_KEY}&loading=async&libraries=marker`;
-        script.id = scriptId;
-        script.async = true;
-        script.defer = true;
-        document.body.appendChild(script);
-        script.onerror = () => {
-            console.error('Failed to load the Google Maps script');
-        };
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GMAP_KEY}&loading=async&libraries=marker`;
+      script.id = scriptId;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        if (callback) callback();
+      };
+      script.onerror = () => console.error('Failed to load the Google Maps script');
+      document.body.appendChild(script);
+    } else if (callback) {
+      callback();
     }
-}, []);
+  }, [callback]);
+}
+
+
+function App() {
+  useLoadGoogleMaps(() => console.log('Maps is launched'));
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <QueryClientProvider client={queryClient}>
