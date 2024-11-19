@@ -8,10 +8,10 @@ const subCategorySchema = new Schema({
     unique: true,
     trim: true,
   },
-  item: {
-    type: Schema.Types.ObjectId,
-    ref: 'FoodItem',
-    default: null,
+  categoryName: {
+    type: String,
+    required: true,
+    ref: 'Category',
   },
 }, {
   timestamps: true,

@@ -1,23 +1,9 @@
 import { motion } from 'framer-motion';
 import { FcShop, FcBusinessman } from 'react-icons/fc';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux'; // Import useDispatch
-import { setRole } from '../../Redux/slices/authSlice'; // Import setRole action
 
 const RoleManagement = () => {
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-
-  const handleRoleSelection = (role) => {
-    dispatch(setRole({ role }));
-
-    if (role === 'vendor') {
-      navigate('/vendor/additem', { replace: true });
-    } else {
-      navigate('/', { replace: true });
-    }
-  };
-
+  const navigate = useNavigate()
   return (
     <motion.div 
       className="flex items-center justify-center min-h-screen bg-gray-100"
@@ -32,7 +18,7 @@ const RoleManagement = () => {
         
         <div className="flex items-center justify-around space-x-6">
           <button 
-            onClick={() => handleRoleSelection('vendor')} 
+            onClick={() => navigate('/vendor')} 
             className="flex flex-col items-center bg-gradient-to-r from-green-400 to-green-500 text-white px-6 py-3 rounded-lg shadow-md hover:from-green-500 hover:to-green-600 transition-all duration-200"
           >
             <FcShop className="text-4xl mb-1" />
@@ -40,7 +26,7 @@ const RoleManagement = () => {
           </button>
 
           <button 
-            onClick={() => handleRoleSelection('user')} 
+            onClick={() => navigate('/')} 
             className="flex flex-col items-center bg-gradient-to-r from-blue-400 to-blue-500 text-white px-6 py-3 rounded-lg shadow-md hover:from-blue-500 hover:to-blue-600 transition-all duration-200"
           >
             <FcBusinessman className="text-4xl mb-1" />
