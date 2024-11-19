@@ -1,11 +1,13 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { useEffect } from 'react';
 
 import UserLayout from './Components/Layouts/UserLayout';
 import AdminLayout from './Components/Layouts/AdminLayout';
 import VendorLayout from './Components/Layouts/VendorLayout';
 import AuthChecker from './Components/AuthChecker';
+import AdminAuthChecker from './Components/AdminAuthChecker'
 import { UserProtectedRoute} from './Routers/ProtectedRoute';
 import { AdminNoAuthRoute , UserNoAuthRoute} from './Routers/NoAuthRouter';
 import {AdminRoleProtectedRoute , UserRoleProtectedRoute} from './Routers/ProtectedRoute'
@@ -14,6 +16,7 @@ import Home from './Pages/Users/Home';
 import Login from './Pages/Users/Login';
 import Register from './Pages/Users/Register';
 import Otp from './Pages/Users/Otp';
+import EditUser from './Pages/Users/EditUser'
 import RoleManagement from './Pages/Users/RoleManagement';
 import Profile from './Pages/Users/Profile';
 import RequestVendorPage from './Pages/Users/RequestVendor';
@@ -26,15 +29,44 @@ import SellerManagement from './Pages/Admins/SellerManagement';
 import AdminProfile from './Pages/Admins/Profile';
 
 import AddItem from './Pages/Seller/AddItem';
+import VendorHome from './Pages/Seller/VendorHome';
+import EditId from './Pages/Users/EditId';
+import ResetPassword from './Pages/Users/ResetPassword';
+import ManageRestaurant from './Pages/Seller/ManageRestaurant';
+import Menu from './Pages/Seller/Menu';
+import Orders from './Pages/Seller/Orders';
 
 const queryClient = new QueryClient();
 
+function useLoadGoogleMaps(callback) {
+  useEffect(() => {
+    const scriptId = 'google-maps-script';
+    if (!document.getElementById(scriptId)) {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GMAP_KEY}&loading=async&libraries=marker`;
+      script.id = scriptId;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        if (callback) callback();
+      };
+      script.onerror = () => console.error('Failed to load the Google Maps script');
+      document.body.appendChild(script);
+    } else if (callback) {
+      callback();
+    }
+  }, [callback]);
+}
+
+
 function App() {
+  useLoadGoogleMaps(() => console.log('Maps is launched'));
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <QueryClientProvider client={queryClient}>
         <Router>
           <AuthChecker />
+          <AdminAuthChecker/>
           <Routes>
             {/* Public User Routes */}
             <Route element={<UserNoAuthRoute />}>
@@ -54,6 +86,9 @@ function App() {
               <Route path="/" element={<UserLayout />}>
                 <Route index element={<Home />} />
                 <Route path="profile" element={<Profile />} />
+                <Route path="edit-user" element={<EditUser/>} />
+                <Route path="change-id" element={<EditId/>} />
+                <Route path="reset-password" element={<ResetPassword/>}/>
                 <Route path="request-vendor" element={<RequestVendorPage />} />
               </Route>
             </Route>
@@ -72,9 +107,14 @@ function App() {
             {/* Vendor Routes */}
             <Route element={<UserRoleProtectedRoute allowedRoles={['vendor']} />}>
               <Route path="/vendor" element={<VendorLayout />}>
-                <Route path="additem" element={<AddItem />} />
+              <Route index element={<VendorHome/>} />
+                <Route path="add-items" element={<AddItem />} />
+                <Route path='manage-restaurant' element={<ManageRestaurant/>}/>
+                <Route path='menu' element={<Menu/>}/> 
+                <Route path='orders' element={<Orders/>}/> 
               </Route>
             </Route>
+            
           </Routes>
         </Router>
       </QueryClientProvider>
