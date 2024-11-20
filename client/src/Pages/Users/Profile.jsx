@@ -13,7 +13,8 @@ const userData = useSelector((state)=>state.userData.data)
         
         <div className="flex flex-col items-center mb-8">
           <img
-            src={userData.profilePicture || "https://placehold.co/100x100"}
+          referrerPolicy="no-referrer"
+            src={userData?.profilePicture || "https://placehold.co/100x100"}
             alt="Profile of Abdul Basith"
             className="rounded-full w-32 h-32 mb-4 border-4 transition-all duration-300 border-blue-500 shadow-xl hover:shadow-2xl"
           />

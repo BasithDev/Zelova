@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState,useCallback } from "react";
 import ProductCard from "./ProductCard";
 import { FiSearch } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { getProducts } from "../../Services/apiServices";
+import { getProducts , getOffers} from "../../Services/apiServices";
+import { ToastContainer, toast } from "react-toastify";
 
 const Menu = () => {
   const navigate = useNavigate()
@@ -13,6 +14,21 @@ const Menu = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [offers, setOffers] = useState([]);
+
+    const fetchOffers = useCallback(async () => {
+        try {
+            const response = await getOffers();
+            setOffers(response.data.offers);
+        } catch (error) {
+            console.error('Error fetching offers:', error);
+            toast.error('Failed to fetch offers. Please try again.');
+        }
+    },[]);
+
+    useEffect(() => {
+        fetchOffers()
+    }, [fetchOffers]);
 
   const fetchProducts = async () => {
     try {
@@ -55,6 +71,7 @@ const Menu = () => {
 
   return (
     <div className="container mx-auto p-4">
+      <ToastContainer position="top-right"/>
       <h1 className="text-4xl font-bold mb-6 text-center">Menu</h1>
       <div className="flex flex-col md:flex-row justify-between items-center px-6 mb-6 gap-4">
         <div className="relative w-full md:w-1/2 mx-auto">
@@ -134,6 +151,7 @@ const Menu = () => {
                 onListToggle={(id) => console.log(`Toggle List/Unlist ${id}`)}
                 onEdit={(id) => console.log(`Edit Info ${id}`)}
                 onChangeImage={(id) => console.log(`Change Image ${id}`)}
+                offers={offers}
                 onChangeOffer={(id, value) =>
                   console.log(`Change Offer ${id} to ${value}`)
                 }

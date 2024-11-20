@@ -41,6 +41,7 @@ import Favourites from './Pages/Users/Favourites';
 import Coins from './Pages/Users/Coins'
 import ShareSupplies from './Pages/Users/ShareSupplies';
 import GetSupplies from './Pages/Users/GetSupplies';
+import GoogleResponse from './Routers/GoogleResponse';
 
 const queryClient = new QueryClient();
 
@@ -79,6 +80,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/otp" element={<Otp />} />
+              <Route path="/google-response" element={<GoogleResponse />} />
             </Route>
 
             {/* Public Admin Routes */}

@@ -23,10 +23,10 @@ const Login = () => {
             const { Id,token, isVendor,status } = response.data;
             const userId = Id
             if (isVendor) {
-                await dispatch(setUserAuth({  userId,token, isVendor, status }));
+                dispatch(setUserAuth({  userId,token, isVendor, status }));
                 navigate('/role-select', { replace: true });
             } else {
-                await dispatch(setUserAuth({  userId,token, isVendor, status }));
+                dispatch(setUserAuth({  userId,token, isVendor, status }));
                 navigate('/');
             }
         } catch (error) {
@@ -37,6 +37,7 @@ const Login = () => {
     const handleGoogleLogin = () => {
         window.location.href = 'http://localhost:3000/api/auth/google';
     };
+
 
     return (
         <div className="flex flex-col md:flex-row h-screen w-full">
