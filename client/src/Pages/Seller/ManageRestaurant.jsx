@@ -61,9 +61,9 @@ const ManageRestaurant = () => {
         }
 
         try {
-            await updateRestaurantDetails(restaurantData.vendorId,restaurantDetails);
+            await updateRestaurantDetails(restaurantDetails);
             toast.success('Restaurant details updated successfully!');
-            dispatch(fetchRestaurantData(restaurantData.vendorId))
+            dispatch(fetchRestaurantData())
         } catch (error) {
             console.error(error);
             toast.error('An error occurred while updating restaurant details!');

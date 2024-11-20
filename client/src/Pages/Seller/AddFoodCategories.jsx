@@ -53,6 +53,7 @@ const AddFoodCategories = () => {
             });
             toast.success(response.message || 'Subcategory added successfully.');
             setSubCategory('');
+            window.dispatchEvent(new Event('updateDropdownData'));
         } catch (error) {
             console.log(error.response?.data || error.message);
             toast.error(error.response?.data?.message || 'Failed to add subcategory.');

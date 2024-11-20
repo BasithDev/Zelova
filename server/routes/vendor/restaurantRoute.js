@@ -9,10 +9,10 @@ const {
     updateRestaurantPic
 } = require('../../controllers/vendor/restaurantController');
 
-router.get('/restaurant/:userId', getRestaurant);
-router.put('/restaurant/:userId/details', updateRestaurantDetails);
-router.patch('/restaurant/:userId/status', openOrCloseShop);
-router.patch('/restaurant/:userId/image', updateRestaurantPic);
-router.patch('/restaurant/:userId/location', setLocation);
+router.get('/restaurant', getRestaurant);
+router.put('/restaurant/details', updateRestaurantDetails);
+router.patch('/restaurant/status', openOrCloseShop);
+router.patch('/restaurant/image', updateRestaurantPic);
+router.patch('/restaurant/location', setLocation);
 
 module.exports = router;

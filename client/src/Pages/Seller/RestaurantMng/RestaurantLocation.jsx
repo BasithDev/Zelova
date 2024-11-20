@@ -55,11 +55,11 @@ const RestaurantLocation = ({ restaurantDetails, setRestaurantDetails, coordinat
         }
         setIsLocationUpdating(true);
         try {
-            await setLocation(restaurantDetails.vendorId, {
+            await setLocation({
                 address: restaurantDetails.address,
                 coordinates,
             });
-            dispatch(fetchRestaurantData(restaurantData.vendorId));
+            dispatch(fetchRestaurantData());
             toast.success("Location updated successfully!");
         } catch (error) {
             console.log(error);
