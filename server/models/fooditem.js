@@ -40,11 +40,9 @@ const foodItemsSchema = new Schema({
     ref: 'SubCategory',
     required: true,
   },
-  images: [
-    {
+  images: {
       type: String,
     },
-  ],
   isActive: {
     type: Boolean,
     default: true,

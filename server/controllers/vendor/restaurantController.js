@@ -1,9 +1,11 @@
 const Restaurant = require('../../models/restaurant')
 const cloudinary = require('cloudinary').v2;
+const getUserId = require('../../helpers/getUserId')
 
 exports.getRestaurant = async (req, res) => {
     try {
-      const { userId } = req.params;
+        const token = req.cookies.user_token
+    const userId  = getUserId(token,process.env.JWT_SECRET)
       if (!userId) return res.status(400).json({ error: "User ID is required" });
       const restaurant = await Restaurant.findOne({ vendorId: userId });
       if (!restaurant) return res.status(404).json({ error: "Restaurant not found" });
@@ -15,7 +17,8 @@ exports.getRestaurant = async (req, res) => {
 };
 
 exports.updateRestaurantDetails = async (req,res)=>{
-  const { userId } = req.params;
+    const token = req.cookies.user_token
+    const userId  = getUserId(token,process.env.JWT_SECRET)
   const { name, description, phone, openingTime, closingTime } = req.body;
 
   if (!userId || !name || !description || !phone || !openingTime || !closingTime) {
@@ -38,7 +41,8 @@ exports.updateRestaurantDetails = async (req,res)=>{
 }
 
 exports.openOrCloseShop = async (req,res)=>{
-  const { userId } = req.params;
+    const token = req.cookies.user_token
+    const userId  = getUserId(token,process.env.JWT_SECRET)
     const { isActive } = req.body;
 
     if (typeof isActive !== "boolean") {
@@ -64,7 +68,8 @@ exports.openOrCloseShop = async (req,res)=>{
 }
 
 exports.updateRestaurantPic = async (req,res)=>{
-  const { userId } = req.params;
+    const token = req.cookies.user_token
+    const userId  = getUserId(token,process.env.JWT_SECRET)
     const { imageURL , public_id } = req.body;
 
     if (!userId || !imageURL) {
@@ -91,7 +96,8 @@ exports.updateRestaurantPic = async (req,res)=>{
 }
 
 exports.setLocation = async (req,res)=>{
-  const { userId } = req.params;
+    const token = req.cookies.user_token
+    const userId  = getUserId(token,process.env.JWT_SECRET)
     const { address, coordinates } = req.body;
 
     if (!userId || !address || !coordinates) {

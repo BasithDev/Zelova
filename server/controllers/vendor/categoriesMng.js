@@ -27,6 +27,18 @@ exports.getCategories = async (req, res) => {
   }
 };
 
+exports.getSubCategories = async (req, res) => {
+  try {
+    const subCategories = await SubCategory.find().sort({ name: 1 });
+    if (subCategories.length === 0) {
+      return res.status(404).json({ message: "No categories found." });
+    }
+    res.status(200).json({ message: "Categories retrieved successfully.", subCategories });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error.", error });
+  }
+};
+
 exports.addSubCategory = async (req, res) => {
   try {
     const { name, categoryName } = req.body;

@@ -5,7 +5,7 @@ import { FaStoreAlt, FaClipboardList, FaUserCircle } from 'react-icons/fa';
 import { HiOutlineLogout } from 'react-icons/hi';
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch} from "react-redux";
 import { logout } from "../../Services/apiServices";
 import { logoutAdmin } from "../../Redux/slices/admin/authAdminSlice";
 import { fetchAdminData } from "../../Redux/slices/admin/adminDataSlice";
@@ -26,13 +26,10 @@ const AdminLayout = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const adminID = useSelector((state) => state.authAdmin.adminId);
-
+  
   useEffect(() => {
-    if (adminID) {
-      dispatch(fetchAdminData(adminID));
-    }
-  }, [dispatch, adminID]);
+    dispatch(fetchAdminData());
+  }, [dispatch]);
 
   const handleLogout = async () => {
     try {

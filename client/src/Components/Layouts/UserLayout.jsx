@@ -17,14 +17,12 @@ const UserLayout = () => {
     const location = useLocation();
     const dispatch = useDispatch();
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-    const userID = useSelector((state) => state.authUser.userId);
-    const userData = useSelector((state) => state.userData.data);
 
     useEffect(() => {
-        if (userID) {
-            dispatch(fetchUserData(userID));
-        }
-    }, [dispatch, userID]);
+        dispatch(fetchUserData());
+    }, [dispatch]);
+
+    const userData = useSelector((state) => state.userData.data);
 
     const handleLogout = async () => {
         try {
@@ -81,17 +79,20 @@ const UserLayout = () => {
                                 variants={{
                                     hover: { opacity:0 },
                                 }}
-                                transition={{ type: "tween", duration: 0.4 }}
+                                transition={{ type: "tween", duration: 0.2 }}
                             >
                                 <MdStore className="text-xl text-blue-600 mr-2" />
                             </motion.p>
 
                             <motion.p
-                                className="text-lg font-semibold text-blue-600"
+                                className="text-lg text-blue-600"
                                 variants={{
-                                    hover: { x: "50%" },
+                                    hover: {
+                                        scale: 1.1,
+                                        fontWeight: 600,
+                                    },
                                 }}
-                                transition={{ type: "tween", duration: 0.4 }}
+                                transition={{ type: "tween", duration: 0.2 }} 
                             >
                                 Switch to Vendor
                             </motion.p>
@@ -109,7 +110,7 @@ const UserLayout = () => {
                         ) : (
                             <FaUser className="text-2xl text-gray-600 bg-gray-300 p-1 rounded-full" />
                         )}
-                        <p className="font-semibold text-gray-700">{userData?.fullname}</p>
+                        <p className={`font-semibold ${location.pathname === '/profile' ? 'text-white' : 'text-gray-700'} `}>{userData?.fullname}</p>
                     </div>
 
                     <div

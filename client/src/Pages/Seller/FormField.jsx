@@ -40,14 +40,14 @@ const FormField = ({ label, type = "text", name, value, onChange, placeholder, o
 FormField.propTypes = {
     label: PropTypes.string,
     type: PropTypes.oneOf(["text", "number", "email", "password", "textarea"]),
-    name: PropTypes.string.isRequired,
+    name: PropTypes.string,
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    onChange: PropTypes.func.isRequired,
+    onChange: PropTypes.func,
     placeholder: PropTypes.string,
     options: PropTypes.arrayOf(
         PropTypes.shape({
             value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-            label: PropTypes.string.isRequired,
+            label: PropTypes.string,
         })
     ), 
     isSelect: PropTypes.bool, 

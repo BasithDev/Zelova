@@ -3,8 +3,11 @@ const cloudinary = require('cloudinary').v2;
 const Otp = require('../../models/otp')
 const { sendOTPEmail } = require('../../config/mailer');
 const bcrypt = require('bcryptjs');
+const getUserId = require('../../helpers/getUserId')
+
 exports.getUserById = async (req, res) => {
-    const { id } = req.params;
+  const token = req.cookies.user_token
+    const id  = getUserId(token,process.env.JWT_SECRET)
     try {
         const user = await User.findById(id);
 
