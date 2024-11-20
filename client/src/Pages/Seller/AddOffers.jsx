@@ -39,6 +39,7 @@ const AddOffers = () => {
             setRequiredQuantity('');
             setDiscountAmount('');
             fetchOffers();
+            window.dispatchEvent(new Event('updateDropdownData'));
         } catch (error) {
             console.error('Error adding offer:', error);
             toast.error('Failed to add offer. Please try again.');
@@ -56,7 +57,7 @@ const AddOffers = () => {
     };
 
     return (
-        <div className="bg-white shadow-lg rounded-lg p-8 max-w-4xl mx-auto space-y-6">
+        <div className="bg-white shadow-lg rounded-lg p-8 max-w-5xl mx-auto space-y-6">
             <h2 className="text-3xl font-bold text-gray-800 mb-4">Offer Management</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
