@@ -39,6 +39,7 @@ const UserLayout = () => {
     if (isVendor) {
         Cookies.set('is_vendor', 'true');
     }
+    const profilePicture = userData?.profilePicture?.replace(/=s\d+-c$/, '=s96-c');
     const navItems = [
         { path: '/', label: 'Home', icon: <MdHome /> },
         { path: '/favourites', label: 'Favourites', icon: <FaHeart /> },
@@ -105,8 +106,13 @@ const UserLayout = () => {
                         onClick={() => navigate('/profile')}
                         className={`flex items-center gap-3 cursor-pointer p-3 ${location.pathname === '/profile' ? 'bg-orange-400 hover:bg-orange-500':'bg-gray-200 hover:bg-gray-300'} hover:scale-105 rounded-lg transition-all`}
                     >
-                        {userData.profilePicture ? (
-                            <img src={userData.profilePicture} alt="Profile" className="rounded-full w-8 h-8" />
+                        {userData?.profilePicture ? (
+                            <img 
+                            referrerPolicy="no-referrer"
+                            src={profilePicture ? profilePicture : 'https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3383.jpg'}
+                            alt="Profile" 
+                            className="rounded-full w-8 h-8" 
+                            />
                         ) : (
                             <FaUser className="text-2xl text-gray-600 bg-gray-300 p-1 rounded-full" />
                         )}

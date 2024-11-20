@@ -185,11 +185,10 @@ exports.resendOTP = async (req, res) => {
 };
 exports.initiateGoogleLogin = (passport) => passport.authenticate('google', { scope: ['profile', 'email'] });
 exports.handleGoogleCallback = (passport) => (req, res, next) => {
-    passport.authenticate('google', { session: false }, (err, user) => {
+    passport.authenticate('google', { session: false }, (err, user,info) => {
         if (err || !user) {
-            return res.status(401).json({ 
-              status:"Failed",
-              message: 'Authentication failed' });
+            console.log("Error or no user:", { err, info });
+            return res.redirect(`${process.env.APP_URL}/login`);
         }
         req.user = user;
         next();
@@ -197,10 +196,15 @@ exports.handleGoogleCallback = (passport) => (req, res, next) => {
 };
 exports.generateTokenAndRedirect = (req, res) => {
     try {
+        const { status } = req.user
+        if (status === 'blocked') {
+            const redirectUrl = `${process.env.APP_URL}/google-response?status=blocked`;
+            return res.redirect(redirectUrl);
+        }
         const token = jwt.sign(
-            { userId: req.user._id, isVendor: req.user.isVendor, status: req.user.status },
+            { userId: req.user._id, isVendor: req.user.isVendor,restaurantId: req.user.restaurantId, status: req.user.status },
             process.env.JWT_SECRET,
-            { expiresIn: '24h' }
+            { expiresIn: '3h' }
         );
         res.cookie('user_token', token, {maxAge: 3600000});
         res.set({
