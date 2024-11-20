@@ -156,17 +156,7 @@ const AddItem = () => {
                 const updatedFormData = { ...formData, image: uploadedImage.secure_url };
                 const response = await addProduct(updatedFormData)
                 toast.success(response.data.message)
-                setFormData({
-                    itemName: '',
-                    price: '',
-                    description: '',
-                    category: '',
-                    offer: '',
-                    isCustomizable: false,
-                    customFields: [],
-                    image: null,
-                })
-                setCroppedImage(null)
+                
             } catch (error) {
                 toast.error('Failed to add product!');
                 console.error('Add Product Error:', error);
@@ -182,9 +172,10 @@ const AddItem = () => {
         <div className="min-h-screen bg-gray-50 py-10 px-4">
             <ToastContainer position="top-right" />
             <div className="space-y-8">
+                <h1 className='text-center font-bold text-5xl'>Add Items</h1>
                 <AddFoodCategories />
                 <AddOffers />
-                <div className="bg-white shadow-lg rounded-lg p-8 max-w-4xl mx-auto space-y-8">
+                <div className="bg-white shadow-lg rounded-lg p-8 max-w-5xl mx-auto space-y-8">
                     <h3 className="text-3xl font-bold text-gray-800 mb-4">Add New Food Item</h3>
                     <form className="space-y-8">
                         <FormField

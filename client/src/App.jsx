@@ -20,6 +20,7 @@ import EditUser from './Pages/Users/EditUser'
 import RoleManagement from './Pages/Users/RoleManagement';
 import Profile from './Pages/Users/Profile';
 import RequestVendorPage from './Pages/Users/RequestVendor';
+import UserOrderPage from './Pages/Users/Orders'
 
 import AdminLogin from './Pages/Admins/Login';
 import Dashboard from './Pages/Admins/Dashboard';
@@ -36,6 +37,10 @@ import ResetPassword from './Pages/Users/ResetPassword';
 import ManageRestaurant from './Pages/Seller/ManageRestaurant';
 import Menu from './Pages/Seller/Menu';
 import Orders from './Pages/Seller/Orders';
+import Favourites from './Pages/Users/Favourites';
+import Coins from './Pages/Users/Coins'
+import ShareSupplies from './Pages/Users/ShareSupplies';
+import GetSupplies from './Pages/Users/GetSupplies';
 
 const queryClient = new QueryClient();
 
@@ -91,6 +96,11 @@ function App() {
                 <Route path="change-id" element={<EditId/>} />
                 <Route path="reset-password" element={<ResetPassword/>}/>
                 <Route path="request-vendor" element={<RequestVendorPage />} />
+                <Route path='favourites' element={<Favourites/>} />
+                <Route path='orders' element={<UserOrderPage/>} />
+                <Route path='coins' element={<Coins/>} />
+                <Route path='share-supplies' element={<ShareSupplies/>} />
+                <Route path='get-supplies' element={<GetSupplies/>}/>
               </Route>
             </Route>
 
