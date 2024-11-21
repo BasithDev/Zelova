@@ -156,7 +156,17 @@ const AddItem = () => {
                 const updatedFormData = { ...formData, image: uploadedImage.secure_url };
                 const response = await addProduct(updatedFormData)
                 toast.success(response.data.message)
-                
+                setFormData({
+                    itemName: '',
+                    price: '',
+                    description: '',
+                    category: '',
+                    offer: '',
+                    isCustomizable: false,
+                    customFields: [],
+                    image: null,
+                })
+                setCroppedImage(null)
             } catch (error) {
                 toast.error('Failed to add product!');
                 console.error('Add Product Error:', error);

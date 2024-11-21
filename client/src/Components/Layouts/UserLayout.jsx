@@ -86,17 +86,17 @@ const UserLayout = () => {
                             </motion.p>
 
                             <motion.p
-                                className="text-lg text-blue-600"
-                                variants={{
-                                    hover: {
-                                        scale: 1.1,
-                                        fontWeight: 600,
-                                    },
-                                }}
-                                transition={{ type: "tween", duration: 0.2 }} 
-                            >
-                                Switch to Vendor
-                            </motion.p>
+                className="text-lg  font-semibold text-blue-600"
+                variants={{
+                    hover: {
+                        scale: 1.1,
+                        fontWeight: 600,
+                    },
+                }}
+                transition={{ type: "tween", duration: 0.4 }}
+            >
+                Switch to Vendor
+            </motion.p>
                         </motion.div>
                         )}
                     </nav>

@@ -1,78 +1,146 @@
-import { useEffect, useState,useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import ProductCard from "./ProductCard";
 import { FiSearch } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { getProducts , getOffers} from "../../Services/apiServices";
+import { getProducts, getOffers, listOrUnlistProduct ,deleteProduct } from "../../Services/apiServices";
 import { ToastContainer, toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 const Menu = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+
   const [products, setProducts] = useState([]);
+  const [offers, setOffers] = useState([]);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("name");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 4;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [offers, setOffers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-    const fetchOffers = useCallback(async () => {
-        try {
-            const response = await getOffers();
-            setOffers(response.data.offers);
-        } catch (error) {
-            console.error('Error fetching offers:', error);
-            toast.error('Failed to fetch offers. Please try again.');
-        }
-    },[]);
+  const itemsPerPage = 4;
 
-    useEffect(() => {
-        fetchOffers()
-    }, [fetchOffers]);
-
-  const fetchProducts = async () => {
+  const fetchOffers = useCallback(async () => {
     try {
+      setLoading(true);
+      const response = await getOffers();
+      setOffers(response.data.offers);
+    } catch (err) {
+      console.error("Error fetching offers:", err);
+      toast.error("Failed to fetch offers. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchProducts = useCallback(async () => {
+    try {
+      setLoading(true);
       const response = await getProducts();
       setProducts(response.data.data);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+      setError("Failed to load products. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchOffers();
+    fetchProducts();
+  }, [fetchOffers, fetchProducts]);
+
+  const filteredProducts = useMemo(() => {
+    return products
+      .filter((product) =>
+        product.name.toLowerCase().includes(search.toLowerCase())
+      )
+      .sort((a, b) => {
+        if (sortBy === "price") return a.price - b.price;
+        if (sortBy === "name") return a.name.localeCompare(b.name);
+        return 0;
+      });
+  }, [products, search, sortBy]);
+
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredProducts.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredProducts, currentPage]);
+
+  const totalPages = useMemo(() => {
+    return Math.ceil(filteredProducts.length / itemsPerPage);
+  }, [filteredProducts]);
+
+  const handleSearch = useCallback((e) => {
+    setSearch(e.target.value);
+    setCurrentPage(1);
+  }, []);
+
+  const handleSort = useCallback((value) => {
+    setSortBy(value);
+    setIsDropdownOpen(false);
+  }, []);
+
+  const handlePageChange = useCallback((page) => {
+    setCurrentPage(page);
+  }, []);
+
+  const handleListToggle = async (productId, newStatus) => {
+    try {
+      await listOrUnlistProduct(productId, newStatus);
+      setProducts((prevProducts) =>
+        prevProducts.map((product) =>
+          product._id === productId ? { ...product, isActive: newStatus } : product
+        )
+      );
+      toast.success(
+        `Product ${newStatus ? "listed" : "unlisted"} successfully!`
+      );
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error("Error toggling product status:", error);
+      toast.error("Failed to update product status. Please try again.");
     }
   };
 
-  useEffect(()=>{
-    fetchProducts()
-  },[])
-
-  const filteredProducts = products
-    .filter((product) =>
-      product.name.toLowerCase().includes(search.toLowerCase())
-    )
-    .sort((a, b) => {
-      if (sortBy === "price") return a.price - b.price;
-      if (sortBy === "name") return a.name.localeCompare(b.name);
-      return 0;
+  const handleDelete = async (productId, productName) => {
+    const result = await Swal.fire({
+      title: `Do you want to Remove <br><b>"${productName}"</b><br> from the menu`,
+      text: `This action cannot be undone.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
     });
-
-  const paginatedProducts = filteredProducts.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-
-  const handleSearch = (e) => setSearch(e.target.value);
-
-  const handleSort = (e) => {
-    setSortBy(e.target.value);
-    setIsDropdownOpen(false);
+  
+    if (result.isConfirmed) {
+      try {
+        await deleteProduct(productId);
+        setProducts((prevProducts) =>
+          prevProducts.filter((product) => product._id !== productId)
+        );
+        toast.success(`${productName} deleted successfully!`);
+      } catch (error) {
+        console.error("Error deleting product:", error);
+        toast.error(`Failed to delete ${productName}. Please try again.`);
+      }
+    }
   };
 
-  const handlePageChange = (page) => setCurrentPage(page);
+  const pageVariants = {
+    initial: { opacity: 0, y: 80 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -80 },
+  };
 
   return (
     <div className="container mx-auto p-4">
-      <ToastContainer position="top-right"/>
+      <ToastContainer position="top-right" />
       <h1 className="text-4xl font-bold mb-6 text-center">Menu</h1>
+
+      {/* Search and Sort */}
       <div className="flex flex-col md:flex-row justify-between items-center px-6 mb-6 gap-4">
         <div className="relative w-full md:w-1/2 mx-auto">
           <input
@@ -84,12 +152,12 @@ const Menu = () => {
           />
           <button
             className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
-            onClick={() => console.log('hello')}
           >
             <FiSearch size={20} />
           </button>
         </div>
 
+        {/* Sort Dropdown */}
         <div className="relative">
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -112,13 +180,13 @@ const Menu = () => {
               >
                 <ul>
                   <li
-                    onClick={() => handleSort({ target: { value: "name" } })}
+                    onClick={() => handleSort("name")}
                     className="px-4 py-2 hover:bg-blue-50 cursor-pointer"
                   >
                     Sort by Name
                   </li>
                   <li
-                    onClick={() => handleSort({ target: { value: "price" } })}
+                    onClick={() => handleSort("price")}
                     className="px-4 py-2 hover:bg-blue-50 cursor-pointer"
                   >
                     Sort by Price
@@ -129,12 +197,18 @@ const Menu = () => {
           </AnimatePresence>
         </div>
       </div>
-      {filteredProducts.length === 0 ? (
+
+      {/* Products */}
+      {loading ? (
+        <div className="text-center">Loading...</div>
+      ) : error ? (
+        <div className="text-center text-red-500">{error}</div>
+      ) : filteredProducts.length === 0 ? (
         <div className="text-center py-8">
           <h2 className="text-2xl font-semibold">No products found!</h2>
           <p className="text-gray-500">Try adjusting your search or add new products.</p>
           <button
-            onClick={()=>navigate('/vendor/add-items')}
+            onClick={() => navigate("/vendor/add-items")}
             className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
           >
             Add a Product
@@ -142,23 +216,41 @@ const Menu = () => {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 px-6">
-            {paginatedProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onDelete={(id) => console.log(`Delete ${id}`)}
-                onListToggle={(id) => console.log(`Toggle List/Unlist ${id}`)}
-                onEdit={(id) => console.log(`Edit Info ${id}`)}
-                onChangeImage={(id) => console.log(`Change Image ${id}`)}
-                offers={offers}
-                onChangeOffer={(id, value) =>
-                  console.log(`Change Offer ${id} to ${value}`)
-                }
-              />
-            ))}
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentPage}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={pageVariants}
+              transition={{ duration: 0.3 }}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 px-6"
+            >
+              {paginatedProducts.map((product) => (
+                <motion.div
+                  key={product._id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ProductCard
+                    product={product}
+                    onDelete={handleDelete}
+                    onEdit={(id) => console.log(`Edit Info ${id}`)}
+                    onListToggle={handleListToggle}
+                    onChangeImage={(id) => console.log(`Change Image ${id}`)}
+                    offers={offers}
+                    onChangeOffer={(id, value) =>
+                      console.log(`Change Offer ${id} to ${value}`)
+                    }
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+          </AnimatePresence>
 
+          {/* Pagination */}
           <div className="flex justify-center items-center mt-6 space-x-2">
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <button
@@ -179,4 +271,5 @@ const Menu = () => {
     </div>
   );
 };
+
 export default Menu;

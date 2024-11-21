@@ -40,6 +40,9 @@ export const setLocation = (locationData) => api.patch(`vendor/restaurant/locati
 //vendor routes - products management
 export const addProduct = (data) => api.post('vendor/product',data)
 export const getProducts = () => api.get('/vendor/products')
+export const listOrUnlistProduct = (id,isActive) => api.patch(`/vendor/product/${id}/list-or-unlist`,{isActive})
+export const deleteProduct = (id) => api.delete(`/vendor/product/${id}/delete`)
+export const updateProduct = (id,data) => api.put(`/vendor/product/${id}/update`,data)
 
 //vendor routes - categories management
 export const addCategory = (data) => api.post('vendor/category/add',data)
