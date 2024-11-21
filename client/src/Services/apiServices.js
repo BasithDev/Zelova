@@ -43,6 +43,7 @@ export const getProducts = () => api.get('/vendor/products')
 export const listOrUnlistProduct = (id,isActive) => api.patch(`/vendor/product/${id}/list-or-unlist`,{isActive})
 export const deleteProduct = (id) => api.delete(`/vendor/product/${id}/delete`)
 export const updateProduct = (data) => api.put(`/vendor/product/update`,data)
+export const updateProductOffer = (data) => api.patch(`/vendor/product/offer/update`,data)
 
 //vendor routes - categories management
 export const addCategory = (data) => api.post('vendor/category/add',data)

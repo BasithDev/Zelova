@@ -9,12 +9,36 @@ const ProductCard = ({
   onDelete,
   onListToggle,
   onChangeImage,
+  onOfferChange,
   offers,
   onSave,
-  onChangeOffer,
 }) => {
   const [isImageLoading, setIsImageLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [selectedOffer, setSelectedOffer] = useState({
+    productId: null,
+    offerId: null,
+    offerName: null,
+  });
+
+  const openConfirmModal = (productId, offerId, offerName) => {
+    setSelectedOffer({ productId, offerId, offerName });
+    setIsConfirmModalOpen(true);
+  };
+
+  const closeConfirmModal = () => {
+    setIsConfirmModalOpen(false);
+    setSelectedOffer({ productId: null, offerId: null, offerName: null });
+  };
+
+  const handleConfirmUpdate = async () => {
+    if (selectedOffer?.productId && selectedOffer?.offerId !== undefined) {
+      await onOfferChange(selectedOffer.productId, selectedOffer.offerId,offers);
+    }
+    closeConfirmModal();
+  };
+
 
   const handleListToggle = () => {
     onListToggle(product._id, !product.isActive);
@@ -50,9 +74,8 @@ const ProductCard = ({
           <img
             src={product.image || "https://via.placeholder.com/150"}
             alt={product.name}
-            className={`object-cover rounded-lg transition-opacity ${
-              isImageLoading ? "opacity-0" : "opacity-100"
-            }`}
+            className={`object-cover rounded-lg transition-opacity ${isImageLoading ? "opacity-0" : "opacity-100"
+              }`}
             onLoad={() => setIsImageLoading(false)}
           />
           <button
@@ -69,26 +92,42 @@ const ProductCard = ({
         <div className="mb-4">
           <p className="text-md font-semibold mt-2">Price: ₹{product.price}</p>
           <p
-            className={`text-sm mt-1 ${
-              product.offers ? "text-green-600" : "text-gray-400"
-            }`}
+            className={`text-sm mt-1 ${product.offers ? "text-green-600" : "text-gray-400"
+              }`}
           >
             Offer:{" "}
             {product.offers
               ? product.offers.discountAmount +
-                "% Off on Min of " +
-                product.offers.requiredQuantity +
-                " Quantity"
+              "% Off on Min of " +
+              product.offers.requiredQuantity +
+              " Quantity"
               : "No offers"}
           </p>
+          {product.customizable && product.customizations?.length > 0 && (
+            <div className="text-sm text-gray-600 mt-2">
+              Customizations:
+              <ul className="mt-1">
+                {product.customizations.map((custom) => (
+                  <li key={custom._id} className="ml-4 list-disc">
+                    {custom.fieldName}:{" "}
+                    {custom.options.map((option) => (
+                      <span key={option._id}>
+                        {option.name} (₹{option.price})
+                        {", "}
+                      </span>
+                    ))}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
         <div className="flex flex-wrap gap-3">
           <button
-            className={`py-2 px-4 rounded text-white font-semibold ${
-              product.isActive
+            className={`py-2 px-4 rounded text-white font-semibold ${product.isActive
                 ? "bg-gray-500 hover:bg-gray-600"
                 : "bg-green-500 hover:bg-green-600"
-            }`}
+              }`}
             onClick={handleListToggle}
           >
             {product.isActive ? "Unlist" : "List"}
@@ -111,16 +150,20 @@ const ProductCard = ({
             </label>
             <select
               className="border border-gray-300 rounded px-3 py-2"
-              onChange={(e) => onChangeOffer(product._id, e.target.value)}
-              value={product.offers?.offerName || ""}
+              onChange={(e) =>
+                openConfirmModal(product._id, e.target.value, e.target.options[e.target.selectedIndex].text)
+              }
+              value={product.offers?._id || ""}
+              
             >
               <option value="">No Offer</option>
               {offers.map((offer) => (
-                <option key={offer._id} value={offer.offerName}>
+                <option key={offer._id} value={offer._id}>
                   {offer.offerName}
                 </option>
               ))}
             </select>
+
           </div>
         </div>
       </div>
@@ -145,18 +188,18 @@ const ProductCard = ({
                 Edit - {product.name}
               </h2>
               <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                const updatedProduct = {
-                  ...product,
-                  id: product._id,
-                  name: e.target.name.value,
-                  price: Number(e.target.price.value),
-                  description: e.target.description.value,
-                };
-                onSave(updatedProduct); // Call the parent handler to save the changes
-                closeEditModal(); // Close the modal after saving
-              }}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const updatedProduct = {
+                    ...product,
+                    id: product._id,
+                    name: e.target.name.value,
+                    price: Number(e.target.price.value),
+                    description: e.target.description.value,
+                  };
+                  onSave(updatedProduct); // Call the parent handler to save the changes
+                  closeEditModal(); // Close the modal after saving
+                }}
               >
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -185,7 +228,7 @@ const ProductCard = ({
                     Description
                   </label>
                   <textarea
-                  name="description"
+                    name="description"
                     defaultValue={product.description}
                     className="border border-gray-300 rounded px-3 py-2 w-full"
                   />
@@ -210,6 +253,47 @@ const ProductCard = ({
           </Modal>
         )}
       </AnimatePresence>
+      <AnimatePresence>
+        {isConfirmModalOpen && (
+          <Modal
+            isOpen={isConfirmModalOpen}
+            onRequestClose={closeConfirmModal}
+            className="flex items-center justify-center"
+            overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+            ariaHideApp={false}
+          >
+            <motion.div
+              className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.2 }}
+            >
+              <h2 className="text-lg font-bold text-gray-800 mb-4">
+                Confirm Update
+              </h2>
+              <p className="text-sm text-gray-600 mb-6">
+                Are you sure you want to update the offer to{" "}
+                <span className="font-semibold text-blue-600">{selectedOffer.offerName || 'to be removed'}</span>?
+              </p>
+              <div className="flex justify-end">
+                <button
+                  onClick={closeConfirmModal}
+                  className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded mr-2"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleConfirmUpdate()}
+                  className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded"
+                >
+                  Confirm
+                </button>
+              </div>
+            </motion.div>
+          </Modal>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
@@ -222,6 +306,7 @@ ProductCard.propTypes = {
     price: PropTypes.number.isRequired,
     image: PropTypes.string,
     offers: PropTypes.shape({
+      _id: PropTypes.string,
       offerName: PropTypes.string,
       discountAmount: PropTypes.number,
       requiredQuantity: PropTypes.number,
@@ -252,7 +337,7 @@ ProductCard.propTypes = {
   onSave: PropTypes.func.isRequired,
   onListToggle: PropTypes.func.isRequired,
   onChangeImage: PropTypes.func.isRequired,
-  onChangeOffer: PropTypes.func.isRequired,
+  onOfferChange: PropTypes.func.isRequired,
 };
 
 export default ProductCard;

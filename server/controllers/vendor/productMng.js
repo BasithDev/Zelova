@@ -213,3 +213,32 @@ exports.updateProduct = async (req, res) => {
         });
     }
 }
+exports.updateOffer = async (req, res) => {
+    try {
+      const { productId, offerId } = req.body;
+  
+      if (!productId) {
+        return res.status(400).json({ message: 'FoodItem ID is required.' });
+      }
+  
+      const foodItem = await FoodItem.findById(productId);
+      if (!foodItem) {
+        return res.status(404).json({ message: 'FoodItem not found.' });
+      }
+
+      if(offerId){
+        foodItem.offers = offerId;
+      }else{
+        foodItem.offers = null
+      }
+      await foodItem.save();
+  
+      return res.status(200).json({
+        message: 'Offer updated successfully.',
+        updatedOffer: offerId,
+      });
+    } catch (error) {
+      console.error('Error updating offer:', error);
+      return res.status(500).json({ message: 'Internal server error.' });
+    }
+  };
