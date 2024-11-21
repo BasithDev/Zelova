@@ -3,7 +3,7 @@ import ProductCard from "./ProductCard";
 import { FiSearch } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { getProducts, getOffers, listOrUnlistProduct ,deleteProduct , updateProduct } from "../../Services/apiServices";
+import { getProducts, getOffers, listOrUnlistProduct ,deleteProduct , updateProduct, updateProductOffer } from "../../Services/apiServices";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
 
@@ -146,6 +146,31 @@ const Menu = () => {
     }
   }
 
+  const handleProductOfferUpdate = async (productId, offerId) => {
+    try {
+      await updateProductOffer({ productId, offerId });
+      setProducts((prev) =>
+        prev.map((product) =>
+          product._id === productId
+            ? {
+                ...product,
+                offers: offerId
+                  ? { _id:offerId, offerName: offers.find((o) => o._id === offerId)?.offerName , discountAmount:offers.find((o) => o._id === offerId)?.discountAmount , requiredQuantity: offers.find((o) => o._id === offerId)?.requiredQuantity}
+                  : null,
+              }
+            : product
+        )
+      );
+  
+      toast.success("Product Offer Updated Successfully!");
+    } catch (error) {
+      console.log(error);
+      toast.error("Failed to update product offer.");
+    }
+  };
+  
+  
+
   const pageVariants = {
     initial: { opacity: 0, x: "5%" },
     animate: { opacity: 1, x: 0 },
@@ -257,10 +282,8 @@ const Menu = () => {
                     onDelete={handleDelete}
                     onListToggle={handleListToggle}
                     onChangeImage={(id) => console.log(`Change Image ${id}`)}
+                    onOfferChange={handleProductOfferUpdate}
                     offers={offers}
-                    onChangeOffer={(id, value) =>
-                      console.log(`Change Offer ${id} to ${value}`)
-                    }
                   />
                 </motion.div>
               ))}
