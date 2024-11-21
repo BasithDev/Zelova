@@ -3,7 +3,7 @@ import ProductCard from "./ProductCard";
 import { FiSearch } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { getProducts, getOffers, listOrUnlistProduct ,deleteProduct } from "../../Services/apiServices";
+import { getProducts, getOffers, listOrUnlistProduct ,deleteProduct , updateProduct } from "../../Services/apiServices";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
 
@@ -129,10 +129,27 @@ const Menu = () => {
     }
   };
 
+  const handleProductUpdate = async (updatedProduct)=>{
+    try {
+      const response = await updateProduct(updatedProduct)
+      setProducts((prev) => {
+        const index = prev.findIndex((product) => product._id === updatedProduct._id);
+        if (index === -1) return prev;
+        const updatedProducts = [...prev];
+        updatedProducts[index] = { ...prev[index], ...response.data.updatedProduct };
+        return updatedProducts;
+      });
+      
+      toast.success("Product Updated Successfully!")
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   const pageVariants = {
-    initial: { opacity: 0, y: 80 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -80 },
+    initial: { opacity: 0, x: "5%" },
+    animate: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: "-5%" },
   };
 
   return (
@@ -236,8 +253,8 @@ const Menu = () => {
                 >
                   <ProductCard
                     product={product}
+                    onSave={handleProductUpdate}
                     onDelete={handleDelete}
-                    onEdit={(id) => console.log(`Edit Info ${id}`)}
                     onListToggle={handleListToggle}
                     onChangeImage={(id) => console.log(`Change Image ${id}`)}
                     offers={offers}

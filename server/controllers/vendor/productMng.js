@@ -171,23 +171,30 @@ exports.deleteProduct = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
     try {
-        const { id } = req.params;
-        const { name, price, description, customizable, customizations } = req.body;
+        const { id, name, price, description } = req.body;
 
         const update = {};
-        if (name || price || description || typeof customizable !== "undefined") {
-            Object.assign(update, { name, price, description, customizable });
-
-            if (typeof customizable !== "undefined") {
-                update.customizations = customizable ? customizations || [] : [];
-            }
+        if (id || name || price || description) {
+            Object.assign(update, { name, price, description });
         }
 
-        const updatedProduct = await Product.findByIdAndUpdate(
+        const updatedProduct = await FoodItem.findByIdAndUpdate(
             id,
             { $set: update },
             { new: true, runValidators: true }
-        );
+        )
+            .populate({
+                path: 'foodCategory',
+                select: 'name description',
+            })
+            .populate({
+                path: 'offers',
+                select: 'offerName discountAmount requiredQuantity',
+            })
+            .populate({
+                path: 'customizations.options',
+                select: 'name price',
+            });
 
         if (!updatedProduct) {
             return res.status(404).json({ message: "Product not found" });
@@ -195,8 +202,9 @@ exports.updateProduct = async (req, res) => {
 
         res.status(200).json({
             message: "Product updated successfully",
+            updatedProduct
         });
-        
+
     } catch (error) {
         console.error("Error updating product:", error);
         res.status(500).json({
