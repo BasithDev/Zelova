@@ -5,5 +5,5 @@ router.post('/product',addProduct)
 router.get('/products',getProducts)
 router.patch('/product/:id/list-or-unlist',listOrUnlist)
 router.delete('/product/:id/delete',deleteProduct)
-router.put('/product/:id/update',updateProduct)
+router.put('/product/update',updateProduct)
 module.exports = router;
