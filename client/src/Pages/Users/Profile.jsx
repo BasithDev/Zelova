@@ -46,7 +46,9 @@ const userData = useSelector((state)=>state.userData.data)
             icon={<FaStore />} color="text-green-500" label="Become a Vendor" />
           }
           <ProfileOption icon={<FaPalette />} color="text-purple-500" label="Theme Preference" />
-          <ProfileOption icon={<FaAddressCard />} color="text-orange-500" label="Your Addresses" />
+          <ProfileOption 
+          onClick={()=>navigate('/address-manage')} 
+          icon={<FaAddressCard />} color="text-orange-500" label="Your Addresses" />
         </div>
       </div>
     </div>

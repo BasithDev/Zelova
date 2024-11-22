@@ -1,7 +1,7 @@
 const User = require('../../models/user');
-const getUserId = require('../../helpers/getUserId')
+const {getUserId} = require('../../helpers/getUserId')
 exports.getAdminById = async (req, res) => {
-    const token = req.cookies.user_token
+    const token = req.cookies.admin_token
     const id  = getUserId(token,process.env.JWT_ADMIN_SECRET)
     try {
         const user = await User.findById(id);

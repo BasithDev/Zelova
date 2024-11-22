@@ -1,6 +1,8 @@
 import { FaBell, FaSearch } from "react-icons/fa";
 import { useNavigate,useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 const AdminSearchBar = () => {
+  const adminData = useSelector((state) => state.adminData.data);
   const location = useLocation()
     const navigate = useNavigate()
   return (
@@ -18,10 +20,8 @@ const AdminSearchBar = () => {
           onClick={()=>navigate('/admin/requests')}
           className={`text-yellow-500 ${location.pathname === '/admin/requests' ? 'bg-blue-500' : 'hover:bg-blue-400'} cursor-pointer transition-all duration-200 text-4xl p-2 rounded-full`} />
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
             <div>
-              <p className="font-semibold">Max</p>
-              <p className="text-sm text-gray-500">Admin</p>
+              <p className="font-semibold text-xl">{adminData?.fullname || "admin name"}</p>
             </div>
           </div>
         </div>

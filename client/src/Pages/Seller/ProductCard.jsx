@@ -1,8 +1,9 @@
+import { OfferModal } from './OfferModal';
+import { EditModal } from './EditModal';
 import PropTypes from "prop-types";
 import { useState } from "react";
 import { MoonLoader } from "react-spinners";
-import Modal from "react-modal";
-import { motion, AnimatePresence } from "framer-motion";
+
 
 const ProductCard = ({
   product,
@@ -167,133 +168,8 @@ const ProductCard = ({
           </div>
         </div>
       </div>
-      <AnimatePresence>
-        {isEditModalOpen && (
-          <Modal
-            isOpen={isEditModalOpen}
-            onRequestClose={closeEditModal}
-            className="flex items-center justify-center"
-            overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
-            ariaHideApp={false}
-          >
-            <motion.div
-              className="bg-white p-5 rounded-lg shadow-lg"
-              variants={modalVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              transition={{ duration: 0.2, ease: "easeInOut" }}
-            >
-              <h2 className="text-lg font-bold text-gray-800 mb-4">
-                Edit - {product.name}
-              </h2>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const updatedProduct = {
-                    ...product,
-                    id: product._id,
-                    name: e.target.name.value,
-                    price: Number(e.target.price.value),
-                    description: e.target.description.value,
-                  };
-                  onSave(updatedProduct); // Call the parent handler to save the changes
-                  closeEditModal(); // Close the modal after saving
-                }}
-              >
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    defaultValue={product.name}
-                    className="border border-gray-300 rounded px-3 py-2 w-full"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Price
-                  </label>
-                  <input
-                    type="number"
-                    name="price"
-                    defaultValue={product.price}
-                    className="border border-gray-300 rounded px-3 py-2 w-full"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Description
-                  </label>
-                  <textarea
-                    name="description"
-                    defaultValue={product.description}
-                    className="border border-gray-300 rounded px-3 py-2 w-full"
-                  />
-                </div>
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    onClick={closeEditModal}
-                    className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded mr-2"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded"
-                  >
-                    Save Changes
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </Modal>
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {isConfirmModalOpen && (
-          <Modal
-            isOpen={isConfirmModalOpen}
-            onRequestClose={closeConfirmModal}
-            className="flex items-center justify-center"
-            overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
-            ariaHideApp={false}
-          >
-            <motion.div
-              className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.2 }}
-            >
-              <h2 className="text-lg font-bold text-gray-800 mb-4">
-                Confirm Update
-              </h2>
-              <p className="text-sm text-gray-600 mb-6">
-                Are you sure you want to update the offer to{" "}
-                <span className="font-semibold text-blue-600">{selectedOffer.offerName || 'to be removed'}</span>?
-              </p>
-              <div className="flex justify-end">
-                <button
-                  onClick={closeConfirmModal}
-                  className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded mr-2"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => handleConfirmUpdate()}
-                  className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded"
-                >
-                  Confirm
-                </button>
-              </div>
-            </motion.div>
-          </Modal>
-        )}
-      </AnimatePresence>
+      <EditModal   isEditModalOpen={isEditModalOpen} closeEditModal={closeEditModal} modalVariants={modalVariants} product={product} onSave={onSave}  />
+      <OfferModal   isConfirmModalOpen={isConfirmModalOpen} closeConfirmModal={closeConfirmModal} handleConfirmUpdate={handleConfirmUpdate} selectedOffer={selectedOffer} />
     </div>
   );
 };

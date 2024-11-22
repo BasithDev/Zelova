@@ -10,6 +10,7 @@ import { fetchRestaurantData } from '../../Redux/slices/seller/restaurantDataSli
 import RestaurantEdit from './RestaurantMng/RestaurantEdit';
 
 
+
 const ManageRestaurant = () => {
     const restaurantData = useSelector((state) => state.restaurantData.data?.restaurant);
     const [isEditing, setIsEditing] = useState(false);

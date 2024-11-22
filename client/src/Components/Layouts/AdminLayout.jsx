@@ -1,7 +1,7 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { LuUsers } from "react-icons/lu";
 import { MdDashboard, MdShoppingBasket, MdLocalOffer, MdEmail } from "react-icons/md";
-import { FaStoreAlt, FaClipboardList, FaUserCircle } from 'react-icons/fa';
+import { FaStoreAlt, FaClipboardList } from 'react-icons/fa';
 import { HiOutlineLogout } from 'react-icons/hi';
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,7 +9,6 @@ import { useDispatch} from "react-redux";
 import { logout } from "../../Services/apiServices";
 import { logoutAdmin } from "../../Redux/slices/admin/authAdminSlice";
 import { fetchAdminData } from "../../Redux/slices/admin/adminDataSlice";
-
 const navItems = [
   { name: "Dashboard", icon: <MdDashboard className="text-3xl" />, path: "/admin" },
   { name: "Users", icon: <LuUsers className="text-3xl" />, path: "/admin/user-manage" },
@@ -18,7 +17,6 @@ const navItems = [
   { name: "Details", icon: <FaClipboardList className="text-3xl" />, path: "/admin/details" },
   { name: "Coupons", icon: <MdLocalOffer className="text-3xl" />, path: "/admin/coupons" },
   { name: "Send Mail", icon: <MdEmail className="text-3xl" />, path: "/admin/send-mail" },
-  { name: "Profile", icon: <FaUserCircle className="text-3xl" />, path: "/admin/profile" },
 ];
 
 const AdminLayout = () => {
@@ -26,6 +24,7 @@ const AdminLayout = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  
   
   useEffect(() => {
     dispatch(fetchAdminData());
