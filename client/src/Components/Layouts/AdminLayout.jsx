@@ -15,7 +15,7 @@ const navItems = [
   { name: "Vendors", icon: <FaStoreAlt className="text-3xl" />, path: "/admin/vendor-manage" },
   { name: "Items", icon: <MdShoppingBasket className="text-3xl" />, path: "/admin/items" },
   { name: "Details", icon: <FaClipboardList className="text-3xl" />, path: "/admin/details" },
-  { name: "Coupons", icon: <MdLocalOffer className="text-3xl" />, path: "/admin/coupons" },
+  { name: "Coupons", icon: <MdLocalOffer className="text-3xl" />, path: "/admin/coupon-manage" },
   { name: "Send Mail", icon: <MdEmail className="text-3xl" />, path: "/admin/send-mail" },
 ];
 

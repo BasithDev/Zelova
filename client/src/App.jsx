@@ -41,6 +41,7 @@ import Coins from './Pages/Users/Coins'
 import ShareSupplies from './Pages/Users/ShareSupplies';
 import GetSupplies from './Pages/Users/GetSupplies';
 import GoogleResponse from './Routers/GoogleResponse';
+import CouponMng from './Pages/Admins/CouponMng';
 
 const queryClient = new QueryClient();
 
@@ -106,6 +107,7 @@ function App() {
                 <Route path="vendor-manage" element={<SellerManagement />} />
                 <Route path="requests" element={<Requests />} />
                 <Route path='items' element={<ItemsAndCategoryMng/>}/>
+                <Route path='coupon-manage' element={<CouponMng/>}/> 
               </Route>
             </Route>
             
