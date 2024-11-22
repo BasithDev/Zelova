@@ -29,6 +29,9 @@ export const getUser = () => api.get(`/user`)
 export const updateUser = (data) => api.put('/user/update-profile',data)
 export const deleteUserImage = (data) => api.post('/user/delete-image',data)
 export const submitVendorReq = (data) => api.post('/user/req-vendor',data)
+export const addAddress = (data) => api.post('/user/address/new',data)
+export const getAddresses = () => api.get('/user/addresses')
+export const deleteAddress = (addressId) => api.delete(`/user/address/${addressId}/delete`)
 
 //vendor routes - restaruant management
 export const getRestaurant = () => api.get(`vendor/restaurant`)

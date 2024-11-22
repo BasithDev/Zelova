@@ -54,15 +54,22 @@ const Menu = () => {
 
   const filteredProducts = useMemo(() => {
     return products
-      .filter((product) =>
-        product.name.toLowerCase().includes(search.toLowerCase())
-      )
+      .filter((product) => {
+        const matchesSearch = product.name.toLowerCase().includes(search.toLowerCase());
+  
+        if (sortBy === "listed") return matchesSearch && product.isActive;
+        if (sortBy === "unlisted") return matchesSearch && !product.isActive;
+  
+        return matchesSearch;
+      })
       .sort((a, b) => {
         if (sortBy === "price") return a.price - b.price;
         if (sortBy === "name") return a.name.localeCompare(b.name);
+  
         return 0;
       });
   }, [products, search, sortBy]);
+  
 
   const paginatedProducts = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -212,31 +219,44 @@ const Menu = () => {
           </button>
 
           <AnimatePresence>
-            {isDropdownOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="absolute left-0 mt-2 w-full bg-white border border-gray-300 rounded-lg shadow-lg z-10"
-              >
-                <ul>
-                  <li
-                    onClick={() => handleSort("name")}
-                    className="px-4 py-2 hover:bg-blue-50 cursor-pointer"
-                  >
-                    Sort by Name
-                  </li>
-                  <li
-                    onClick={() => handleSort("price")}
-                    className="px-4 py-2 hover:bg-blue-50 cursor-pointer"
-                  >
-                    Sort by Price
-                  </li>
-                </ul>
-              </motion.div>
-            )}
-          </AnimatePresence>
+  {isDropdownOpen && (
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.2 }}
+      className="absolute left-0 mt-2 w-full bg-white border border-gray-300 rounded-lg shadow-lg z-10"
+    >
+      <ul>
+        <li
+          onClick={() => handleSort("name")}
+          className="px-4 py-2 hover:bg-blue-50 cursor-pointer"
+        >
+          By Name
+        </li>
+        <li
+          onClick={() => handleSort("price")}
+          className="px-4 py-2 hover:bg-blue-50 cursor-pointer"
+        >
+          By Price
+        </li>
+        <li
+          onClick={() => handleSort("listed")}
+          className="px-4 py-2 hover:bg-blue-50 cursor-pointer"
+        >
+          Listed Items
+        </li>
+        <li
+          onClick={() => handleSort("unlisted")}
+          className="px-4 py-2 hover:bg-blue-50 cursor-pointer"
+        >
+          Unlisted Items
+        </li>
+      </ul>
+    </motion.div>
+  )}
+</AnimatePresence>
+
         </div>
       </div>
 

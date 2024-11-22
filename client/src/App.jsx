@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { useEffect } from 'react';
 
 import UserLayout from './Components/Layouts/UserLayout';
 import AdminLayout from './Components/Layouts/AdminLayout';
@@ -21,13 +20,13 @@ import RoleManagement from './Pages/Users/RoleManagement';
 import Profile from './Pages/Users/Profile';
 import RequestVendorPage from './Pages/Users/RequestVendor';
 import UserOrderPage from './Pages/Users/Orders'
+import AddressMng from './Pages/Users/AddressMng';
 
 import AdminLogin from './Pages/Admins/Login';
 import Dashboard from './Pages/Admins/Dashboard';
 import Requests from './Pages/Admins/Requests';
 import UserManagement from './Pages/Admins/UserManagement';
 import SellerManagement from './Pages/Admins/SellerManagement';
-import AdminProfile from './Pages/Admins/Profile';
 import ItemsAndCategoryMng from './Pages/Admins/ItemsAndCategoryMng'
 
 import AddItem from './Pages/Seller/AddItem';
@@ -45,29 +44,10 @@ import GoogleResponse from './Routers/GoogleResponse';
 
 const queryClient = new QueryClient();
 
-function useLoadGoogleMaps(callback) {
-  useEffect(() => {
-    const scriptId = 'google-maps-script';
-    if (!document.getElementById(scriptId)) {
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GMAP_KEY}&loading=async&libraries=marker`;
-      script.id = scriptId;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        if (callback) callback();
-      };
-      script.onerror = () => console.error('Failed to load the Google Maps script');
-      document.body.appendChild(script);
-    } else if (callback) {
-      callback();
-    }
-  }, [callback]);
-}
+
 
 
 function App() {
-  useLoadGoogleMaps(() => console.log('Maps is launched'));
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <QueryClientProvider client={queryClient}>
@@ -103,6 +83,7 @@ function App() {
                 <Route path='coins' element={<Coins/>} />
                 <Route path='share-supplies' element={<ShareSupplies/>} />
                 <Route path='get-supplies' element={<GetSupplies/>}/>
+                <Route path='address-manage' element={<AddressMng/>}/>
               </Route>
             </Route>
 
@@ -123,7 +104,6 @@ function App() {
                 <Route index element={<Dashboard />} />
                 <Route path="user-manage" element={<UserManagement />} />
                 <Route path="vendor-manage" element={<SellerManagement />} />
-                <Route path="profile" element={<AdminProfile />} />
                 <Route path="requests" element={<Requests />} />
                 <Route path='items' element={<ItemsAndCategoryMng/>}/>
               </Route>
