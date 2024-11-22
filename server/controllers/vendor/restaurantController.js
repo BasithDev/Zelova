@@ -8,7 +8,6 @@ exports.getRestaurant = async (req, res) => {
         const userId  = getUserId(token,process.env.JWT_SECRET)
       if (!userId) return res.status(400).json({ error: "User ID is required" });
       const restaurant = await Restaurant.findOne({ vendorId: userId });
-      console.log(restaurant)
       if (!restaurant) return res.status(404).json({ error: "Restaurant not found" });
       res.status(200).json({ restaurant });
     } catch (error) {
