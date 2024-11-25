@@ -198,7 +198,7 @@ exports.getAddresses = async (req,res)=>{
     const addresses = await Address.find({ userId });
 
     if (!addresses || addresses.length === 0) {
-      return res.status(404).json({ message: "No addresses found." });
+      return res.status(200).json({ message: "No addresses found." });
     }
 
     res.status(200).json({ message: "Addresses retrieved successfully", addresses });
