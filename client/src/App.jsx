@@ -21,6 +21,7 @@ import Profile from './Pages/Users/Profile';
 import RequestVendorPage from './Pages/Users/RequestVendor';
 import UserOrderPage from './Pages/Users/Orders'
 import AddressMng from './Pages/Users/AddressMng';
+import Menu from './Pages/Users/Menu';
 
 import AdminLogin from './Pages/Admins/Login';
 import Dashboard from './Pages/Admins/Dashboard';
@@ -34,7 +35,7 @@ import VendorHome from './Pages/Seller/VendorHome';
 import EditId from './Pages/Users/EditId';
 import ResetPassword from './Pages/Users/ResetPassword';
 import ManageRestaurant from './Pages/Seller/ManageRestaurant';
-import Menu from './Pages/Seller/Menu';
+import MenuManagement from './Pages/Seller/Menu';
 import Orders from './Pages/Seller/Orders';
 import Favourites from './Pages/Users/Favourites';
 import Coins from './Pages/Users/Coins'
@@ -85,6 +86,7 @@ function App() {
                 <Route path='share-supplies' element={<ShareSupplies/>} />
                 <Route path='get-supplies' element={<GetSupplies/>}/>
                 <Route path='address-manage' element={<AddressMng/>}/>
+                <Route path='/restaurant/:id/menu' element={<Menu/>}/>
               </Route>
             </Route>
 
@@ -94,7 +96,7 @@ function App() {
               <Route index element={<VendorHome/>} />
                 <Route path="add-items" element={<AddItem />} />
                 <Route path='manage-restaurant' element={<ManageRestaurant/>}/>
-                <Route path='menu' element={<Menu/>}/> 
+                <Route path='menu' element={<MenuManagement/>}/> 
                 <Route path='orders' element={<Orders/>}/> 
               </Route>
             </Route>
