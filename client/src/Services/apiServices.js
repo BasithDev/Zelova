@@ -32,6 +32,7 @@ export const submitVendorReq = (data) => api.post('/user/req-vendor',data)
 export const addAddress = (data) => api.post('/user/address/new',data)
 export const getAddresses = () => api.get('/user/addresses')
 export const deleteAddress = (addressId) => api.delete(`/user/address/${addressId}/delete`)
+export const getRestaurantsForUser = (lat,lon)=> api.get(`/user/nearby-restaurants?lat=${lat}&lon=${lon}`)
 
 //vendor routes - restaruant management
 export const getRestaurant = () => api.get(`vendor/restaurant`)
