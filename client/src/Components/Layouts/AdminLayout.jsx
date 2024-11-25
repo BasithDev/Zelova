@@ -1,24 +1,22 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { LuUsers } from "react-icons/lu";
 import { MdDashboard, MdShoppingBasket, MdLocalOffer, MdEmail } from "react-icons/md";
-import { FaStoreAlt, FaClipboardList, FaUserCircle } from 'react-icons/fa';
+import { FaStoreAlt, FaClipboardList } from 'react-icons/fa';
 import { HiOutlineLogout } from 'react-icons/hi';
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch} from "react-redux";
 import { logout } from "../../Services/apiServices";
 import { logoutAdmin } from "../../Redux/slices/admin/authAdminSlice";
 import { fetchAdminData } from "../../Redux/slices/admin/adminDataSlice";
-
 const navItems = [
   { name: "Dashboard", icon: <MdDashboard className="text-3xl" />, path: "/admin" },
   { name: "Users", icon: <LuUsers className="text-3xl" />, path: "/admin/user-manage" },
   { name: "Vendors", icon: <FaStoreAlt className="text-3xl" />, path: "/admin/vendor-manage" },
   { name: "Items", icon: <MdShoppingBasket className="text-3xl" />, path: "/admin/items" },
   { name: "Details", icon: <FaClipboardList className="text-3xl" />, path: "/admin/details" },
-  { name: "Coupons", icon: <MdLocalOffer className="text-3xl" />, path: "/admin/coupons" },
+  { name: "Coupons", icon: <MdLocalOffer className="text-3xl" />, path: "/admin/coupon-manage" },
   { name: "Send Mail", icon: <MdEmail className="text-3xl" />, path: "/admin/send-mail" },
-  { name: "Profile", icon: <FaUserCircle className="text-3xl" />, path: "/admin/profile" },
 ];
 
 const AdminLayout = () => {
@@ -26,13 +24,11 @@ const AdminLayout = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const adminID = useSelector((state) => state.authAdmin.adminId);
-
+  
+  
   useEffect(() => {
-    if (adminID) {
-      dispatch(fetchAdminData(adminID));
-    }
-  }, [dispatch, adminID]);
+    dispatch(fetchAdminData());
+  }, [dispatch]);
 
   const handleLogout = async () => {
     try {
@@ -49,7 +45,7 @@ const AdminLayout = () => {
 
   return (
     <div className="flex h-screen w-full">
-      <aside className="w-64 hide-scrollbar h-screen overflow-y-auto left-0 top-0 p-5 bg-gray-800 text-white shadow-lg">
+      <aside className="w-[15%] hide-scrollbar h-screen overflow-y-auto left-0 top-0 p-5 bg-gray-800 text-white shadow-lg">
         <div className="text-center mb-10">
           <p className="text-orange-400 font-bold text-3xl">
             Zelova <span className="text-blue-500 text-xl">Admin</span>

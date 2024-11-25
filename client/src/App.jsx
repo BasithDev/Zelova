@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { useEffect } from 'react';
 
 import UserLayout from './Components/Layouts/UserLayout';
 import AdminLayout from './Components/Layouts/AdminLayout';
@@ -20,13 +19,15 @@ import EditUser from './Pages/Users/EditUser'
 import RoleManagement from './Pages/Users/RoleManagement';
 import Profile from './Pages/Users/Profile';
 import RequestVendorPage from './Pages/Users/RequestVendor';
+import UserOrderPage from './Pages/Users/Orders'
+import AddressMng from './Pages/Users/AddressMng';
 
 import AdminLogin from './Pages/Admins/Login';
 import Dashboard from './Pages/Admins/Dashboard';
 import Requests from './Pages/Admins/Requests';
 import UserManagement from './Pages/Admins/UserManagement';
 import SellerManagement from './Pages/Admins/SellerManagement';
-import AdminProfile from './Pages/Admins/Profile';
+import ItemsAndCategoryMng from './Pages/Admins/ItemsAndCategoryMng'
 
 import AddItem from './Pages/Seller/AddItem';
 import VendorHome from './Pages/Seller/VendorHome';
@@ -35,32 +36,19 @@ import ResetPassword from './Pages/Users/ResetPassword';
 import ManageRestaurant from './Pages/Seller/ManageRestaurant';
 import Menu from './Pages/Seller/Menu';
 import Orders from './Pages/Seller/Orders';
+import Favourites from './Pages/Users/Favourites';
+import Coins from './Pages/Users/Coins'
+import ShareSupplies from './Pages/Users/ShareSupplies';
+import GetSupplies from './Pages/Users/GetSupplies';
+import GoogleResponse from './Routers/GoogleResponse';
+import CouponMng from './Pages/Admins/CouponMng';
 
 const queryClient = new QueryClient();
 
-function useLoadGoogleMaps(callback) {
-  useEffect(() => {
-    const scriptId = 'google-maps-script';
-    if (!document.getElementById(scriptId)) {
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GMAP_KEY}&loading=async&libraries=marker`;
-      script.id = scriptId;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        if (callback) callback();
-      };
-      script.onerror = () => console.error('Failed to load the Google Maps script');
-      document.body.appendChild(script);
-    } else if (callback) {
-      callback();
-    }
-  }, [callback]);
-}
+
 
 
 function App() {
-  useLoadGoogleMaps(() => console.log('Maps is launched'));
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <QueryClientProvider client={queryClient}>
@@ -73,6 +61,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/otp" element={<Otp />} />
+              <Route path="/google-response" element={<GoogleResponse />} />
             </Route>
 
             {/* Public Admin Routes */}
@@ -90,17 +79,12 @@ function App() {
                 <Route path="change-id" element={<EditId/>} />
                 <Route path="reset-password" element={<ResetPassword/>}/>
                 <Route path="request-vendor" element={<RequestVendorPage />} />
-              </Route>
-            </Route>
-
-            {/* Admin Routes */}
-            <Route element={<AdminRoleProtectedRoute />}>
-              <Route path="/admin" element={<AdminLayout />}>
-                <Route index element={<Dashboard />} />
-                <Route path="user-manage" element={<UserManagement />} />
-                <Route path="vendor-manage" element={<SellerManagement />} />
-                <Route path="profile" element={<AdminProfile />} />
-                <Route path="requests" element={<Requests />} />
+                <Route path='favourites' element={<Favourites/>} />
+                <Route path='orders' element={<UserOrderPage/>} />
+                <Route path='coins' element={<Coins/>} />
+                <Route path='share-supplies' element={<ShareSupplies/>} />
+                <Route path='get-supplies' element={<GetSupplies/>}/>
+                <Route path='address-manage' element={<AddressMng/>}/>
               </Route>
             </Route>
 
@@ -112,6 +96,18 @@ function App() {
                 <Route path='manage-restaurant' element={<ManageRestaurant/>}/>
                 <Route path='menu' element={<Menu/>}/> 
                 <Route path='orders' element={<Orders/>}/> 
+              </Route>
+            </Route>
+
+            {/* Admin Routes */}
+            <Route element={<AdminRoleProtectedRoute />}>
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="user-manage" element={<UserManagement />} />
+                <Route path="vendor-manage" element={<SellerManagement />} />
+                <Route path="requests" element={<Requests />} />
+                <Route path='items' element={<ItemsAndCategoryMng/>}/>
+                <Route path='coupon-manage' element={<CouponMng/>}/> 
               </Route>
             </Route>
             

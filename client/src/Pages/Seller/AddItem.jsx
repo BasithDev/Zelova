@@ -1,288 +1,299 @@
 import PrimaryBtn from '../../Components/Buttons/PrimaryBtn';
-import { useState,useEffect,useCallback } from "react";
-import { toast } from 'react-toastify';
-import { addOffer,getOffers,deleteOffer } from '../../Services/apiServices';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { AiOutlineClose } from 'react-icons/ai';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import AddFoodCategories from './AddFoodCategories'
-import { useSelector } from 'react-redux';
-
-const AddOffers = () => {
-    const [offerName, setOfferName] = useState('');
-    const [requiredQuantity, setRequiredQuantity] = useState('');
-    const [discountAmount, setDiscountAmount] = useState('');
-    const [restaurantId, setRestaurantId] = useState('');
-    const [offers, setOffers] = useState([]);
-
-    const id = useSelector((state)=>state.restaurantData.data?.restaurant?._id)
-
-    useEffect(()=>{
-        if (id) setRestaurantId(id)
-    },[id])
-
-    const fetchOffers = useCallback(async () => {
-        try {
-            const response = await getOffers(restaurantId);
-            setOffers(response.data.offers);
-        } catch (error) {
-            console.error('Error fetching offers:', error);
-            toast.error('Failed to fetch offers. Please try again.');
-        }
-    },[restaurantId]);
-
-    useEffect(() => {
-        if (restaurantId) {
-            fetchOffers();
-        }
-    }, [fetchOffers, restaurantId]);
-
-    const handleAddOffer = async () => {
-        if (!offerName || !requiredQuantity || !discountAmount || !restaurantId) {
-            toast.error('All fields are required!');
-            return;
-        }
-        if (requiredQuantity <= 0 || discountAmount < 0) {
-            toast.error('Invalid quantity or discount amount!');
-            return;
-        }
-        try {
-            const offerData = { offerName, requiredQuantity, discountAmount, restaurantId };
-            await addOffer(offerData);
-            toast.success('Offer added successfully!');
-            setOfferName('');
-            setRequiredQuantity('');
-            setDiscountAmount('');
-            fetchOffers();
-        } catch (error) {
-            console.error('Error adding offer:', error);
-            toast.error('Failed to add offer. Please try again.');
-        }
-    };
-
-    const handleDeleteOffer = async (offerId) => {
-        try {
-            const response = await deleteOffer(offerId);
-            toast.success(response.message);
-            fetchOffers();
-        } catch (error) {
-            console.log(error)
-        }
-    };
-
-    return (
-        <div className="bg-white shadow-lg rounded-lg p-8 max-w-4xl mx-auto space-y-6">
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">Offer Management</h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex flex-col">
-                    <label className="text-lg font-medium text-gray-700 mb-2">Offer Name</label>
-                    <input
-                        type="text"
-                        className="text-xl p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                        placeholder="Enter offer name"
-                        value={offerName}
-                        onChange={(e) => setOfferName(e.target.value)}
-                    />
-                </div>
-                <div className="flex flex-col">
-                    <label className="text-lg font-medium text-gray-700 mb-2">Required Quantity</label>
-                    <input
-                        type="number"
-                        className="text-xl p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                        placeholder="Enter required quantity"
-                        value={requiredQuantity}
-                        onChange={(e) => setRequiredQuantity(e.target.value)}
-                    />
-                </div>
-                <div className="flex flex-col">
-                    <label className="text-lg font-medium text-gray-700 mb-2">Discount Amount</label>
-                    <input
-                        type="number"
-                        className="text-xl p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                        placeholder="Enter discount amount"
-                        value={discountAmount}
-                        onChange={(e) => setDiscountAmount(e.target.value)}
-                    />
-                </div>
-                <div className="col-span-2">
-                    <PrimaryBtn
-                        text="Add Offer"
-                        onClick={handleAddOffer}
-                        className="w-full px-6 py-3 text-xl font-semibold text-white bg-orange-500 rounded-md hover:bg-orange-600"
-                    />
-                </div>
-            </div>
-
-            <div className="mt-8">
-                <h3 className="text-2xl font-bold text-gray-800 mb-4">Available Offers</h3>
-                <div className="bg-gray-50 p-4 rounded-lg shadow-md space-y-4">
-                {offers.length > 0 ? (
-                        offers.map((offer) => (
-                            <div
-                                key={offer._id}
-                                className="flex justify-between items-center p-4 bg-white rounded-lg shadow"
-                            >
-                                <div>
-                                    <h4 className="text-xl font-semibold text-gray-800">{offer.offerName}</h4>
-                                    <p className="text-gray-600">
-                                        Quantity: {offer.requiredQuantity} | Discount: {offer.discountAmount}%
-                                    </p>
-                                </div>
-                                <button
-                                    className="text-red-500 text-lg font-semibold hover:text-white hover:bg-red-500 transition-all duration-200 px-2 py-1 rounded-md"
-                                    onClick={() => handleDeleteOffer(offer._id)}
-                                >
-                                    Delete
-                                </button>
-                            </div>
-                        ))
-                    ) : (
-                        <p className="text-gray-600">No offers available.</p>
-                    )}
-                </div>
-            </div>
-        </div>
-    )
-}
+import AddFoodCategories from './AddFoodCategories';
+import AddOffers from './AddOffers';
+import { addProduct, getOffers, getSubCategories } from '../../Services/apiServices';
+import { MdEdit } from 'react-icons/md';
+import FormField from './FormField';
+import Cropper from 'react-cropper';
+import 'cropperjs/dist/cropper.css';
+import 'react-toastify/dist/ReactToastify.css';
+import { toast } from "react-toastify";
+import { uploadImageToCloud } from '../../Helpers/uploadImageToCloud';
+import { BeatLoader } from 'react-spinners';
 
 const AddItem = () => {
-    const [isCustomizable, setIsCustomizable] = useState(false);
-    const [customFields, setCustomFields] = useState([]);
+    const [formData, setFormData] = useState({
+        itemName: '',
+        price: '',
+        description: '',
+        category: '',
+        offer: '',
+        isCustomizable: false,
+        customFields: [],
+        image: null,
+    });
 
-    const handleCustomizationChange = (e) => {
-        setIsCustomizable(e.target.value === "Yes");
-        if (e.target.value === "No") {
-            setCustomFields([]);  // Clear custom fields when 'No' is selected
+    const [croppedImage,setCroppedImage] = useState(null)
+    const [isAddingItem,setIsAddingItem] = useState(false)
+
+    const [dropdownData, setDropdownData] = useState({ subCategories: [], offers: [] });
+    const [isCropperVisible, setIsCropperVisible] = useState(false);
+    const cropperRef = useRef(null);
+
+    const fetchDropdownData = useCallback(async () => {
+        try {
+            const [subCategoriesResponse, offersResponse] = await Promise.all([getSubCategories(), getOffers()]);
+            setDropdownData({
+                subCategories: subCategoriesResponse.data.subCategories || [],
+                offers: offersResponse.data.offers || [],
+            });
+        } catch (error) {
+            console.error('Error fetching dropdown data:', error);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchDropdownData();
+    }, [fetchDropdownData]);
+
+    useEffect(() => {
+        const handleUpdate = () => {
+            fetchDropdownData();
+        };
+    
+        window.addEventListener('updateDropdownData', handleUpdate);
+    
+        return () => {
+            window.removeEventListener('updateDropdownData', handleUpdate);
+        };
+    }, [fetchDropdownData]);
+    
+
+    const handleFieldChange = (field, value) => {
+        setFormData((prev) => ({ ...prev, [field]: value }));
+    };
+
+    const handleCustomizationChange = (value) => {
+        handleFieldChange('isCustomizable', value === 'Yes');
+        if (value === 'No') {
+            handleFieldChange('customFields', []);
         }
     };
 
     const addCustomField = () => {
-        setCustomFields([...customFields, { fieldName: "", options: "" }]);
+        setFormData((prev) => ({
+            ...prev,
+            customFields: [...prev.customFields, { fieldName: '', options: '', price: '' }],
+        }));
+    };
+
+    const updateCustomField = (index, field, value) => {
+        const updatedFields = formData.customFields.map((f, i) =>
+            i === index ? { ...f, [field]: value } : f
+        );
+        handleFieldChange('customFields', updatedFields);
     };
 
     const removeCustomField = (index) => {
-        const newFields = customFields.filter((_, i) => i !== index);
-        setCustomFields(newFields);
+        const updatedFields = formData.customFields.filter((_, i) => i !== index);
+        handleFieldChange('customFields', updatedFields);
     };
 
-    const handleFieldChange = (index, e) => {
-        const { name, value } = e.target;
-        const updatedFields = customFields.map((field, i) =>
-            i === index ? { ...field, [name]: value } : field
-        );
-        setCustomFields(updatedFields);
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                handleFieldChange('image', reader.result);
+                setIsCropperVisible(true);
+            };
+            reader.readAsDataURL(file);
+        }
     };
+
+    const handleSelectNewImage = () => {
+        setIsCropperVisible(false);
+        handleFieldChange('image', null);
+        setCroppedImage(null)
+    };
+
+    const handleDoneCrop = () => {
+        if (cropperRef.current) {
+            const croppedData = cropperRef.current.cropper.getCroppedCanvas().toDataURL();
+            setCroppedImage(croppedData)
+            setIsCropperVisible(false);
+        }
+    };
+
+    const validateForm = () => {
+        const { itemName, price, category,customFields } = formData;
+        if (!itemName || !price || !category || !croppedImage) {
+            toast.error('Please fill in all required fields!');
+            return false;
+        }
+        if (customFields && customFields.length > 0) {
+            for (let field of customFields) {
+                const { fieldName, options, price } = field;
+    
+                if (!fieldName || !options || !price) {
+                    toast.error(`Custom field "${fieldName || 'Unnamed'}" is incomplete!`);
+                    return false;
+                }
+    
+                const optionsArray = options.split(',');
+                const priceArray = price.split(',');
+    
+                if (optionsArray.length !== priceArray.length) {
+                    toast.error(`Custom field "${fieldName}" has mismatched options and prices!`);
+                    return false;
+                }
+            }
+        }
+        return true;
+    };
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        if (validateForm()) {
+            try {
+                setIsAddingItem(true)
+                const uploadedImage = await uploadImageToCloud(croppedImage)
+                const updatedFormData = { ...formData, image: uploadedImage.secure_url };
+                const response = await addProduct(updatedFormData)
+                toast.success(response.data.message)
+                setFormData({
+                    itemName: '',
+                    price: '',
+                    description: '',
+                    category: '',
+                    offer: '',
+                    isCustomizable: false,
+                    customFields: [],
+                    image: null,
+                })
+                setCroppedImage(null)
+            } catch (error) {
+                toast.error('Failed to add product!');
+                console.error('Add Product Error:', error);
+            } finally {
+                setIsAddingItem(false)
+            }
+        }
+    };
+
+    const { subCategories, offers } = dropdownData;
 
     return (
         <div className="min-h-screen bg-gray-50 py-10 px-4">
             <ToastContainer position="top-right" />
             <div className="space-y-8">
+                <h1 className='text-center font-bold text-5xl'>Add Items</h1>
                 <AddFoodCategories />
                 <AddOffers />
-                <div className="bg-white shadow-lg rounded-lg p-8 max-w-4xl mx-auto space-y-8">
+                <div className="bg-white shadow-lg rounded-lg p-8 max-w-5xl mx-auto space-y-8">
                     <h3 className="text-3xl font-bold text-gray-800 mb-4">Add New Food Item</h3>
                     <form className="space-y-8">
-                        <div>
-                            <label className="block text-lg font-medium text-gray-700 mb-2">Select Food Item Category</label>
-                            <select
-                                className="w-full text-xl p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                            >
-                                <option value="">Select a category</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-lg font-medium text-gray-700 mb-2">Item Name</label>
-                            <input
-                                type="text"
-                                className="w-full text-xl p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                placeholder="Enter item name"
-                            />
-                        </div>
+                        <FormField
+                            label="Item Name"
+                            placeholder="Enter item name"
+                            value={formData.itemName}
+                            onChange={(e) => handleFieldChange('itemName', e.target.value)}
+                        />
                         <div>
                             <label className="block text-lg font-medium text-gray-700 mb-2">Add Item Images</label>
                             <div className="flex space-x-4 mt-4">
-                                <div className="w-32 h-32 border border-gray-300 rounded-md flex items-center justify-center text-2xl text-gray-400 cursor-pointer">
-                                    <input type="file" className="hidden" id="image-upload" />
-                                    <label htmlFor="image-upload" className="cursor-pointer">
+                                {croppedImage ? (
+                                    <div className="relative w-52 h-60 border border-gray-300 rounded-md flex items-center justify-center group">
+                                        <img
+                                            src={croppedImage}
+                                            alt="Cropped"
+                                            className="w-full h-full object-cover rounded-md"
+                                        />
+                                        <MdEdit
+                                            onClick={() => document.getElementById('image-upload').click()}
+                                            className="cursor-pointer text-4xl p-1 bottom-2 right-2 text-white absolute rounded-full bg-green-500 opacity-0 group-hover:opacity-100 transition-all duration-200"
+                                        />
+                                    </div>
+                                ) : (
+                                    <div
+                                        onClick={() => document.getElementById('image-upload').click()}
+                                        className="w-32 h-32 border border-gray-300 rounded-md flex items-center justify-center text-2xl text-gray-400 cursor-pointer"
+                                    >
                                         +
-                                    </label>
-                                </div>
+                                    </div>
+                                )}
+                                <input
+                                    type="file"
+                                    className="hidden"
+                                    id="image-upload"
+                                    onChange={handleImageChange}
+                                    accept="image/*"
+                                />
                             </div>
                         </div>
-                        <div>
-                            <label className="block text-lg font-medium text-gray-700 mb-2">Item Price</label>
-                            <input
-                                type="text"
-                                className="w-full text-xl p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                placeholder="Enter item price"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-lg font-medium text-gray-700 mb-2">Select Offer Type</label>
-                            <select
-                                className="w-full text-xl p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                            >
-                                <option value="">Select an offer</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-lg font-medium text-gray-700 mb-2">Item Description</label>
-                            <textarea
-                                className="w-full text-xl p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                rows="4"
-                                placeholder="Enter item description"
-                            ></textarea>
-                        </div>
-                        <div>
-                            <label className="block text-lg font-medium text-gray-700 mb-2">Customizable</label>
-                            <select
-                                className="w-full text-xl p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                onChange={handleCustomizationChange}
-                            >
-                                <option value="No">No</option>
-                                <option value="Yes">Yes</option>
-                            </select>
-                        </div>
-
-                        {isCustomizable && (
+                        <FormField
+                            label="Item Price"
+                            type="number"
+                            placeholder="Enter item price"
+                            value={formData.price}
+                            onChange={(e) => handleFieldChange('price', e.target.value)}
+                        />
+                        <FormField
+                            label="Item Description"
+                            type="textarea"
+                            placeholder="Enter item description"
+                            value={formData.description}
+                            onChange={(e) => handleFieldChange('description', e.target.value)}
+                        />
+                        <FormField
+                            label="Select Food Item Category"
+                            isSelect={true}
+                            options={[{ value: '', label: 'Select a category' }, ...subCategories.map((cat) => ({ value: cat._id, label: cat.name }))]}
+                            value={formData.category}
+                            onChange={(e) => handleFieldChange('category', e.target.value)}
+                        />
+                        <FormField
+                            label="Select Offer Type"
+                            isSelect={true}
+                            options={[{ value: '', label: 'Select an offer' }, ...offers.map((offer) => ({ value: offer._id, label: offer.offerName }))]}
+                            value={formData.offer}
+                            onChange={(e) => handleFieldChange('offer', e.target.value)}
+                        />
+                        <FormField
+                            label="Customizable"
+                            isSelect={true}
+                            options={[
+                                { value: 'No', label: 'No' },
+                                { value: 'Yes', label: 'Yes' },
+                            ]}
+                            value={formData.isCustomizable ? 'Yes' : 'No'}
+                            onChange={(e) => handleCustomizationChange(e.target.value)}
+                        />
+                        {formData.isCustomizable && (
                             <div>
                                 <label className="block text-lg font-medium text-gray-700 mb-2">Custom Fields</label>
                                 <div className="space-y-6">
-                                    {customFields.map((field, index) => (
+                                    {formData.customFields.map((field, index) => (
                                         <div key={index} className="space-y-4">
-                                            <div>
-                                                <label className="block text-lg font-medium text-gray-700 mb-2">Custom Choice Name</label>
-                                                <input
-                                                    type="text"
-                                                    name="fieldName"
-                                                    value={field.fieldName}
-                                                    onChange={(e) => handleFieldChange(index, e)}
-                                                    className="w-full text-xl p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                                    placeholder="Enter custom field name"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-lg font-medium text-gray-700 mb-2">Custom Choice Options</label>
-                                                <input
-                                                    type="text"
-                                                    name="options"
-                                                    value={field.options}
-                                                    onChange={(e) => handleFieldChange(index, e)}
-                                                    className="w-full text-xl p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                                    placeholder="Enter options separated by commas"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-lg font-medium text-gray-700 mb-2">Custom Choice Price</label>
-                                                <input
-                                                    type="text"
-                                                    name="options"
-                                                    value={field.options}
-                                                    onChange={(e) => handleFieldChange(index, e)}
-                                                    className="w-full text-xl p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                                    placeholder="Enter options separated by commas"
-                                                />
-                                            </div>
+                                            <FormField
+                                                label="Custom Choice Name"
+                                                value={field.fieldName}
+                                                onChange={(e) =>
+                                                    updateCustomField(index, 'fieldName', e.target.value)
+                                                }
+                                                placeholder="Enter custom field name"
+                                            />
+                                            <FormField
+                                                label="Custom Choice Options"
+                                                value={field.options}
+                                                onChange={(e) =>
+                                                    updateCustomField(index, 'options', e.target.value)
+                                                }
+                                                placeholder="Enter options separated by commas"
+                                            />
+                                            <FormField
+                                                label="Custom Choice Price"
+                                                value={field.price}
+                                                onChange={(e) =>
+                                                    updateCustomField(index, 'price', e.target.value)
+                                                }
+                                                placeholder="Enter price for the choice"
+                                            />
                                             <button
                                                 type="button"
                                                 onClick={() => removeCustomField(index)}
@@ -302,17 +313,64 @@ const AddItem = () => {
                                 </div>
                             </div>
                         )}
-
-                        <div className="flex justify-center">
-                            <PrimaryBtn
-                                text="Add Item"
-                                onClick={() => console.log('Item Added')}
-                                className="py-3 px-8 text-xl font-semibold text-white bg-orange-500 rounded-md hover:bg-orange-600"
-                            />
+                        <div className="mt-6 flex justify-center">
+                            <PrimaryBtn 
+                            text={isAddingItem ? <BeatLoader size={10} color='white'/>:'Add Product'} 
+                            className="py-3 px-8 text-xl font-semibold text-white bg-orange-500 rounded-md hover:bg-orange-600"
+                            onClick={handleSubmit} />
                         </div>
                     </form>
                 </div>
             </div>
+            <AnimatePresence>
+                {isCropperVisible && (
+                    <motion.div
+                        className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <motion.div
+                            className="bg-white p-4 rounded-lg w-96 relative"
+                            initial={{ scale: 0.8 }}
+                            animate={{ scale: 1 }}
+                            exit={{ scale: 0.8 }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            <button
+                                onClick={() => setIsCropperVisible(false)}
+                                className="absolute top-2 right-2 text-xl bg-red-500 text-white hover:bg-red-700"
+                            >
+                                <AiOutlineClose />
+                            </button>
+                            <Cropper
+                            className='mt-6'
+                                ref={cropperRef}
+                                src={formData.image}
+                                style={{ height: 400, width: '100%' }}
+                                aspectRatio={1}
+                                guides={false}
+                                cropBoxResizable={false}
+                            />
+                            <div className="mt-4 flex justify-between">
+                                <button
+                                    onClick={handleSelectNewImage}
+                                    className="py-2 px-4 text-white bg-gray-500 rounded-md hover:bg-gray-600"
+                                >
+                                    Select New
+                                </button>
+                                <button
+                                    onClick={handleDoneCrop}
+                                    className="py-2 px-4 text-white bg-blue-500 rounded-md hover:bg-blue-600"
+                                >
+                                    Done
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

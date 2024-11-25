@@ -1,36 +1,60 @@
 import api from './api'
 import cloudinaryInstance from './cloudnaryApi'
 
+//authentication
 export const loginUser = (data) => api.post('/auth/login',data)
 export const registerUser = (data) => api.post('/auth/register',data)
 export const verifyOTP = (data) => api.post('/auth/verify-otp',data)
 export const resendOTP = (data) => api.post('/auth/resend-otp',data)
 export const logout = (role) => api.post('/auth/logout', { role });
 
+//for uploading image to cloudnairy
 export const uploadToCloud = (data) => cloudinaryInstance.post(`/image/upload`,data)
 
-export const getAdmin = (adminId) => api.get(`/admin/${adminId}`)
+//admin routes
+export const getAdmin = () => api.get(`/admin`)
 export const deleteImage = (data) => api.post('/admin/manage/delete-image',data)
 export const fetchVendorRequests = () => api.get('/admin/manage/requests')
 export const acceptVenodrRequests = (requestId) => api.post(`/admin/manage/accept-vendor/${requestId}`)
 export const denyVenodrRequests = (applicationId) => api.post(`/admin/manage/deny-vendor/${applicationId}`)
 export const blockUnblockUser = (userId,status) => api.patch(`/admin/manage/block-unblock-user/${userId}`,status)
+export const blockUnblockVendor = (vendorId,status) => api.patch(`/admin/manage/block-unblock-user/${vendorId}`,status)
+export const getCategoriesToMng = ()=>api.get('/admin/manage/categories')
+export const getSubCategoriesToMng = ()=>api.get('/admin/manage/subcategories')
+export const deleteCategory = (id)=>api.delete(`/admin/manage/category/delete/${id}`)
+export const deleteSubCategory = (id)=>api.delete(`/admin/manage/subcategory/delete/${id}`)
 
-export const getUser = (userId) => api.get(`/user/${userId}`)
+//user routes
+export const getUser = () => api.get(`/user`)
 export const updateUser = (data) => api.put('/user/update-profile',data)
 export const deleteUserImage = (data) => api.post('/user/delete-image',data)
 export const submitVendorReq = (data) => api.post('/user/req-vendor',data)
+export const addAddress = (data) => api.post('/user/address/new',data)
+export const getAddresses = () => api.get('/user/addresses')
+export const deleteAddress = (addressId) => api.delete(`/user/address/${addressId}/delete`)
 
-export const getRestaurant = (userId) => api.get(`vendor/restaurant/${userId}`)
-export const updateRestaurantDetails = (userId, data) => api.put(`vendor/restaurant/${userId}/details`, data);
-export const openOrCloseShop = (userId, isActive) => api.patch(`vendor/restaurant/${userId}/status`, { isActive });
-export const updateRestaurantPic = (userId, data) => api.patch(`vendor/restaurant/${userId}/image`,data);
-export const setLocation = (userId, locationData) => api.patch(`vendor/restaurant/${userId}/location`, locationData);
+//vendor routes - restaruant management
+export const getRestaurant = () => api.get(`vendor/restaurant`)
+export const updateRestaurantDetails = (data) => api.put(`vendor/restaurant/details`, data);
+export const openOrCloseShop = (isActive) => api.patch(`vendor/restaurant/status`, { isActive });
+export const updateRestaurantPic = (data) => api.patch(`vendor/restaurant/image`,data);
+export const setLocation = (locationData) => api.patch(`vendor/restaurant/location`, locationData);
 
+//vendor routes - products management
+export const addProduct = (data) => api.post('vendor/product',data)
+export const getProducts = () => api.get('/vendor/products')
+export const listOrUnlistProduct = (id,isActive) => api.patch(`/vendor/product/${id}/list-or-unlist`,{isActive})
+export const deleteProduct = (id) => api.delete(`/vendor/product/${id}/delete`)
+export const updateProduct = (data) => api.put(`/vendor/product/update`,data)
+export const updateProductOffer = (data) => api.patch(`/vendor/product/offer/update`,data)
+
+//vendor routes - categories management
 export const addCategory = (data) => api.post('vendor/category/add',data)
 export const addSubCategory = (data) => api.post('vendor/subcategory/add',data)
 export const getCategories = ()=> api.get('/vendor/categories')
+export const getSubCategories = ()=> api.get('/vendor/subCategories')
 
-export const getOffers = (resId)=> api.get(`/vendor/offers/${resId}`)
+//vendor routes - offers management
+export const getOffers = ()=> api.get(`/vendor/offer/`)
 export const addOffer = (data)=> api.post('/vendor/offer/add',data)
-export const deleteOffer = (offerId) => api.delete(`/vendor/offer/${offerId}`)
+export const deleteOffer = (offerId) => api.delete(`/vendor/offer/delete/${offerId}`)

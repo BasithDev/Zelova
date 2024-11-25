@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../../models/user');
+const Restaurant = require('../../models/restaurant')
 const Otp = require('../../models/otp')
 const { sendOTPEmail } = require('../../config/mailer');
 
@@ -27,17 +28,20 @@ exports.login = async (req, res) => {
             return res.status(401).json({ message: "Invalid credentials" });
         }
 
+        const restaurant = await Restaurant.findOne({ vendorId: user._id });
+
         const payload = {
             userId: user._id,
-            isVendor:user.isVendor,
-            isAdmin: user.isAdmin
+            isVendor: user.isVendor,
+            isAdmin: user.isAdmin,
+            restaurantId: restaurant ? restaurant._id : null
         };
 
         const secret = user.isAdmin ? process.env.JWT_ADMIN_SECRET : process.env.JWT_SECRET;
         const tokenName = user.isAdmin ? 'admin_token' : 'user_token';
-        const token = jwt.sign(payload, secret, { expiresIn: '24h' });
+        const token = jwt.sign(payload, secret, { expiresIn: '3h' });
 
-        res.cookie(tokenName, token, { maxAge: 3600000 });
+        res.cookie(tokenName, token, { maxAge: 10800000 });
 
         return res.status(200).json({ 
             status: "Success",
@@ -181,11 +185,10 @@ exports.resendOTP = async (req, res) => {
 };
 exports.initiateGoogleLogin = (passport) => passport.authenticate('google', { scope: ['profile', 'email'] });
 exports.handleGoogleCallback = (passport) => (req, res, next) => {
-    passport.authenticate('google', { session: false }, (err, user) => {
+    passport.authenticate('google', { session: false }, (err, user,info) => {
         if (err || !user) {
-            return res.status(401).json({ 
-              status:"Failed",
-              message: 'Authentication failed' });
+            console.log("Error or no user:", { err, info });
+            return res.redirect(`${process.env.APP_URL}/login`);
         }
         req.user = user;
         next();
@@ -193,10 +196,15 @@ exports.handleGoogleCallback = (passport) => (req, res, next) => {
 };
 exports.generateTokenAndRedirect = (req, res) => {
     try {
+        const { status } = req.user
+        if (status === 'blocked') {
+            const redirectUrl = `${process.env.APP_URL}/google-response?status=blocked`;
+            return res.redirect(redirectUrl);
+        }
         const token = jwt.sign(
-            { userId: req.user._id, isVendor: req.user.isVendor, status: req.user.status },
+            { userId: req.user._id, isVendor: req.user.isVendor,restaurantId: req.user.restaurantId, status: req.user.status },
             process.env.JWT_SECRET,
-            { expiresIn: '24h' }
+            { expiresIn: '3h' }
         );
         res.cookie('user_token', token, {maxAge: 3600000});
         res.set({

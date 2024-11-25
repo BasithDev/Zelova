@@ -10,10 +10,11 @@ import { fetchRestaurantData } from '../../Redux/slices/seller/restaurantDataSli
 import RestaurantEdit from './RestaurantMng/RestaurantEdit';
 
 
+
 const ManageRestaurant = () => {
     const restaurantData = useSelector((state) => state.restaurantData.data?.restaurant);
     const [isEditing, setIsEditing] = useState(false);
-    const [coordinates, setCoordinates] = useState({ lat: null, lng: null });
+    const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
     const dispatch = useDispatch()
     const defaultDetails = useMemo(
         () => ({
@@ -32,10 +33,8 @@ const ManageRestaurant = () => {
     useEffect(() => {
         if (restaurantData) {
             setRestaurantDetails({ ...defaultDetails, ...restaurantData });
-            setCoordinates({
-                lat: restaurantData?.location?.coordinates[0],
-                lng: restaurantData?.location?.coordinates[1],
-            });
+            const [lat = 0, lng = 0] = restaurantData?.location?.coordinates || [];
+            setCoordinates({ lat, lng });
         }
     }, [defaultDetails, restaurantData]);
 
@@ -61,9 +60,9 @@ const ManageRestaurant = () => {
         }
 
         try {
-            await updateRestaurantDetails(restaurantData.vendorId,restaurantDetails);
+            await updateRestaurantDetails(restaurantDetails);
             toast.success('Restaurant details updated successfully!');
-            dispatch(fetchRestaurantData(restaurantData.vendorId))
+            dispatch(fetchRestaurantData())
         } catch (error) {
             console.error(error);
             toast.error('An error occurred while updating restaurant details!');

@@ -13,7 +13,8 @@ const userData = useSelector((state)=>state.userData.data)
         
         <div className="flex flex-col items-center mb-8">
           <img
-            src={userData.profilePicture || "https://placehold.co/100x100"}
+          referrerPolicy="no-referrer"
+            src={userData?.profilePicture || "https://placehold.co/100x100"}
             alt="Profile of Abdul Basith"
             className="rounded-full w-32 h-32 mb-4 border-4 transition-all duration-300 border-blue-500 shadow-xl hover:shadow-2xl"
           />
@@ -45,7 +46,9 @@ const userData = useSelector((state)=>state.userData.data)
             icon={<FaStore />} color="text-green-500" label="Become a Vendor" />
           }
           <ProfileOption icon={<FaPalette />} color="text-purple-500" label="Theme Preference" />
-          <ProfileOption icon={<FaAddressCard />} color="text-orange-500" label="Your Addresses" />
+          <ProfileOption 
+          onClick={()=>navigate('/address-manage')} 
+          icon={<FaAddressCard />} color="text-orange-500" label="Your Addresses" />
         </div>
       </div>
     </div>
