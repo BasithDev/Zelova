@@ -49,6 +49,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "active",
   },
+  currentAddress :{
+    type: String,
+  },
   location: {
     type: {
       type: String,

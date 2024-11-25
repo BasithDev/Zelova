@@ -60,10 +60,10 @@ const RestaurantEdit = ({
             if (cloudResponse) {
                 const public_id = extractPublicId(restaurantDetails.image)
                 const imageURL = cloudResponse.secure_url
-                await updateRestaurantPic(restaurantDetails.vendorId, {imageURL,public_id});
+                await updateRestaurantPic({imageURL,public_id});
                 toast.success("Image updated successfully!")
                 setShowPopup(false);
-                dispatch(fetchRestaurantData(restaurantDetails.vendorId))
+                dispatch(fetchRestaurantData())
             } else {
                 throw new Error("Failed to upload image.");
             }
@@ -79,9 +79,9 @@ const RestaurantEdit = ({
         try {
             setLoading(true);
             const updatedStatus = !isOpen;
-            await openOrCloseShop(restaurantDetails.vendorId, updatedStatus);
+            await openOrCloseShop(updatedStatus);
             setIsOpen(updatedStatus);
-            dispatch(fetchRestaurantData(restaurantDetails.vendorId))
+            dispatch(fetchRestaurantData())
         } catch (error) {
             console.error("Error updating shop status:", error);
         } finally {

@@ -1,5 +1,5 @@
 import PrimaryBtn from '../../Components/Buttons/PrimaryBtn';
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import { addCategory, addSubCategory, getCategories } from '../../Services/apiServices'
 import { toast } from 'react-toastify';
 const AddFoodCategories = () => {
@@ -8,17 +8,19 @@ const AddFoodCategories = () => {
     const [selectedCategory, setSelectedCategory] = useState('');
     const [subCategory, setSubCategory] = useState('');
 
+    const fetchCategories = async () => {
+        try {
+            const response = await getCategories();
+            let data = response.data.categories
+            setCategories(data || []);
+        } catch (error) {
+            console.log(error.response?.data || error.message);
+        }
+    };
+    
     useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const response = await getCategories();
-                setCategories(response.data.categories || []);
-            } catch (error) {
-                console.log(error.response?.data || error.message);
-            }
-        };
         fetchCategories();
-    }, [categories]);
+    }, []);
 
     const handleAddCategory = async () => {
         if (!mainCategory.trim()) {
@@ -27,10 +29,9 @@ const AddFoodCategories = () => {
         }
         try {
             const response = await addCategory({ name: mainCategory });
-            console.log(response)
             toast.success(response.message || 'Category added successfully.');
             setMainCategory('');
-            setCategories((prev) => [...prev, response.data.categories]);
+            fetchCategories();
         } catch (error) {
             console.log(error.response.data)
         }
@@ -52,13 +53,14 @@ const AddFoodCategories = () => {
             });
             toast.success(response.message || 'Subcategory added successfully.');
             setSubCategory('');
+            window.dispatchEvent(new Event('updateDropdownData'));
         } catch (error) {
             console.log(error.response?.data || error.message);
             toast.error(error.response?.data?.message || 'Failed to add subcategory.');
         }
     };
     return (
-        <div className="bg-white shadow-lg rounded-lg p-8 max-w-4xl mx-auto space-y-6">
+        <div className="bg-white shadow-lg rounded-lg p-8 max-w-5xl mx-auto space-y-6">
             <h2 className="text-3xl font-bold text-gray-800 mb-4">Food Categories managment</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex flex-col">
@@ -79,14 +81,14 @@ const AddFoodCategories = () => {
                 <div className="flex flex-col">
                     <label className="text-lg font-medium text-gray-700 mb-2">Select Main Food Category</label>
                     <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
                         className="text-xl p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
                     >
                         <option value="">Select a category</option>
                         {categories.map((category) => (
-                            <option key={category._id} value={category.name}>
-                                {category.name}
+                            <option key={category?._id} value={category?.name || 'loading...'}>
+                                {category?.name || 'loading..'}
                             </option>
                         ))}
                     </select>

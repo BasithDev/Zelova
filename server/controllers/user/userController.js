@@ -1,10 +1,14 @@
 const User = require('../../models/user');
+const Address = require('../../models/Address')
 const cloudinary = require('cloudinary').v2;
 const Otp = require('../../models/otp')
 const { sendOTPEmail } = require('../../config/mailer');
 const bcrypt = require('bcryptjs');
+const {getUserId} = require('../../helpers/getUserId')
+
 exports.getUserById = async (req, res) => {
-    const { id } = req.params;
+  const token = req.cookies.user_token
+    const id  = getUserId(token,process.env.JWT_SECRET)
     try {
         const user = await User.findById(id);
 
@@ -155,3 +159,74 @@ exports.getUserStatus = async (req, res) => {
       res.status(500).json({ message: 'Server error' });
   }
 };
+exports.addAddress = async (req,res) => {
+  try {
+    const token = req.cookies.user_token
+    if (!token) {
+      return res.status(401).json({ message: "Unauthorized. No token provided." });
+    }
+    const userId = getUserId(token, process.env.JWT_SECRET);
+    const { label, address, phone } = req.body;
+
+    if (!label || !address || !phone) {
+      return res.status(400).json({ message: "All fields are required." });
+    }
+
+    const newAddress = new Address({
+      userId,
+      label,
+      address,
+      phone,
+    })
+
+    await newAddress.save();
+
+    res.status(201).json({ message: "Address added successfully", address: newAddress });
+
+  } catch (error) {
+    console.error('Error adding new Address:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+exports.getAddresses = async (req,res)=>{
+  try {
+    const token = req.cookies.user_token
+    if (!token) {
+      return res.status(401).json({ message: "Unauthorized. No token provided." });
+    }
+    const userId  = getUserId(token,process.env.JWT_SECRET)
+    const addresses = await Address.find({ userId });
+
+    if (!addresses || addresses.length === 0) {
+      return res.status(200).json({ message: "No addresses found." });
+    }
+
+    res.status(200).json({ message: "Addresses retrieved successfully", addresses });
+
+  } catch (error) {
+    console.error('Error getting addresses:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
+exports.deleteAddress = async (req,res) =>{
+  try {
+    const { addressId } = req.params;
+    const token = req.cookies.user_token
+    if (!token) {
+      return res.status(401).json({ message: "Unauthorized. No token provided." });
+    }
+    const userId  = getUserId(token,process.env.JWT_SECRET)
+
+    const address = await Address.findOneAndDelete({ _id: addressId, userId });
+
+    if (!address) {
+      return res.status(404).json({ message: "Address not found or not authorized" });
+    }
+
+    res.status(200).json({ message: "Address deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting address:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+}

@@ -28,7 +28,6 @@ const Login = () => {
             if (response.status === 200) {
                 const { Id,token, isAdmin } = response.data;
                 const adminId = Id
-                console.log(adminId)
                 if (isAdmin) {
                     dispatch(setAdminAuth({ adminId,token }));
                     navigate('/admin');

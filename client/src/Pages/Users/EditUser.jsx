@@ -100,7 +100,7 @@ const EditUser = () => {
   };
 
   return (
-    <div className="mx-5 my-2 p-6 bg-white rounded-lg shadow-lg">
+    <div className="mx-5 my-10 p-6 bg-white rounded-lg shadow-lg">
       <ToastContainer position="top-right" />
       <h2 className="text-4xl font-bold text-center mb-4">Edit Profile</h2>
       <div className="flex flex-col items-center mb-6 space-y-4">
