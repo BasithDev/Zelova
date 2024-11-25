@@ -49,7 +49,6 @@ const AddressMng = () => {
         }
     };
     
-
     return (
         <div className="relative flex flex-col md:flex-row p-6 gap-6 min-h-screen bg-gray-50">
             <ToastContainer position="top-right" />
@@ -63,12 +62,12 @@ const AddressMng = () => {
                     <h2 className="text-2xl font-bold mb-6 text-gray-800">
                         Saved Addresses
                     </h2>
-                    {addresses.length > 0 ? (
+                    {addresses?.length > 0 ? (
                         <ul className="space-y-4">
                             {addresses.map((address) => (
                                 <li
                                     key={address._id}
-                                    className="relative p-4 border rounded-md bg-gradient-to-r from-gray-50 to-gray-100 hover:shadow-xl hover:scale-[1.02] transition-all"
+                                    className="relative cursor-pointer p-4 border rounded-md bg-gradient-to-r from-gray-50 to-gray-100 hover:shadow-xl hover:scale-[1.02] transition-all"
                                 >
                                     <button
                                         onClick={() => handleDeleteAddress(address._id)}
