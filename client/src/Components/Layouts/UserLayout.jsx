@@ -132,7 +132,7 @@ const UserLayout = () => {
 
   return (
     <div className="flex">
-      <aside className="bg-gray-100 hide-scrollbar w-[18%] top-0 left-0 bottom-0 text-center shadow-lg flex flex-col justify-between overflow-y-auto">
+      <aside className="bg-gray-100 hide-scrollbar h-screen w-[18%] top-0 left-0 bottom-0 text-center shadow-lg flex flex-col justify-between overflow-y-auto">
         <div>
           <p className="text-5xl font-semibold mt-3 mb-5 text-transparent bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text cursor-pointer">Zelova</p>
           <nav className="space-y-4">
