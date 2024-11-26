@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {getUserById,updateProfile, deleteImage, sendOTP, updateEmail, resetPassword, getUserStatus, addAddress, getAddresses, deleteAddress} = require('../../controllers/user/userController')
+const {getUserById,updateProfile, deleteImage, sendOTP, updateEmail, resetPassword, getUserStatus, addAddress, getAddresses, deleteAddress, updateAddress} = require('../../controllers/user/userController')
 router.get('/',getUserById)
 router.put('/update-profile',updateProfile)
 router.post('/delete-image',deleteImage)
@@ -11,4 +11,5 @@ router.get('/status/:id',getUserStatus)
 router.post('/address/new',addAddress)
 router.get('/addresses',getAddresses)
 router.delete('/address/:addressId/delete',deleteAddress)
+router.put('/address/:addressId/update',updateAddress)
 module.exports = router

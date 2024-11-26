@@ -230,3 +230,33 @@ exports.deleteAddress = async (req,res) =>{
     res.status(500).json({ message: "Server error" });
   }
 }
+exports.updateAddress = async (req,res)=>{
+  try {
+    const { addressId } = req.params;
+    const token = req.cookies.user_token
+    if (!token) {
+      return res.status(401).json({ message: "Unauthorized. No token provided." });
+    }
+    const userId  = getUserId(token,process.env.JWT_SECRET)
+    const { label, address, phone } = req.body;
+
+    if (!label || !address || !phone) {
+      return res.status(400).json({ message: "All fields are required." });
+    }
+
+    const updatedAddress = await Address.findOneAndUpdate(
+      { _id: addressId, userId },
+      { label, address, phone },
+      { new: true }
+    );
+
+    if (!updatedAddress) {
+      return res.status(404).json({ message: "Address not found or not authorized" });
+    }
+
+    res.status(200).json({ message: "Address updated successfully", address: updatedAddress });
+  } catch (error) {
+    console.error("Error updating address:", error);    
+    res.status(500).json({ message: "Server error" });
+  }
+}

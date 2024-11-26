@@ -29,12 +29,19 @@ export const getUser = () => api.get(`/user`)
 export const updateUser = (data) => api.put('/user/update-profile',data)
 export const deleteUserImage = (data) => api.post('/user/delete-image',data)
 export const submitVendorReq = (data) => api.post('/user/req-vendor',data)
-export const addAddress = (data) => api.post('/user/address/new',data)
-export const getAddresses = () => api.get('/user/addresses')
-export const deleteAddress = (addressId) => api.delete(`/user/address/${addressId}/delete`)
 export const getRestaurantsForUser = (lat,lon)=> api.get(`/user/nearby-restaurants?lat=${lat}&lon=${lon}`)
 export const getMenuForUser = (id,lat,lon)=> api.get(`/user/${id}/menu?lat=${lat}&lon=${lon}`)
 export const getFoodCategories = () => api.get('/user/food-categories')
+
+//user routes - address management
+export const addAddress = (data) => api.post('/user/address/new',data)
+export const getAddresses = () => api.get('/user/addresses')
+export const deleteAddress = (addressId) => api.delete(`/user/address/${addressId}/delete`)
+export const updateAddress = (addressId,data) => api.put(`/user/address/${addressId}/update`,data)
+
+//user routes - cart management
+export const getCart = () => api.get('/user/cart')
+export const manageCart = (data) => api.post('/user/manage-cart',data)
 
 //vendor routes - restaruant management
 export const getRestaurant = () => api.get(`vendor/restaurant`)
