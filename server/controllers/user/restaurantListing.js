@@ -80,7 +80,8 @@ exports.getMenu = async (req,res) =>{
                     rating: 1,
                     address: 1,
                     distance: 1,
-                    phone: 1
+                    phone: 1,
+                    image:1
                 }
             }
         ]);

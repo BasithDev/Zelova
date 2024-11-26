@@ -23,6 +23,17 @@ const cartSchema = new Schema({
       required: true,
       min: 0,
     },
+    customizations: [{
+      fieldName: String,
+      options: [{
+        name: String,
+        price: Number
+      }]
+    }],
+    offer: {
+      type: Schema.Types.ObjectId,
+      ref: 'Offer'
+    }
   }],
   deliveryType: {
     type: String,
@@ -31,6 +42,9 @@ const cartSchema = new Schema({
     type: String,
     trim: true,
   },
+  suggestions: {
+    type: String
+  }
 }, {
   timestamps: true,
 });
