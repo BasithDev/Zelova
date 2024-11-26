@@ -10,6 +10,8 @@ const authRouter = require('./routes/auth/authRoutes')
 const userReqVendorRouter = require('./routes/user/reqVendorRoute')
 const userRouter = require('./routes/user/userRoute')
 const restaurantListing = require('./routes/user/restaurantListing')
+const cartMngRouter = require('./routes/user/cartMngRoute')
+
 const adminManageRouter = require('./routes/admin/manageRoutes')
 const adminRouter = require('./routes/admin/adminRoute')
 
@@ -19,6 +21,7 @@ const categoriesRouter = require('./routes/vendor/categoriesMng')
 const productMngRouter = require('./routes/vendor/productMng')
 
 const passport = require('passport');
+
 
 require('dotenv').config()
 
@@ -44,6 +47,7 @@ app.use('/api/auth',authRouter)
 app.use('/api/user/req-vendor',userReqVendorRouter)
 app.use('/api/user',userRouter)
 app.use('/api/user',restaurantListing)
+app.use('/api/user/cart', cartMngRouter)
 
 app.use('/api/admin/manage',adminManageRouter)
 app.use('/api/admin',adminRouter)

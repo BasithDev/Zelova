@@ -30,12 +30,9 @@ const Home = () => {
         }
     }, [lat, lon, fetchRestaurants])
 
-    console.log(restaurantData)
-
     const handleRestaurantClick = (restaurantId) => {
         navigate(`restaurant/${restaurantId}/menu`);
     };
-
     return (
         <motion.div
             initial={{ opacity: 0 }}

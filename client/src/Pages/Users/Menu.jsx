@@ -1,24 +1,107 @@
-import { useState, useEffect } from "react";
-import { FaStar } from "react-icons/fa";
+import { useState, useEffect, useCallback } from "react";
 import { FiMenu } from 'react-icons/fi';
 import { useParams } from 'react-router-dom';
-import { getMenuForUser } from "../../Services/apiServices";
-import { useSelector } from "react-redux";
+import { getMenuForUser } from '../../Services/apiServices';
+import { useDispatch, useSelector } from "react-redux";
 import { RingLoader } from 'react-spinners';
 import { calculateDistanceAndTime } from '../../utils/distanceUtils';
 import SearchBarWithCart from "../../Components/SearchBarWithCart/SearchBarWithCart";
+import RestaurantCard from "../../Components/RestaurantCard/RestaurantCard";
+import CartSnackbar from "../../Components/Snackbar/CartSnackbar";
 import { AnimatePresence, motion } from "framer-motion";
-import { FaMapMarkerAlt } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+import CustomizationModal from "../../Components/CustomizationModal/CustomizationModal";
+import { fetchCart, updateCartItem, removeCartItem } from "../../Redux/slices/user/cartSlice";
 
 const Menu = () => {
+    const dispatch = useDispatch();
+
     const { id } = useParams();
     const [searchQuery, setSearchQuery] = useState("");
     const [restaurant, setRestaurant] = useState(null);
     const [menuItems, setMenuItems] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isFabOpen, setIsFabOpen] = useState(false);
+    const [showSnackbar, setShowSnackbar] = useState(false);
+    const cart = useSelector((state) => state.cart);
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [isCustomizationModalOpen, setIsCustomizationModalOpen] = useState(false);
+
     const userLocation = useSelector((state) => state.userLocation);
     const { lat, lng: lon } = userLocation.coordinates;
-    const [isFabOpen, setIsFabOpen] = useState(false);
+
+    useEffect(() => {
+        dispatch(fetchCart());
+    }, [dispatch]);
+
+    useEffect(() => {
+        if (cart.items.length > 0) {
+            setShowSnackbar(true);
+        } else {
+            setShowSnackbar(false);
+        }
+    }, [cart.items]);
+
+    const getItemQuantity = (itemId) => {
+        const cartItem = cart.items.find(item => item.itemId === itemId);
+        return cartItem ? cartItem.quantity : 0;
+    };
+
+    const handleUpdateCart = useCallback((item, action) => {
+        const currentCartItem = cart.items.find(i => i.itemId === item._id);
+        let newQuantity = 0;
+
+        if (action === "increment") {
+            newQuantity = (currentCartItem?.quantity || 0) + 1;
+        } else if (action === "decrement") {
+            newQuantity = (currentCartItem?.quantity || 0) - 1;
+        } else if (action === "add") {
+            newQuantity = 1;
+        }
+
+        if (newQuantity <= 0) {
+            dispatch(removeCartItem({ cartId: cart.cartId, itemId: item._id }));
+            return;
+        }
+
+        if (item.customizable && action === "add" && (!currentCartItem || currentCartItem.customizations.length === 0)) {
+
+            setSelectedItem(item);
+            setIsCustomizationModalOpen(true);
+            return;
+        }
+
+        if (!cart.restaurantId || cart.restaurantId === restaurant._id) {
+            dispatch(updateCartItem({
+                itemId: item._id,
+                quantity: newQuantity,
+                customizations: currentCartItem?.customizations || []
+            }));
+        } else {
+            const confirmed = window.confirm(
+                "Adding items from a different restaurant will clear your current cart. Do you want to proceed?"
+            );
+            if (confirmed) {
+                dispatch(updateCartItem({ itemId: item._id, quantity: newQuantity, customizations: [] }));
+            }
+        }
+
+        dispatch(fetchCart());
+    }, [cart, restaurant, dispatch]);
+
+    const handleCustomizationConfirm = useCallback((customizations) => {
+        if (selectedItem) {
+            dispatch(updateCartItem({ itemId: selectedItem._id, quantity: 1, customizations }));
+        }
+    }, [selectedItem, dispatch]);
+
+    const handleCategoryClick = (category) => {
+        const categoryElement = document.getElementById(category);
+        if (categoryElement) {
+            categoryElement.scrollIntoView({ behavior: 'smooth' });
+            setIsFabOpen(false);
+        }
+    };
 
     useEffect(() => {
         const fetchMenu = async () => {
@@ -29,7 +112,8 @@ const Menu = () => {
                     setMenuItems(response.data.menu);
                 }
             } catch (error) {
-                console.error("Error fetching menu:", error);
+                console.log(error);
+                toast.error("Failed to load menu");
             } finally {
                 setLoading(false);
             }
@@ -43,31 +127,16 @@ const Menu = () => {
     if (loading) {
         return (
             <div className="flex flex-col justify-center items-center min-h-screen">
-                <RingLoader size={50} color="#FF5733" className="mb-5" />
-                <p className="text-lg text-gray-600 mt-4 animate-pulse">Loading menu...</p>
+                <RingLoader color="#4F46E5" loading={loading} size={50} />
+                <p className="mt-4 text-gray-600">Loading menu...</p>
             </div>
         );
     }
 
-    if (!restaurant) {
-        return (
-            <div className="p-4 text-center">
-                <p className="text-xl text-gray-600">Restaurant not found</p>
-            </div>
-        );
-    }
+    const { distanceInKm, timeInMinutes } = restaurant ? calculateDistanceAndTime(restaurant.distance) : { distanceInKm: 0, timeInMinutes: 0 };
 
-    const { distanceInKm, timeInMinutes } = calculateDistanceAndTime(restaurant.distance);
-
-    const filteredMenu = menuItems.filter(item => 
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    console.log(filteredMenu)
-
-    const categorizedMenu = filteredMenu.reduce((acc, item) => {
-        const categoryName = item.foodCategory.name;
+    const menuByCategory = menuItems.reduce((acc, item) => {
+        const categoryName = item.foodCategory?.name || 'Other';
         if (!acc[categoryName]) {
             acc[categoryName] = [];
         }
@@ -75,175 +144,152 @@ const Menu = () => {
         return acc;
     }, {});
 
-    const categories = Object.keys(categorizedMenu);
-
-    const toggleFab = () => {
-        setIsFabOpen(!isFabOpen);
-    };
-
-    const handleCategoryClick = (category) => {
-        const categoryElement = document.getElementById(category);
-        if (categoryElement) {
-            categoryElement.scrollIntoView({ behavior: "smooth" });
-            setIsFabOpen(false);
+    const filteredMenu = Object.entries(menuByCategory).reduce((acc, [category, items]) => {
+        const filteredItems = items.filter(item =>
+            item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.description.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+        if (filteredItems.length > 0) {
+            acc[category] = filteredItems;
         }
-    };
+        return acc;
+    }, {});
 
     return (
-        <div className="px-4">
-            <div className="flex items-center gap-2 p-4 w-full">
-                <SearchBarWithCart 
-                    searchQuery={searchQuery}
-                    setSearchQuery={setSearchQuery}
-                    placeholderText="foods, restaurants, and more..."
-                />
-            </div>
-            {/* Restaurant Details Card */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
-                <div className="h-40 bg-gradient-to-br from-orange-500 via-orange-400 to-yellow-400 relative">
-                    <div className="absolute inset-0">
-                        <svg className="w-full h-full opacity-10" viewBox="0 0 100 100" preserveAspectRatio="none">
-                            <path d="M0 0 L100 0 L100 100 L0 100 Z" fill="url(#pattern)" />
-                            <defs>
-                                <pattern id="pattern" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
-                                    <circle cx="5" cy="5" r="2" fill="currentColor" />
-                                </pattern>
-                            </defs>
-                        </svg>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white/30"></div>
-                </div>
-                <div className="p-6 relative">
-                    <div className="flex items-start gap-6">
-                        <div className="w-32 h-32 rounded-lg overflow-hidden shadow-lg -mt-16 border-4 border-white bg-white">
-                            <img 
-                                src={restaurant.image} 
-                                alt={restaurant.name}
-                                className="w-full h-full object-cover"
-                            />
-                        </div>
-                        <div className="flex-1">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <h1 className="text-2xl font-bold text-gray-800">{restaurant.name}</h1>
-                                    <p className="text-gray-600 flex items-center gap-2 mt-1">
-                                        <FaMapMarkerAlt className="text-orange-500" />
-                                        {restaurant.address}
-                                    </p>
-                                    <p className="text-gray-600 mt-1">Phone: {restaurant.phone}</p>
-                                </div>
-                                <div className={`mb-4 ${restaurant.rating >= 4 ? "bg-green-500" : "bg-orange-500"} text-white rounded-lg px-3 py-1`}>
-                                    <span className="text-lg font-semibold">{restaurant.rating || "No Rating Yet"}
-                                        <FaStar className="inline ml-1 text-yellow-400" />
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="flex flex-wrap items-center gap-2 mt-3">
-                                <span className="bg-orange-50 text-orange-600 text-sm px-3 py-1 rounded-full">Fast Food</span>
-                                <span className="bg-orange-50 text-orange-600 text-sm px-3 py-1 rounded-full">Restaurant</span>
-                                <span className="bg-orange-50 text-orange-600 text-sm px-3 py-1 rounded-full">Beverages</span>
-                            </div>
-                            {/* Delivery Progress */}
-                            <div className="mt-4 border-t pt-4">
-                                <div className="flex flex-col">
-                                    <div className="flex items-center">
-                                        <div className={`w-3 h-3 ${timeInMinutes < 15 ? 'bg-green-600' : timeInMinutes <= 30 ? 'bg-orange-500' : 'bg-red-500'} rounded-full`}></div>
-                                        <p className="text-gray-600 ml-2">Outlet</p>
-                                    </div>
-                                    <div className={`h-12 flex items-center ml-1 border-l-2 ${timeInMinutes < 15 ? 'border-green-600' : timeInMinutes <= 30 ? 'border-orange-500' : 'border-red-500'}`}>
-                                        <p className="text-gray-600 ml-2">Delivery In {timeInMinutes} Mins ({distanceInKm} Km)</p>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <div className={`w-3 h-3 ${timeInMinutes < 15 ? 'bg-green-600' : timeInMinutes <= 30 ? 'bg-orange-500' : 'bg-red-500'} rounded-full`}></div>
-                                        <p className="text-gray-600 ml-2">Your Location</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div className="min-h-screen bg-gray-50">
+            <SearchBarWithCart
+                searchQuery={searchQuery}
+                onSearchChange={(e) => setSearchQuery(e.target.value)}
+            />
 
-            {/* Menu Subheading */}
-            <h2 className="text-3xl font-bold font-roboto mb-4 text-center">~ Menu ~</h2>
-
-            {/* Search Bar */}
-            <div className="mb-6 flex justify-center">
-                <input
-                    type="text"
-                    placeholder="Search for a dish..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-[70%] px-4 py-2 border-2 rounded-lg text-xl focus:outline-none transition-all duration-200 focus:ring-2 focus:ring-orange-500"
-                />
-            </div>
-
-            {/* Menu Items by Category */}
-            {Object.entries(categorizedMenu).length === 0 ? (
-                <div className="flex flex-col items-center justify-center text-center text-gray-500 text-xl py-10">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m0 0l-6-6m6 6H3m13 6l6-6m0 0l-6-6m6 6h-6" />
-                    </svg>
-                    <p className="mb-2">No items available in the menu.</p>
-                    <p className="text-sm text-gray-400">Please check back later or try another search.</p>
+            {restaurant && (
+                <div className="p-4">
+                    <RestaurantCard
+                        restaurant={restaurant}
+                        distanceInKm={distanceInKm}
+                        timeInMinutes={timeInMinutes}
+                    />
                 </div>
-            ) : (
-                Object.entries(categorizedMenu).map(([categoryName, items]) => (
-                    <div key={categoryName} id={categoryName} className="px-8 py-2 mb-8">
-                        <h3 className="text-2xl underline font-bold px-3 mb-4">{categoryName}</h3>
-                        {items.map((item) => (
-                            <div key={item._id} className="bg-white rounded-lg shadow-md mb-4 p-4 flex items-center">
-                                <div className="flex-1 gap-4">
-                                    <h4 className="text-3xl font-semibold mb-1">{item.name}</h4>
-                                    <p className="text-gray-600 mb-1">{item.description}</p>
-                                    <p className="text-gray-800 text-xl font-semibold mb-1">₹{item.price}</p>
-                                    {item.offers ? (
-                                        <p className="bg-green-100 text-green-600 w-fit px-2 py-1 rounded-md font-semibold">{item.offers.offerName}</p>
-                                    ) : (
-                                        <p className="bg-yellow-100 text-yellow-600 w-fit px-2 py-1 rounded-md font-semibold">BUY for 300+ GET Free Delivery</p>
-                                    )}
-                                </div>
-                                <div className="flex pb-5 flex-col items-center relative">
-                                    <img src={item.image} alt={item.name} className="w-32 h-32 object-cover rounded-md mr-4" />
-                                    <button className="absolute bottom-0 bg-orange-500 text-white rounded-md px-4 py-1 font-semibold text-xl hover:bg-orange-600 transition duration-300">
-                                        Add
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ))
             )}
 
-            {/* Floating Action Button for Menu */}
-            <div className="fixed bottom-10 right-10">
-                <button
-                    onClick={toggleFab}
-                    className="bg-black text-white rounded-full p-4 shadow-lg hover:bg-gray-300 hover:text-black hover:shadow-2xl transition duration-300"
-                >
-                    <FiMenu className="text-3xl" />
-                </button>
-                <AnimatePresence>
-                {isFabOpen && (
-                    <motion.div
-                        initial={{ y: 50, scale: 0 }}
-                        animate={{ y: 0, scale: 1 }}
-                        exit={{ y: 50, scale: 0 }}
-                        transition={{ duration: 0.3, ease: "easeOut" }}
-                        className="absolute bottom-16 right-0 bg-white border border-gray-300 rounded-lg shadow-lg p-4 w-48 z-10"
-                        style={{ transformOrigin: "bottom right" }}
-                    >
-                        <h1 className="font-bold text-center mb-2">{restaurant.name}&apos;s Menu</h1>
-                        <ul className="divide-y divide-gray-200">
-                            {categories.map((category) => (
-                                <li key={category} onClick={() => handleCategoryClick(category)} className="py-2 px-3 hover:bg-gray-100 cursor-pointer text-center">
-                                    {category}
-                                </li>
-                            ))}
-                        </ul>
-                    </motion.div>
+            <AnimatePresence>
+                {showSnackbar && (
+                    <CartSnackbar
+                        totalItems={cart.items.reduce((sum, item) => sum + item.quantity, 0)}
+                        onClose={() => setShowSnackbar(false)}
+                    />
                 )}
+            </AnimatePresence>
+
+            <CustomizationModal
+                isOpen={isCustomizationModalOpen}
+                onClose={() => setIsCustomizationModalOpen(false)}
+                item={selectedItem}
+                onConfirm={handleCustomizationConfirm}
+            />
+
+            <div className="fixed bottom-4 right-4 z-50">
+                <button
+                    onClick={() => setIsFabOpen(!isFabOpen)}
+                    className="bg-indigo-600 text-white p-3 rounded-full shadow-lg hover:bg-indigo-700 transition-all"
+                >
+                    <FiMenu size={24} />
+                </button>
+
+                <AnimatePresence>
+                    {isFabOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 20 }}
+                            className="absolute bottom-16 right-0 bg-white rounded-lg shadow-xl p-4 w-48"
+                        >
+                            {Object.keys(filteredMenu).map((category) => (
+                                <button
+                                    key={category}
+                                    onClick={() => handleCategoryClick(category)}
+                                    className="block py-2 px-4 hover:bg-gray-100 rounded"
+                                >
+                                    {category}
+                                </button>
+                            ))}
+                        </motion.div>
+                    )}
                 </AnimatePresence>
+            </div>
+
+            <div className="pb-20">
+                {Object.entries(filteredMenu).map(([categoryName, items]) => (
+                    <div key={categoryName} id={categoryName} className="px-8 py-4 mb-12">
+                        <h3 className="text-3xl underline font-extrabold px-3 mb-6 text-gray-800">{categoryName}</h3>
+                        {items.map((item) => {
+                            const quantity = getItemQuantity(item._id);
+
+                            return (
+                                <div key={item._id} className="bg-white rounded-lg shadow-lg p-6 mb-6 flex justify-between items-start hover:shadow-xl transition-shadow duration-300">
+                                    <div className="flex-1">
+                                        <h4 className="text-2xl font-semibold mb-3 text-gray-900">{item.name}</h4>
+                                        <p className="text-gray-500 mb-3">{item.description}</p>
+                                        <p className="text-xl font-bold text-green-600">₹{item.price}</p>
+                                    </div>
+                                    <div className="flex flex-col items-end gap-3">
+                                        {item.image && (
+                                            <div className="w-40 h-40">
+                                                <img
+                                                    src={item.image}
+                                                    alt={item.name}
+                                                    className="w-full h-full object-cover rounded-lg shadow-md"
+                                                />
+                                            </div>
+                                        )}
+                                        {quantity > 0 ? (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: 10 }}
+                                                transition={{ duration: 0.2 }}
+                                                className="flex items-center gap-3 bg-white border-green-600 border-2 text-green-600 px-3 py-2 rounded-lg"
+                                            >
+                                                <motion.button
+                                                    whileTap={{ scale: 0.95 }}
+                                                    onClick={() => handleUpdateCart(item, "decrement")}
+                                                    className="text-2xl font-bold hover:text-green-400"
+                                                >
+                                                    -
+                                                </motion.button>
+                                                <motion.span
+                                                    key={quantity}
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: -10 }}
+                                                    transition={{ duration: 0.2 }}
+                                                    className="w-10 text-center text-2xl font-semibold"
+                                                >
+                                                    {quantity}
+                                                </motion.span>
+                                                <motion.button
+                                                    whileTap={{ scale: 0.95 }}
+                                                    onClick={() => handleUpdateCart(item, "increment")}
+                                                    className="text-2xl font-bold hover:text-green-400"
+                                                >
+                                                    +
+                                                </motion.button>
+                                            </motion.div>
+                                        ) : (
+                                            <motion.button
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={() => handleUpdateCart(item, "add")}
+                                                className="bg-green-600 text-white text-2xl px-8 font-semibold py-2 rounded-lg hover:bg-green-700 transition-colors"
+                                            >
+                                                Add
+                                            </motion.button>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ))}
             </div>
         </div>
     );

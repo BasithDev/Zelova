@@ -5,14 +5,17 @@ import userDataReducer from './slices/user/userDataSlice';
 import adminDataReducer from './slices/admin/adminDataSlice'
 import restaurantReducer from './slices/seller/restaurantDataSlice'
 import userLocationReducer from './slices/user/userLocationSlice'
-const store = configureStore({
+import cartReducer from './slices/user/cartSlice';
+
+export const store = configureStore({
   reducer: {
     authUser: authUserReducer,
     authAdmin: authAdminReducer,
     userData: userDataReducer,
     adminData: adminDataReducer,
-    restaurantData:restaurantReducer,
+    restaurantData: restaurantReducer,
     userLocation: userLocationReducer,
+    cart: cartReducer,
   },
 });
 
