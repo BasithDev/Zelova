@@ -2,7 +2,7 @@ const Restaurant = require('../../models/restaurant')
 const FoodItem = require('../../models/fooditem');
 const mongoose = require('mongoose');
 
-const getNearbyRestaurantsFromDB = async (userLat, userLong, maxDistance = 5000) => {
+const getNearbyRestaurantsFromDB = async (userLat, userLong, maxDistance = 50000) => {
     try {
         const nearbyRestaurants = await Restaurant.aggregate([
             {
@@ -32,7 +32,6 @@ const getNearbyRestaurantsFromDB = async (userLat, userLong, maxDistance = 5000)
                 }
             }
         ]);
-
         return nearbyRestaurants;
     } catch (error) {
         console.error("Error fetching nearby restaurants:", error);
@@ -69,7 +68,7 @@ exports.getMenu = async (req,res) =>{
                 $geoNear: {
                     near: { type: "Point", coordinates: [parseFloat(lat), parseFloat(lon)] },
                     distanceField: "distance",
-                    maxDistance: 5000,
+                    maxDistance: 50000,
                     spherical: true,
                     query: { _id: new mongoose.Types.ObjectId(id) }
                 }
