@@ -1,11 +1,12 @@
-import SearchBarWithCart from "../../Components/SearchBarWithCart/SearchBarWithCart";
 import { FaTags, FaUtensils, FaMapMarkerAlt, FaStar } from "react-icons/fa";
 import { getRestaurantsForUser } from "../../Services/apiServices";
 import { useSelector } from "react-redux";
 import { useCallback, useEffect, useState } from "react";
 import { RingLoader } from 'react-spinners';
-import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import Header from "../../Components/Common/Header";
 import { calculateDistanceAndTime } from '../../utils/distanceUtils';
 
 const Home = () => {
@@ -20,19 +21,22 @@ const Home = () => {
         const response = await getRestaurantsForUser(lat, lon)
         if (response?.data) {
             setRestaurantData(response?.data)
+            setLocationAvailable(true)
         }
     }, [lat, lon])
 
     useEffect(() => {
         if (lat && lon) {
-            setLocationAvailable(true);
-            fetchRestaurants();
+            fetchRestaurants()
+        } else {
+            toast.error("Please enable location services to view nearby restaurants")
         }
     }, [lat, lon, fetchRestaurants])
 
     const handleRestaurantClick = (restaurantId) => {
         navigate(`restaurant/${restaurantId}/menu`);
     };
+
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -41,13 +45,11 @@ const Home = () => {
             transition={{ duration: 0.5 }}
             className="p-1"
         >
-            <div className="flex items-center px-4 py-3 w-full">
-                <SearchBarWithCart 
-                    searchQuery={searchQuery}
-                    setSearchQuery={setSearchQuery}
-                    placeholderText="Search for restaurants or dishes..."
-                />
-            </div>
+            <Header 
+                searchQuery={searchQuery}
+                onSearchChange={(e) => setSearchQuery(e.target.value)}
+                placeholderText="Search for restaurants or dishes..."
+            />
 
             {locationAvailable && (
                 <div className="p-4">

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaMapMarkerAlt, FaMinus, FaPlus } from 'react-icons/fa';
-import { AnimatePresence } from 'framer-motion';
 
 const Cart = () => {
     // Mock data for demonstration
@@ -50,7 +49,6 @@ const Cart = () => {
         }
     ]);
 
-    const [activeCustomization, setActiveCustomization] = useState(null);
 
     const handleQuantity = (id, increment) => {
         setCartItems(items => {
@@ -64,20 +62,6 @@ const Cart = () => {
             });
             return updatedItems.filter(Boolean);
         });
-    };
-
-    const toggleCustomization = (itemId, optionName) => {
-        setCartItems(items =>
-            items.map(item => {
-                if (item.id === itemId) {
-                    const newCustomizations = item.selectedCustomizations.includes(optionName)
-                        ? item.selectedCustomizations.filter(c => c !== optionName)
-                        : [...item.selectedCustomizations, optionName];
-                    return { ...item, selectedCustomizations: newCustomizations };
-                }
-                return item;
-            })
-        );
     };
 
     const calculateItemTotal = (item) => {
@@ -197,7 +181,7 @@ const Cart = () => {
                                         <div className="mt-1 space-y-1">
                                             {item.selectedCustomizations.length > 0 && (
                                                 <div className="text-sm text-gray-600">
-                                                    Customizations: {item.selectedCustomizations.join(", ")}
+                                                    Add-Ons Added: {item.selectedCustomizations.join(", ")}
                                                 </div>
                                             )}
                                         </div>
@@ -252,58 +236,6 @@ const Cart = () => {
                                         </motion.div>
                                     </div>
                                 </div>
-                                
-                                {item.isCustomizable && (
-                                    <div className="mt-2">
-                                        <button 
-                                            onClick={() => setActiveCustomization(activeCustomization === item.id ? null : item.id)}
-                                            className="text-orange-500 text-sm hover:text-orange-600 flex items-center gap-1"
-                                        >
-                                            Customize
-                                            <motion.span
-                                                animate={{ rotate: activeCustomization === item.id ? 180 : 0 }}
-                                                transition={{ duration: 0.2 }}
-                                            >
-                                                ▼
-                                            </motion.span>
-                                        </button>
-                                        
-                                        <AnimatePresence>
-                                            {activeCustomization === item.id && (
-                                                <motion.div
-                                                    initial={{ height: 0, opacity: 0 }}
-                                                    animate={{ height: "auto", opacity: 1 }}
-                                                    exit={{ height: 0, opacity: 0 }}
-                                                    transition={{ duration: 0.2 }}
-                                                    className="overflow-hidden"
-                                                >
-                                                    <div className="grid grid-cols-2 gap-2 mt-3">
-                                                        {item.customOptions.map((option) => (
-                                                            <motion.button
-                                                                key={option.id}
-                                                                onClick={() => toggleCustomization(item.id, option.name)}
-                                                                className={`flex items-center justify-between p-3 rounded-lg border ${
-                                                                    item.selectedCustomizations.includes(option.name)
-                                                                        ? 'border-orange-500 bg-orange-50'
-                                                                        : 'border-gray-200 hover:border-orange-500'
-                                                                }`}
-                                                                whileHover={{ scale: 1.02 }}
-                                                                whileTap={{ scale: 0.98 }}
-                                                            >
-                                                                <span className="font-medium">
-                                                                    {option.name}
-                                                                </span>
-                                                                <span className="text-gray-600">
-                                                                    +₹{option.price}
-                                                                </span>
-                                                            </motion.button>
-                                                        ))}
-                                                    </div>
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
-                                    </div>
-                                )}
                             </div>
                         </motion.li>
                     ))}
