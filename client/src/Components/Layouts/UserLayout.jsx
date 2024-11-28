@@ -17,6 +17,7 @@ import { FaHeart } from "react-icons/fa";
 import LogoutConfirm from "../../Components/LogoutConfirm";
 import { Outlet } from 'react-router-dom';
 import {setAddress,setCoordinates} from '../../Redux/slices/user/userLocationSlice'
+import CartSnackbar from '../CartSnackbar';
 
 const UserLayout = () => {
   const navigate = useNavigate();
@@ -227,6 +228,7 @@ const UserLayout = () => {
 
       <main className="flex-1 h-screen overflow-y-auto">
         <Outlet />
+        <CartSnackbar />
       </main>
       <AnimatePresence>
       {showLocationPopup && (

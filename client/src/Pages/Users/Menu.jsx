@@ -3,16 +3,35 @@ import { FiMenu } from 'react-icons/fi';
 import { useParams } from 'react-router-dom';
 import { getMenuForUser } from '../../Services/apiServices';
 import { useSelector } from "react-redux";
-import { RingLoader } from 'react-spinners';
 import { calculateDistanceAndTime } from '../../utils/distanceUtils';
 import RestaurantCard from "../../Components/RestaurantCard/RestaurantCard";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { toast } from 'react-toastify';
 import Header from "../../Components/Common/Header";
-import { FaSearch, FaHeart, FaRegHeart } from 'react-icons/fa';
+import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import debounce from 'lodash/debounce';
+import LoadingSpinner from "../../Components/LoadingSpinner/LoadingSpinner";
+import MenuSearch from "../../Components/MenuSearch/MenuSearch";
+import CategoryMenu from "../../Components/CategoryMenu/CategoryMenu";
+import { useCart } from "../../Hooks/useCart";
 
 const Menu = () => {
+
+    const {
+        cart,
+        updateCartMutation,
+    } = useCart();
+
+    const handleCartUpdation = (itemId, action, customizations = null) => {
+        const payload = {
+            itemId,
+            action,
+            selectedCustomizations: customizations
+        };
+    
+        updateCartMutation.mutate(payload);
+    };
+
     const { id } = useParams();
     const [searchQuery, setSearchQuery] = useState("");
     const [menuSearchQuery, setMenuSearchQuery] = useState("");
@@ -23,11 +42,66 @@ const Menu = () => {
     const [isFabOpen, setIsFabOpen] = useState(false);
     const [sortOrder, setSortOrder] = useState('none');
     const [favorites, setFavorites] = useState(new Set());
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedCustomizations, setSelectedCustomizations] = useState({});
+    const [selectedItem, setSelectedItem] = useState(null);
+
+    const openModal = (item) => {
+        setSelectedItem(item);
+        setIsModalOpen(true);
+    };
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setSelectedItem(null);
+        setSelectedCustomizations({});
+    };
+
+    const handleCustomizationChange = (fieldName, option) => {
+        setSelectedCustomizations({
+            ...selectedCustomizations,
+            [fieldName]: {
+                name: option.name,
+                price: option.price
+            }
+        });
+    };
+
+    const handleOkClick = () => {
+        if (!selectedItem) return;
+
+        // Transform selectedCustomizations into the required format
+        const formattedCustomizations = Object.entries(selectedCustomizations).map(([fieldName, option]) => ({
+            fieldName,
+            options: option
+        }));
+
+        // Call handleCartUpdation with the formatted customizations
+        handleCartUpdation(selectedItem._id, 'add', formattedCustomizations);
+
+        // Close the modal
+        closeModal();
+    };
+
+    const handleCustomizableItemUpdate = (item, action) => {
+        const cartItem = cart.data?.cart?.items?.find(
+            (cartItem) => cartItem?.item._id === item._id
+        );
+
+        if (action === 'add') {
+            if (!cartItem) {
+                openModal(item);
+            } else {
+                // For existing items, use their current customizations
+                handleCartUpdation(item._id, 'add', cartItem.selectedCustomizations);
+            }
+        } else if (action === 'remove') {
+            handleCartUpdation(item._id, 'remove');
+        }
+    };
 
     const userLocation = useSelector((state) => state.userLocation);
     const { lat, lng: lon } = userLocation.coordinates;
 
-    // Create debounced function for menu search
     const debouncedSetMenuSearch = useMemo(
         () => debounce((value) => {
             setDebouncedMenuSearch(value);
@@ -35,7 +109,6 @@ const Menu = () => {
         []
     );
 
-    // Cleanup debounce on unmount
     useEffect(() => {
         return () => {
             debouncedSetMenuSearch.cancel();
@@ -95,12 +168,7 @@ const Menu = () => {
     }, [id, lat, lon]);
 
     if (loading) {
-        return (
-            <div className="flex flex-col justify-center items-center min-h-screen">
-                <RingLoader color="#4F46E5" loading={loading} size={50} />
-                <p className="mt-4 text-gray-600">Loading menu...</p>
-            </div>
-        );
+        return <LoadingSpinner message="Loading menu..." />;
     }
 
     const { distanceInKm, timeInMinutes } = restaurant ? calculateDistanceAndTime(restaurant.distance) : { distanceInKm: 0, timeInMinutes: 0 };
@@ -126,7 +194,7 @@ const Menu = () => {
     const filteredMenu = Object.entries(menuByCategory).reduce((acc, [category, items]) => {
         const query = debouncedMenuSearch.toLowerCase().trim();
         let filteredItems = items;
-        
+
         if (query) {
             filteredItems = items.filter(item =>
                 item.name.toLowerCase().includes(query) ||
@@ -145,7 +213,7 @@ const Menu = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <Header 
+            <Header
                 searchQuery={searchQuery}
                 onSearchChange={(e) => setSearchQuery(e.target.value)}
                 placeholderText="Search foods, restaurants, etc..."
@@ -162,32 +230,12 @@ const Menu = () => {
             )}
 
             {/* Menu Search and Sort Section */}
-            <div className="px-8 py-3">
-                <div className="flex justify-between items-center gap-4">
-                    <div className="relative w-72">
-                        <input
-                            type="text"
-                            value={menuSearchQuery}
-                            onChange={handleMenuSearchChange}
-                            placeholder="Search in menu..."
-                            className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 placeholder-gray-400 shadow-sm"
-                        />
-                        <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                            <FaSearch size={16} />
-                        </div>
-                    </div>
-                    
-                    <select
-                        value={sortOrder}
-                        onChange={(e) => setSortOrder(e.target.value)}
-                        className="px-4 py-3 bg-white border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 shadow-sm cursor-pointer"
-                    >
-                        <option value="none">Sort by</option>
-                        <option value="lowToHigh">Price: Low to High</option>
-                        <option value="highToLow">Price: High to Low</option>
-                    </select>
-                </div>
-            </div>
+            <MenuSearch
+                menuSearchQuery={menuSearchQuery}
+                onSearchChange={handleMenuSearchChange}
+                sortOrder={sortOrder}
+                onSortChange={(e) => setSortOrder(e.target.value)}
+            />
 
             <div className="fixed bottom-4 right-4 z-50">
                 <button
@@ -199,23 +247,12 @@ const Menu = () => {
 
                 <AnimatePresence>
                     {isFabOpen && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 20 }}
-                            className="absolute bottom-16 right-0 bg-white rounded-lg shadow-xl p-4 w-48"
-                        >
-                            <h2 className="font-bold text-lg mb-2 text-center">{restaurant?.name} Menu</h2>
-                            {Object.keys(filteredMenu).map((category) => (
-                                <button
-                                    key={category}
-                                    onClick={() => handleCategoryClick(category)}
-                                    className="w-full py-2 px-4 hover:bg-gray-100 rounded"
-                                >
-                                    {category}
-                                </button>
-                            ))}
-                        </motion.div>
+                        <CategoryMenu
+                            isOpen={isFabOpen}
+                            onToggle={() => setIsFabOpen(!isFabOpen)}
+                            categories={Object.keys(menuByCategory)}
+                            onCategoryClick={handleCategoryClick}
+                        />
                     )}
                 </AnimatePresence>
             </div>
@@ -227,10 +264,11 @@ const Menu = () => {
                         <p className="text-gray-500 mt-2">Try a different search term</p>
                     </div>
                 )}
-                
+
                 {Object.entries(filteredMenu).map(([categoryName, items]) => (
                     <div key={categoryName} id={categoryName} className="px-8 py-3">
                         <h3 className="text-3xl font-extrabold px-3 mb-6 text-gray-800">{categoryName}</h3>
+
                         {items.map((item) => (
                             <div key={item._id} className="bg-white rounded-2xl shadow-lg p-6 mb-6 flex flex-col md:flex-row justify-between items-start hover:shadow-xl transition-shadow duration-300">
                                 <div className="flex-1 mb-4 md:mb-0">
@@ -238,7 +276,7 @@ const Menu = () => {
                                     <p className="text-gray-500 mb-3">{item.description}</p>
                                     <p className="text-xl font-bold text-green-600 mb-3">₹{item.price}</p>
                                     <p className={`text-lg font-semibold w-fit ${item?.offers?.offerName ? 'text-green-600 bg-green-200' : 'text-yellow-600 bg-yellow-200'} p-2 rounded-lg mb-3`}>{item.offers?.offerName || 'Buy For 500+ Get Free Delivery'}</p>
-                                    <button 
+                                    <button
                                         onClick={() => toggleFavorite(item._id)}
                                         className="w-fit p-2 bg-gray-100 rounded-full transition-colors duration-300"
                                     >
@@ -259,17 +297,124 @@ const Menu = () => {
                                             />
                                         </div>
                                     )}
-                                    <button 
-                                        className="w-full px-4 py-2 text-xl bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-300 flex items-center justify-center gap-2 font-medium"
-                                    >
-                                        Add to Cart
-                                    </button>
+                                    {item.customizable ? (
+                                        cart.data?.cart?.items?.find(
+                                            (cartItem) => cartItem?.item._id === item._id
+                                        )?.quantity > 0 ? (
+                                            // Show quantity controls for customizable items in cart
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => handleCustomizableItemUpdate(item, 'remove')}
+                                                    className="w-10 h-10 bg-gray-200 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-300 transition-colors duration-300"
+                                                >
+                                                    -
+                                                </button>
+                                                <p className="text-lg font-semibold">
+                                                    {cart.data?.cart?.items?.find(
+                                                        (cartItem) => cartItem?.item._id === item._id
+                                                    )?.quantity}
+                                                </p>
+                                                <button
+                                                    onClick={() => handleCustomizableItemUpdate(item, 'add')}
+                                                    className="w-10 h-10 bg-gray-200 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-300 transition-colors duration-300"
+                                                >
+                                                    +
+                                                </button>
+                                                <button
+                                                    onClick={() => openModal(item)}
+                                                    className="ml-2 px-3 py-2 text-sm bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-300"
+                                                >
+                                                    Change Options
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            // Show customize button for items not in cart
+                                            <button
+                                                onClick={() => openModal(item)}
+                                                className="w-full px-4 py-2 text-xl bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-300"
+                                            >
+                                                Customize & Add
+                                            </button>
+                                        )
+                                    ) : (
+                                        cart.data?.cart?.items?.find((cartItem) => cartItem?.item._id === item._id)?.quantity > 0 ? (
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => handleCartUpdation(item._id, 'remove')}
+                                                    className="w-10 h-10 bg-gray-200 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-300 transition-colors duration-300"
+                                                >
+                                                    -
+                                                </button>
+                                                <p className="text-lg font-semibold">
+                                                    {cart.data?.cart?.items?.find((cartItem) => cartItem?.item._id === item._id)?.quantity}
+                                                </p>
+                                                <button
+                                                    onClick={() => handleCartUpdation(item._id, 'add')}
+                                                    className="w-10 h-10 bg-gray-200 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-300 transition-colors duration-300"
+                                                >
+                                                    +
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleCartUpdation(item._id, 'add')}
+                                                className="w-full px-4 py-2 text-xl bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-300"
+                                            >
+                                                Add to Cart
+                                            </button>
+                                        )
+                                    )}
+
+                                    {isModalOpen && selectedItem && (
+                                        <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-75">
+                                            <div className="bg-white p-6 rounded-lg w-96">
+                                                <h2 className="text-xl font-bold mb-4">Customize {selectedItem.name}</h2>
+
+                                                {selectedItem.customizations.map((customization) => (
+                                                    <div key={customization._id}>
+                                                        <h3 className="font-semibold">{customization.fieldName}</h3>
+                                                        <div className="flex gap-4">
+                                                            {customization.options.map((option) => (
+                                                                <button
+                                                                    key={option._id}
+                                                                    onClick={() => handleCustomizationChange(customization.fieldName, option)}
+                                                                    className={`px-4 py-2 rounded-lg ${
+                                                                        selectedCustomizations[customization.fieldName]?.name === option.name 
+                                                                            ? 'bg-blue-500 text-white' 
+                                                                            : 'bg-gray-200'
+                                                                    }`}
+                                                                >
+                                                                    {option.name} - ₹{option.price}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                ))}
+
+                                                <div className="mt-4 flex justify-between">
+                                                    <button
+                                                        onClick={closeModal}
+                                                        className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                    <button
+                                                        onClick={handleOkClick}
+                                                        className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                                                    >
+                                                        Add to Cart
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))}
                     </div>
                 ))}
             </div>
+            
         </div>
     );
 };

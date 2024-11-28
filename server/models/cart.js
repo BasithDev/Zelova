@@ -26,7 +26,6 @@ const cartSchema = new Schema({
     },
     itemPrice: {
       type: Number,
-      required: true,
     },
     selectedCustomizations: [{
       fieldName: String,
@@ -49,35 +48,39 @@ const cartSchema = new Schema({
 });
 
 // Pre-validate middleware to handle restaurantId
-cartSchema.pre('validate', async function(next) {
+cartSchema.pre('validate', async function (next) {
   try {
-    if (this.items && this.items.length > 0) {
-      const FoodItem = mongoose.model('FoodItem');
-      
-      const firstFoodItem = await FoodItem.findById(this.items[0].item);
-      if (!firstFoodItem) {
-        throw new Error('Food item not found');
-      }
+      if (this.items && this.items.length > 0) {
+          const FoodItem = mongoose.model('FoodItem');
 
-      if (!this.restaurantId) {
-        this.restaurantId = firstFoodItem.restaurantId;
-      } else {
-        for (const cartItem of this.items) {
-          const foodItem = await FoodItem.findById(cartItem.item);
-          if (!foodItem) {
-            throw new Error('Food item not found');
+          // Ensure the first item exists and has a restaurantId
+          const firstItem = await FoodItem.findById(this.items[0].item);
+          if (!firstItem || !firstItem.restaurantId) {
+              throw new Error('Food item or its restaurantId is missing.');
           }
-          if (foodItem.restaurantId.toString() !== this.restaurantId.toString()) {
-            throw new Error('Cannot add items from different restaurant. Please clear cart first.');
+
+          // Assign the restaurantId if it's not already set
+          if (!this.restaurantId) {
+              this.restaurantId = firstItem.restaurantId;
+          } else {
+              // Validate all items belong to the same restaurant
+              for (const cartItem of this.items) {
+                  const foodItem = await FoodItem.findById(cartItem.item);
+                  if (!foodItem) {
+                      throw new Error('Food item not found.');
+                  }
+                  if (foodItem.restaurantId.toString() !== this.restaurantId.toString()) {
+                      throw new Error('Cannot add items from multiple restaurants. Clear cart first.');
+                  }
+              }
           }
-        }
       }
-    }
-    next();
+      next();
   } catch (error) {
-    next(error);
+      next(error);
   }
 });
+
 
 // Pre-save middleware to calculate prices and totals
 cartSchema.pre('save', async function(next) {
