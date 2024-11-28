@@ -40,9 +40,6 @@ export const deleteAddress = (addressId) => api.delete(`/user/address/${addressI
 export const updateAddress = (addressId,data) => api.put(`/user/address/${addressId}/update`,data)
 
 //user routes - cart management
-export const getCart = () => api.get('/user/cart');
-export const updateCartItem = (data) => api.post('/user/cart/update', data);
-export const removeCartItem = (cartId, itemId) => api.delete(`/user/cart/${cartId}/items/${itemId}`);
 
 //vendor routes - restaruant management
 export const getRestaurant = () => api.get(`vendor/restaurant`)
