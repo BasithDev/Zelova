@@ -5,12 +5,19 @@ exports.getCart = async (req, res) => {
         const token = req.cookies.user_token;
         const userId = getUserId(token, process.env.JWT_SECRET);
         const cart = await Cart.findOne({ userId })
-            .populate('items.item')
+            .populate({
+                path: 'items.item',
+                populate: {
+                    path: 'offers',
+                    select: 'offerName requiredQuantity discountAmount'
+                }
+            })
             .populate('restaurantId', 'name image address');
+
         res.json({ cart: cart || null });
     } catch (error) {
         console.error('Error getting cart:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ error: 'Internal server error' });
     }
 }
 

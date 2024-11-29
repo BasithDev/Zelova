@@ -44,6 +44,7 @@ import GetSupplies from './Pages/Users/GetSupplies';
 import GoogleResponse from './Routers/GoogleResponse';
 import CouponMng from './Pages/Admins/CouponMng';
 import Cart from './Pages/Users/Cart';
+import ConfirmPayment from './Pages/Users/ConfirmPayment';
 
 const queryClient = new QueryClient();
 
@@ -89,6 +90,7 @@ function App() {
                   <Route path='address-manage' element={<AddressMng/>}/>
                   <Route path='/restaurant/:id/menu' element={<Menu/>}/>
                   <Route path='cart' element={<Cart/>} />
+                  <Route path='confirm-payment' element={<ConfirmPayment/>}/>
                 </Route>
               </Route>
 

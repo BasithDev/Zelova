@@ -16,7 +16,7 @@ const Favourites = () => {
             name: 'Margherita Pizza',
             description: 'Classic Italian pizza with fresh mozzarella, tomatoes, and basil',
             price: 299,
-            image: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?ixlib=rb-4.0.3',
+            image: '',
             restaurant: 'Pizza Paradise',
             category: 'Pizza'
         },
@@ -25,7 +25,7 @@ const Favourites = () => {
             name: 'Chicken Biryani',
             description: 'Aromatic basmati rice cooked with tender chicken and spices',
             price: 249,
-            image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?ixlib=rb-4.0.3',
+            image: '',
             restaurant: 'Biryani House',
             category: 'Main Course'
         },
@@ -34,7 +34,7 @@ const Favourites = () => {
             name: 'Chocolate Brownie',
             description: 'Rich and fudgy chocolate brownie with vanilla ice cream',
             price: 149,
-            image: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?ixlib=rb-4.0.3',
+            image: '',
             restaurant: 'Sweet Treats',
             category: 'Desserts'
         },

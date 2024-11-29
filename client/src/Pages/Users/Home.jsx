@@ -1,4 +1,4 @@
-import { FaTags, FaUtensils, FaMapMarkerAlt, FaStar } from "react-icons/fa";
+import { FaStar } from "react-icons/fa";
 import { getRestaurantsForUser } from "../../Services/apiServices";
 import { useSelector } from "react-redux";
 import { useCallback, useEffect, useState } from "react";
@@ -50,40 +50,6 @@ const Home = () => {
                 onSearchChange={(e) => setSearchQuery(e.target.value)}
                 placeholderText="Search for restaurants or dishes..."
             />
-
-            {locationAvailable && (
-                <div className="p-4">
-                    <h2 className="text-2xl font-bold mb-6 text-gray-800">Explore</h2>
-                    <div className="flex flex-wrap gap-4">
-                        <div
-                            className="flex flex-col items-center justify-center gap-1 bg-white shadow-xl hover:scale-95 rounded-lg p-3 cursor-pointer hover:shadow-2xl transition-all duration-300"
-                            style={{ flex: "1 1 200px", maxWidth: "200px" }}
-                            onClick={() => console.log("Offers clicked")}
-                        >
-                            <FaTags className="text-orange-500 text-7xl" />
-                            <h3 className="text-lg font-semibold text-gray-800">Offers</h3>
-                        </div>
-
-                        <div
-                            className="flex flex-col items-center justify-center gap-1 bg-white shadow-xl hover:scale-95 rounded-lg p-3 cursor-pointer hover:shadow-2xl transition-all duration-300"
-                            style={{ flex: "1 1 200px", maxWidth: "200px" }}
-                            onClick={() => console.log("Categories clicked")}
-                        >
-                            <FaUtensils className="text-blue-500 text-7xl" />
-                            <h3 className="text-lg font-semibold text-gray-800">Categories</h3>
-                        </div>
-
-                        <div
-                            className="flex flex-col items-center justify-center gap-1 bg-white shadow-xl hover:scale-95 rounded-lg p-3 cursor-pointer hover:shadow-2xl transition-all duration-300"
-                            style={{ flex: "1 1 200px", maxWidth: "200px" }}
-                            onClick={() => console.log("Near Me clicked")}
-                        >
-                            <FaMapMarkerAlt className="text-green-500 text-7xl" />
-                            <h3 className="text-lg font-semibold text-gray-800">Near Me</h3>
-                        </div>
-                    </div>
-                </div>
-            )}
             <div className="p-6">
                 {!locationAvailable ? (
                     <div className="flex flex-col justify-center items-center">
@@ -117,8 +83,8 @@ const Home = () => {
                                     const { distanceInKm, timeInMinutes } = calculateDistanceAndTime(restaurant.distance);
                                     return (
                                         <div
-                                            key={restaurant.id}
-                                            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-2xl hover:scale-[1.01] hover:bg-orange-50 transform transition-all duration-300 cursor-pointer"
+                                            key={restaurant._id}
+                                            className="bg-white w-[80%] rounded-lg shadow-md overflow-hidden hover:shadow-2xl hover:scale-[1.01] hover:bg-orange-50 transform transition-all duration-300 cursor-pointer"
                                             onClick={() => handleRestaurantClick(restaurant._id)}
                                         >
                                             <div className="relative">

@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useCart } from "../../Hooks/useCart";
 
 const CartDropdown = ({ onClose }) => {
+    const navigate = useNavigate();
     const { cart } = useCart();
     const cartData = cart?.data?.cart;
 
@@ -54,16 +55,13 @@ const CartDropdown = ({ onClose }) => {
                 <div className="mt-4 space-y-3 max-h-60 overflow-y-auto">
                     {cartData.items.map((item) => (
                         <div key={item._id} className="flex items-center gap-3">
-                            <img
-                                src={item.item.image}
-                                alt={item.item.name}
-                                className="w-16 h-16 rounded-lg object-cover"
-                            />
                             <div className="flex-1">
                                 <h4 className="font-medium text-gray-800">{item.item.name}</h4>
                                 {item.selectedCustomizations?.length > 0 && (
                                     <p className="text-sm text-gray-500">
-                                        {item.selectedCustomizations.join(", ")}
+                                        {item.selectedCustomizations.map(customization => (
+                                            `${customization.fieldName}: ${customization.options.name}`
+                                        )).join(", ")}
                                     </p>
                                 )}
                                 <div className="flex items-center justify-between mt-1">
@@ -84,6 +82,7 @@ const CartDropdown = ({ onClose }) => {
                         <span>Subtotal</span>
                         <span>₹{calculateSubtotal()}</span>
                     </div>
+                    <p className="text-xs text-gray-500 mt-1">Note: Prices may vary after offers and taxes</p>
                     <button
                         onClick={() => navigate('/cart')}
                         className="mt-4 w-full bg-orange-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-orange-600 transition-colors"
@@ -94,6 +93,10 @@ const CartDropdown = ({ onClose }) => {
             </div>
         </motion.div>
     );
+};
+
+CartDropdown.propTypes = {
+    onClose: PropTypes.func.isRequired
 };
 
 const Header = ({ searchQuery, onSearchChange, placeholderText = "Search..." }) => {

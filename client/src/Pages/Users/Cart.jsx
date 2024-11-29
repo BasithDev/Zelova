@@ -1,114 +1,158 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FaMapMarkerAlt, FaMinus, FaPlus } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaMinus, FaPlus, FaChevronDown } from 'react-icons/fa';
+import { useCart } from '../../Hooks/useCart';
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 const Cart = () => {
-    // Mock data for demonstration
-    const restaurant = {
-        name: "KFC",
-        image: "https://example.com/kfc-image.jpg",
-        location: "123 Main St, City"
-    };
+    const navigate = useNavigate();
+    const { cart, updateCartMutation } = useCart();
+    const cartData = cart?.data?.cart;
+    const restaurant = cart?.data?.cart?.restaurantId;
 
-    const [cartItems, setCartItems] = useState([
+    const coupons = [
         {
-            id: 1,
-            name: "Chicken Burger",
-            price: 150,
-            quantity: 2,
-            offer: {
-                type: "quantity",
-                threshold: 2,
-                discount: 10,
-                description: "Buy 2 Get 10% off"
-            },
-            isCustomizable: true,
-            selectedCustomizations: ["Extra cheese", "Spicy mayo"],
-            customOptions: [
-                { id: 1, name: "Extra cheese", price: 30 },
-                { id: 2, name: "Spicy mayo", price: 20 },
-                { id: 3, name: "No onions", price: 0 },
-                { id: 4, name: "Extra patty", price: 80 }
-            ]
+            _id: "coup1",
+            code: "WELCOME50",
+            title: "50% Off For New Users",
+            description: "Get 50% off up to ₹100 on your first order",
+            maxDiscount: 100,
+            minOrderValue: 200
         },
         {
-            id: 2,
-            name: "French Fries",
-            price: 100,
-            quantity: 1,
-            offer: {
-                type: "combo",
-                description: "Add drink for ₹50 only"
-            },
-            isCustomizable: true,
-            selectedCustomizations: ["Extra masala"],
-            customOptions: [
-                { id: 1, name: "Extra masala", price: 10 },
-                { id: 2, name: "Cheese sauce", price: 40 }
-            ]
+            _id: "coup2",
+            code: "FREEDEL",
+            title: "Free Delivery",
+            description: "No delivery charges on orders above ₹300",
+            maxDiscount: 40,
+            minOrderValue: 300
+        },
+        {
+            _id: "coup3",
+            code: "SPECIAL20",
+            title: "Special Discount",
+            description: "Get flat ₹100 off on orders above ₹500",
+            maxDiscount: 100,
+            minOrderValue: 500
         }
-    ]);
+    ];
 
+    const [showCoupons, setShowCoupons] = useState(false);
+    const [couponCode, setCouponCode] = useState('');
+    const [showAddresses, setShowAddresses] = useState(false);
+    const [selectedAddress, setSelectedAddress] = useState('');
+    const [deliveryAddress, setDeliveryAddress] = useState('123 Main St, Apartment 4B, New York, NY 10001');
+    const [phoneNumber, setPhoneNumber] = useState('+1 (555) 123-4567');
 
-    const handleQuantity = (id, increment) => {
-        setCartItems(items => {
-            const updatedItems = items.map(item => {
-                if (item.id === id) {
-                    const newQuantity = item.quantity + (increment ? 1 : -1);
-                    if (newQuantity === 0) return null;
-                    return { ...item, quantity: newQuantity };
-                }
-                return item;
-            });
-            return updatedItems.filter(Boolean);
-        });
+    const savedAddresses = [
+        {
+            _id: '1',
+            label: 'Home',
+            address: '123 Main St, Apartment 4B, New York, NY 10001',
+            phone: '+1 (555) 123-4567'
+        },
+        {
+            _id: '2',
+            label: 'Work',
+            address: '456 Business Ave, Suite 200, New York, NY 10002',
+            phone: '+1 (555) 987-6543'
+        },
+        {
+            _id: '3',
+            label: 'Parents',
+            address: '789 Family Lane, House 12, New York, NY 10003',
+            phone: '+1 (555) 246-8135'
+        }
+    ];
+
+    const handleCopyCode = (code) => {
+        navigator.clipboard.writeText(code);
+        console.log('Copied code:', code);
     };
 
-    const calculateItemTotal = (item) => {
-        const basePrice = item.price;
-        const customizationPrice = item.selectedCustomizations.reduce((total, customName) => {
-            const option = item.customOptions.find(opt => opt.name === customName);
-            return total + (option?.price || 0);
+    const handleApplyCoupon = () => {
+        console.log('Applying coupon:', couponCode);
+    };
+
+    const calculateItemPrice = (cartItem) => {
+        const originalPrice = cartItem.itemPrice * cartItem.quantity;
+        const offer = cartItem.item.offers;
+        
+        if (offer && cartItem.quantity >= offer.requiredQuantity) {
+            const discount = (originalPrice * offer.discountAmount) / 100;
+            return {
+                original: originalPrice,
+                discounted: originalPrice - discount,
+                hasDiscount: true
+            };
+        }
+        return {
+            original: originalPrice,
+            discounted: originalPrice,
+            hasDiscount: false
+        };
+    };
+
+    const calculateItemTotal = () => {
+        if (!cartData?.items) return 0;
+        
+        return cartData.items.reduce((total, cartItem) => {
+            const price = calculateItemPrice(cartItem);
+            return total + price.discounted;
         }, 0);
-        
-        const subtotal = (basePrice + customizationPrice) * item.quantity;
-        
-        // Apply offer if applicable
-        if (item.offer?.type === "quantity" && item.quantity >= item.offer.threshold) {
-            return subtotal * (1 - item.offer.discount / 100);
-        }
-        return subtotal;
     };
 
-    const calculateSavings = () => {
-        let totalSavings = 0;
-        cartItems.forEach(item => {
-            const basePrice = item.price;
-            const customizationPrice = item.selectedCustomizations.reduce((total, customName) => {
-                const option = item.customOptions.find(opt => opt.name === customName);
-                return total + (option?.price || 0);
-            }, 0);
-            
-            const subtotal = (basePrice + customizationPrice) * item.quantity;
-            
-            if (item.offer?.type === "quantity" && item.quantity >= item.offer.threshold) {
-                const discountAmount = subtotal * (item.offer.discount / 100);
-                totalSavings += discountAmount;
-            }
-        });
-        return totalSavings;
+    const totalPrice = calculateItemTotal();
+    const originalPrice = cartData?.items?.reduce((total, item) => total + (item.itemPrice * item.quantity), 0) || 0;
+    const totalSavings = originalPrice - totalPrice;
+    const tax = totalPrice * 0.05; // 5% tax
+    const deliveryFee = totalPrice >= 500 ? 0 : 40;
+    const platformFee = 8;
+    const totalAmount = totalPrice + tax + deliveryFee + platformFee;
+
+    const handleQuantity = (itemId, action) => {
+        const cartItem = cartData?.items?.find(
+            (item) => item.item._id === itemId
+        );
+
+        const payload = {
+            itemId,
+            action,
+            selectedCustomizations: cartItem?.selectedCustomizations || null
+        };
+    
+        updateCartMutation.mutate(payload);
     };
 
-    const subtotal = cartItems.reduce((sum, item) => sum + calculateItemTotal(item), 0);
-    const tax = subtotal * 0.05; // 5% tax
-    const deliveryFee = subtotal >= 500 ? 0 : 40;
-    const platformFee = 20;
-    const totalAmount = subtotal + tax + deliveryFee + platformFee;
-    const totalSavings = calculateSavings();
+    const handleSelectAddress = (address) => {
+        setDeliveryAddress(address.address);
+        setPhoneNumber(address.phone);
+        setSelectedAddress(address._id);
+        setShowAddresses(false);
+    };
+
+    if (!cartData || !cartData.items || cartData.items.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh]">
+                <h2 className="text-2xl font-bold text-gray-700 mb-4">Your cart is empty</h2>
+                <p className="text-gray-500">Add some delicious items to your cart!</p>
+                <motion.button
+                    className="bg-orange-500 mt-2 text-white px-4 py-2 rounded-md font-bold transition duration-300 hover:bg-yellow-500"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                        navigate('/');
+                    }}
+                >
+                    Shop Now
+                </motion.button>
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-4xl mx-auto p-6">
-            {/* Restaurant Details */}
+            <h1 className='text-4xl font-bold text-gray-800 mb-6 text-center'>Checkout</h1>
             <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
                 <div className="h-32 bg-gradient-to-br from-orange-500 via-orange-400 to-yellow-400 relative">
                     <div className="absolute inset-0">
@@ -127,18 +171,18 @@ const Cart = () => {
                     <div className="flex items-start gap-6">
                         <div className="w-24 h-24 rounded-lg overflow-hidden shadow-lg -mt-12 border-4 border-white bg-white">
                             <img 
-                                src={restaurant.image} 
-                                alt={restaurant.name}
+                                src={restaurant?.image} 
+                                alt={restaurant?.name}
                                 className="w-full h-full object-cover"
                             />
                         </div>
                         <div className="flex-1">
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <h1 className="text-2xl font-bold text-gray-800">{restaurant.name}</h1>
+                                    <h1 className="text-2xl font-bold text-gray-800">{restaurant?.name}</h1>
                                     <p className="text-gray-600 flex items-center gap-2 mt-1">
                                         <FaMapMarkerAlt className="text-orange-500" />
-                                        {restaurant.location}
+                                        {restaurant?.address}
                                     </p>
                                 </div>
                                 <div className="bg-green-100 px-3 py-1 rounded-lg">
@@ -155,36 +199,39 @@ const Cart = () => {
                 </div>
             </div>
 
-            {/* Cart Items */}
             <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h2 className="text-xl font-bold mb-4">Your Order</h2>
+                <h2 className="text-xl font-bold mb-4">Your Cart</h2>
                 <ul className="divide-y divide-gray-200">
-                    {cartItems.map((item) => (
+                    {cartData.items.map((cartItem) => (
                         <motion.li 
-                            key={item.id}
-                            className="py-6"
+                            key={cartItem._id}
+                            className="py-3"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
                         >
-                            <div className="flex flex-col gap-4">
+                            <div className="flex flex-col">
                                 <div className="flex justify-between items-start">
                                     <div className="flex-1">
-                                        <h3 className="font-semibold text-gray-800 text-lg">{item.name}</h3>
-                                        {item.offer && (
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-medium">
-                                                    {item.offer.description}
-                                                </span>
+                                        <h3 className="font-semibold text-gray-800 text-2xl">{cartItem.item.name}</h3>
+                                        {cartItem.selectedCustomizations && cartItem.selectedCustomizations.length > 0 && (
+                                            <div className="mt-1 space-y-1">
+                                                <div className="text-sm text-gray-600">
+                                                    {cartItem.selectedCustomizations.map(customization => (
+                                                        <div key={customization._id}>
+                                                           Add-Ons : {customization.fieldName}: {customization.options.name} - ₹{customization.options.price}
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         )}
-                                        <div className="mt-1 space-y-1">
-                                            {item.selectedCustomizations.length > 0 && (
-                                                <div className="text-sm text-gray-600">
-                                                    Add-Ons Added: {item.selectedCustomizations.join(", ")}
-                                                </div>
-                                            )}
-                                        </div>
+    
+                                        {cartItem.item.offers && (
+                                            <div className='bg-green-200 text-green-500 font-semibold text-md py-1 px-2 rounded-md mt-2 w-fit'>
+                                                <p>{cartItem.item.offers.offerName}</p>
+                                            </div>
+                                            
+                                        )}
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <motion.div 
@@ -192,7 +239,7 @@ const Cart = () => {
                                             whileTap={{ scale: 0.98 }}
                                         >
                                             <motion.button 
-                                                onClick={() => handleQuantity(item.id, false)}
+                                                onClick={() => handleQuantity(cartItem.item._id, 'remove')}
                                                 className="px-3 py-2 hover:bg-orange-100 transition-colors"
                                                 whileHover={{ backgroundColor: 'rgb(251 146 60 / 0.2)' }}
                                                 whileTap={{ scale: 0.95 }}
@@ -201,15 +248,15 @@ const Cart = () => {
                                             </motion.button>
                                             <motion.div 
                                                 className="w-10 flex items-center justify-center font-semibold text-gray-700"
-                                                key={item.quantity}
+                                                key={cartItem.quantity}
                                                 initial={{ scale: 0.8, opacity: 0 }}
                                                 animate={{ scale: 1, opacity: 1 }}
                                                 transition={{ type: "spring", stiffness: 300 }}
                                             >
-                                                {item.quantity}
+                                                {cartItem.quantity}
                                             </motion.div>
                                             <motion.button 
-                                                onClick={() => handleQuantity(item.id, true)}
+                                                onClick={() => handleQuantity(cartItem.item._id, 'add')}
                                                 className="px-3 py-2 hover:bg-orange-100 transition-colors"
                                                 whileHover={{ backgroundColor: 'rgb(251 146 60 / 0.2)' }}
                                                 whileTap={{ scale: 0.95 }}
@@ -219,19 +266,30 @@ const Cart = () => {
                                         </motion.div>
                                         <motion.div 
                                             className="text-right"
-                                            key={calculateItemTotal(item)}
+                                            key={cartItem.itemPrice}
                                             initial={{ scale: 0.8, opacity: 0 }}
                                             animate={{ scale: 1, opacity: 1 }}
                                             transition={{ type: "spring", stiffness: 300 }}
                                         >
                                             <div className="font-bold text-gray-800">
-                                                ₹{calculateItemTotal(item).toFixed(2)}
+                                                {(() => {
+                                                    const price = calculateItemPrice(cartItem);
+                                                    return price.hasDiscount ? (
+                                                        <div className="flex flex-col items-end">
+                                                            <span className="text-gray-400 line-through text-sm">
+                                                                ₹{price.original}
+                                                            </span>
+                                                            <span className="text-green-600">
+                                                                ₹{price.discounted.toFixed(2)}
+                                                            </span>
+                                                        </div>
+                                                    ) : (
+                                                        <span>₹{price.original}</span>
+                                                    );
+                                                })()}
                                             </div>
                                             <div className="text-sm text-gray-500">
-                                                ₹{(item.price + item.selectedCustomizations.reduce((total, customName) => {
-                                                    const option = item.customOptions.find(opt => opt.name === customName);
-                                                    return total + (option?.price || 0);
-                                                }, 0))} each
+                                                ₹{cartItem.item.price} each
                                             </div>
                                         </motion.div>
                                     </div>
@@ -242,14 +300,165 @@ const Cart = () => {
                 </ul>
             </div>
 
-            {/* Order Summary */}
+            <div className="bg-white rounded-lg shadow-md p-3 my-6">
+                <div className="mb-1"> 
+                    <h2 className="text-xl font-bold mb-4">Have a Coupon?</h2>
+                    <div className="flex gap-2 mb-4">
+                        <input
+                            type="text"
+                            value={couponCode}
+                            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                            placeholder="Enter coupon code"
+                            className="flex-1 border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-orange-500"
+                        />
+                        <button
+                            onClick={handleApplyCoupon}
+                            className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                        >
+                            Apply
+                        </button>
+                    </div>
+                    
+                    <div className="relative">
+                        <button
+                            onClick={() => setShowCoupons(!showCoupons)}
+                            className="text-orange-500 hover:text-orange-600 text-sm font-medium flex items-center"
+                        >
+                            View Available Coupons
+                            <FaChevronDown 
+                                className={`ms-1 transform transition-transform ${showCoupons ? 'rotate-180' : ''}`}
+                                size={12}
+                            />
+                        </button>
+                    </div>
+                </div>
+                
+                {showCoupons && (
+                    <div className="border-t border-gray-100 pt-4 px-4">
+                        <div className="space-y-3 hide-scrollbar max-h-56 overflow-y-auto">
+                            {coupons.map(coupon => (
+                                <div 
+                                    key={coupon._id} 
+                                    className="border border-gray-100 rounded-lg p-3 hover:border-orange-500 transition-colors bg-gray-50"
+                                >
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex-1 mr-4">
+                                            <h3 className="font-medium text-gray-800">{coupon.title}</h3>
+                                            <p className="text-sm text-gray-600 mt-1">{coupon.description}</p>
+                                            <p className="text-xs text-gray-500 mt-1">Min. Order: ₹{coupon.minOrderValue}</p>
+                                        </div>
+                                        <div className="flex flex-col items-end gap-2">
+                                            <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded text-sm font-medium whitespace-nowrap">
+                                                {coupon.code}
+                                            </span>
+                                            <button
+                                                onClick={() => handleCopyCode(coupon.code)}
+                                                className="bg-orange-500 text-white py-1 px-2 rounded-md hover:text-orange-600 text-sm font-medium"
+                                            >
+                                                Copy
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            <div className="bg-white rounded-lg shadow-md p-3 my-6">
+                <div className="mb-1">
+                    <h2 className="text-xl font-bold mb-4">Confirm Delivery Details</h2>
+                    <div className="space-y-3 mb-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Address</label>
+                            <textarea
+                                value={deliveryAddress}
+                                onChange={(e) => setDeliveryAddress(e.target.value)}
+                                className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-orange-500 resize-none"
+                                rows="2"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                            <input
+                                type="text"
+                                value={phoneNumber}
+                                onChange={(e) => setPhoneNumber(e.target.value)}
+                                className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-orange-500"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="relative">
+                        <button
+                            onClick={() => setShowAddresses(!showAddresses)}
+                            className="text-orange-500 hover:text-orange-600 text-sm font-medium flex items-center"
+                        >
+                            View Saved Addresses
+                            <FaChevronDown 
+                                className={`ms-1 transform transition-transform ${showAddresses ? 'rotate-180' : ''}`}
+                                size={12}
+                            />
+                        </button>
+                    </div>
+                </div>
+
+                {showAddresses && (
+                    <div className="border-t border-gray-100 pt-4 px-4">
+                        <div className="space-y-3 hide-scrollbar max-h-56 overflow-y-auto">
+                            {savedAddresses.map(addr => (
+                                <div 
+                                    key={addr._id} 
+                                    className={`border rounded-lg p-3 transition-colors ${
+                                        selectedAddress === addr._id 
+                                        ? 'border-orange-500 bg-orange-50' 
+                                        : 'border-gray-100 bg-gray-50 hover:border-orange-500'
+                                    }`}
+                                >
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex-1 mr-4">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="bg-orange-100 text-orange-800 px-2 py-0.5 rounded text-sm font-medium">
+                                                    {addr.label}
+                                                </span>
+                                                <span className="text-sm text-gray-600">
+                                                    {addr.phone}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-gray-600">{addr.address}</p>
+                                        </div>
+                                        <button
+                                            onClick={() => handleSelectAddress(addr)}
+                                            className={`px-4 py-1 rounded-md text-sm font-medium ${
+                                                selectedAddress === addr._id
+                                                ? 'bg-orange-500 text-white'
+                                                : 'text-orange-500 border border-orange-500 hover:bg-orange-500 hover:text-white'
+                                            }`}
+                                        >
+                                            {selectedAddress === addr._id ? 'Selected' : 'Select'}
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+
             <div className="bg-white rounded-lg shadow-md p-6">
                 <h2 className="text-xl font-bold mb-4">Bill Details</h2>
                 <div className="space-y-3">
                     <div className="flex justify-between text-gray-600">
                         <span>Item Total</span>
-                        <span>₹{subtotal.toFixed(2)}</span>
+                        <span>₹{originalPrice}</span>
                     </div>
+                    {totalSavings > 0 && (
+                        <div className="flex justify-between text-green-600">
+                            <span>Offer Discount</span>
+                            <span>- ₹{totalSavings.toFixed(2)}</span>
+                        </div>
+                    )}
                     <div className="flex justify-between text-gray-600">
                         <span>GST (5%)</span>
                         <span>₹{tax.toFixed(2)}</span>
@@ -257,14 +466,14 @@ const Cart = () => {
                     <div className="flex justify-between text-gray-600">
                         <div className="flex items-center gap-2">
                             <span>Delivery Fee</span>
-                            {subtotal >= 500 && (
+                            {totalPrice >= 500 && (
                                 <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
                                     Free Delivery
                                 </span>
                             )}
                         </div>
                         <span className="flex items-center gap-2">
-                            {subtotal >= 500 ? (
+                            {totalPrice >= 500 ? (
                                 <>
                                     <span className="text-gray-400 line-through">₹40</span>
                                     <span className="text-green-600">FREE</span>
@@ -278,9 +487,9 @@ const Cart = () => {
                         <span>Platform Fee</span>
                         <span>₹{platformFee}</span>
                     </div>
-                    {subtotal < 500 && (
+                    {totalPrice < 500 && (
                         <div className="text-sm text-orange-600 bg-orange-50 p-3 rounded-lg">
-                            Add items worth ₹{(500 - subtotal).toFixed(2)} more for free delivery
+                            Add items worth ₹{(500 - totalPrice).toFixed(2)} more for free delivery
                         </div>
                     )}
                     <div className="border-t border-gray-200 pt-3 mt-3">
@@ -294,14 +503,14 @@ const Cart = () => {
                                     You saved ₹{totalSavings.toFixed(2)} with offers
                                 </div>
                             )}
-                            {subtotal >= 500 && (
+                            {totalPrice >= 500 && (
                                 <div className="text-green-600 text-sm">
                                     You saved ₹40 on delivery charges
                                 </div>
                             )}
-                            {totalSavings > 0 || subtotal >= 500 ? (
+                            {totalSavings > 0 || totalPrice >= 500 ? (
                                 <div className="text-green-600 text-sm font-semibold">
-                                    Total Savings: ₹{(totalSavings + (subtotal >= 500 ? 40 : 0)).toFixed(2)}
+                                    Total Savings: ₹{(totalSavings + (totalPrice >= 500 ? 40 : 0)).toFixed(2)}
                                 </div>
                             ) : null}
                         </div>
