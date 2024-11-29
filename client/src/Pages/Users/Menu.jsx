@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
 import { FiMenu } from 'react-icons/fi';
+import { FaPlus, FaMinus } from "react-icons/fa";
 import { useParams } from 'react-router-dom';
 import { getMenuForUser } from '../../Services/apiServices';
 import { useSelector } from "react-redux";
 import { calculateDistanceAndTime } from '../../utils/distanceUtils';
 import RestaurantCard from "../../Components/RestaurantCard/RestaurantCard";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { toast } from 'react-toastify';
 import Header from "../../Components/Common/Header";
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
@@ -46,10 +47,18 @@ const Menu = () => {
     const [selectedCustomizations, setSelectedCustomizations] = useState({});
     const [selectedItem, setSelectedItem] = useState(null);
 
-    const openModal = (item) => {
+    const handleModalOpen = (item) => {
         setSelectedItem(item);
+        // Set default selections for each customization
+        const defaultSelections = {};
+        item.customizations.forEach(customization => {
+            // Select the first option as default for each customization
+            defaultSelections[customization.fieldName] = customization.options[0];
+        });
+        setSelectedCustomizations(defaultSelections);
         setIsModalOpen(true);
     };
+
     const closeModal = () => {
         setIsModalOpen(false);
         setSelectedItem(null);
@@ -57,28 +66,20 @@ const Menu = () => {
     };
 
     const handleCustomizationChange = (fieldName, option) => {
-        setSelectedCustomizations({
-            ...selectedCustomizations,
-            [fieldName]: {
-                name: option.name,
-                price: option.price
-            }
-        });
+        setSelectedCustomizations(prev => ({
+            ...prev,
+            [fieldName]: option
+        }));
     };
 
-    const handleOkClick = () => {
+    const handleOkClick = (e) => {
+        e.preventDefault();
         if (!selectedItem) return;
-
-        // Transform selectedCustomizations into the required format
         const formattedCustomizations = Object.entries(selectedCustomizations).map(([fieldName, option]) => ({
             fieldName,
             options: option
         }));
-
-        // Call handleCartUpdation with the formatted customizations
         handleCartUpdation(selectedItem._id, 'add', formattedCustomizations);
-
-        // Close the modal
         closeModal();
     };
 
@@ -89,7 +90,7 @@ const Menu = () => {
 
         if (action === 'add') {
             if (!cartItem) {
-                openModal(item);
+                handleModalOpen(item);
             } else {
                 // For existing items, use their current customizations
                 handleCartUpdation(item._id, 'add', cartItem.selectedCustomizations);
@@ -301,113 +302,147 @@ const Menu = () => {
                                         cart.data?.cart?.items?.find(
                                             (cartItem) => cartItem?.item._id === item._id
                                         )?.quantity > 0 ? (
-                                            // Show quantity controls for customizable items in cart
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex bg-white rounded-lg shadow-md py-2 px-4 border-orange-500 border-2 items-center gap-6">
                                                 <button
                                                     onClick={() => handleCustomizableItemUpdate(item, 'remove')}
-                                                    className="w-10 h-10 bg-gray-200 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-300 transition-colors duration-300"
+                                                    className="w-6 h-6 flex items-center justify-center hover:bg-gray-200 p-1 rounded-lg transition-colors duration-300"
                                                 >
-                                                    -
+                                                    <FaMinus className="text-orange-500 text-xl" />
                                                 </button>
-                                                <p className="text-lg font-semibold">
-                                                    {cart.data?.cart?.items?.find(
-                                                        (cartItem) => cartItem?.item._id === item._id
-                                                    )?.quantity}
-                                                </p>
+                                                <p className="text-2xl text-orange-500 font-bold">{cart.data?.cart?.items?.find((cartItem) => cartItem?.item._id === item._id)?.quantity}</p>
                                                 <button
                                                     onClick={() => handleCustomizableItemUpdate(item, 'add')}
-                                                    className="w-10 h-10 bg-gray-200 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-300 transition-colors duration-300"
+                                                    className="w-6 h-6 flex items-center justify-center hover:bg-gray-200 p-1 rounded-lg transition-colors duration-300"
                                                 >
-                                                    +
-                                                </button>
-                                                <button
-                                                    onClick={() => openModal(item)}
-                                                    className="ml-2 px-3 py-2 text-sm bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-300"
-                                                >
-                                                    Change Options
+                                                    <FaPlus className="text-orange-500 text-xl" />
                                                 </button>
                                             </div>
                                         ) : (
-                                            // Show customize button for items not in cart
                                             <button
-                                                onClick={() => openModal(item)}
-                                                className="w-full px-4 py-2 text-xl bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-300"
+                                                onClick={() => handleModalOpen(item)}
+                                                className="w-full px-4 py-2 text-2xl bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors duration-300"
                                             >
-                                                Customize & Add
+                                                Add
                                             </button>
                                         )
                                     ) : (
-                                        cart.data?.cart?.items?.find((cartItem) => cartItem?.item._id === item._id)?.quantity > 0 ? (
-                                            <div className="flex items-center gap-2">
+                                        cart.data?.cart?.items?.find(
+                                            (cartItem) => cartItem?.item._id === item._id
+                                        )?.quantity > 0 ? (
+                                            <div className="flex bg-white rounded-lg shadow-md py-2 px-4 border-orange-500 border-2 items-center gap-6">
                                                 <button
                                                     onClick={() => handleCartUpdation(item._id, 'remove')}
-                                                    className="w-10 h-10 bg-gray-200 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-300 transition-colors duration-300"
+                                                    className="w-6 h-6 flex items-center justify-center hover:bg-gray-200 p-1 rounded-lg transition-colors duration-300"
                                                 >
-                                                    -
+                                                    <FaMinus className="text-orange-500 text-xl" />
                                                 </button>
-                                                <p className="text-lg font-semibold">
-                                                    {cart.data?.cart?.items?.find((cartItem) => cartItem?.item._id === item._id)?.quantity}
-                                                </p>
+                                                <p className="text-2xl text-orange-500 font-bold">{cart.data?.cart?.items?.find((cartItem) => cartItem?.item._id === item._id)?.quantity}</p>
                                                 <button
                                                     onClick={() => handleCartUpdation(item._id, 'add')}
-                                                    className="w-10 h-10 bg-gray-200 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-300 transition-colors duration-300"
+                                                    className="w-6 h-6 flex items-center justify-center hover:bg-gray-200 p-1 rounded-lg transition-colors duration-300"
                                                 >
-                                                    +
+                                                    <FaPlus className="text-orange-500 text-xl" />
                                                 </button>
                                             </div>
                                         ) : (
                                             <button
                                                 onClick={() => handleCartUpdation(item._id, 'add')}
-                                                className="w-full px-4 py-2 text-xl bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-300"
+                                                className="w-full px-4 py-2 text-2xl bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors duration-300"
                                             >
-                                                Add to Cart
+                                                Add
                                             </button>
                                         )
                                     )}
-
+                                    <AnimatePresence>
                                     {isModalOpen && selectedItem && (
-                                        <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-75">
-                                            <div className="bg-white p-6 rounded-lg w-96">
-                                                <h2 className="text-xl font-bold mb-4">Customize {selectedItem.name}</h2>
+                                            <motion.div 
+                                                className="fixed inset-0 flex items-center justify-center"
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0 }}
+                                            >
+                                                <motion.div
+                                                    className="bg-white rounded-xl p-8 w-[28rem] relative shadow-[0_0_12px_0_rgba(0,0,0,0.3)]"
+                                                    initial={{ 
+                                                        opacity: 0,
+                                                        scale: 0.5,
+                                                        y: 100
+                                                    }}
+                                                    animate={{ 
+                                                        opacity: 1,
+                                                        scale: 1,
+                                                        y: 0,
+                                                        transition: {
+                                                            type: "spring",
+                                                            stiffness: 300,
+                                                            damping: 20
+                                                        }
+                                                    }}
+                                                    exit={{ 
+                                                        opacity: 0,
+                                                        scale: 0.5,
+                                                        y: 100,
+                                                        transition: { 
+                                                            duration: 0.1 
+                                                        }
+                                                    }}
+                                                >
+                                                    <h2 className="text-2xl font-bold mb-6">{selectedItem.name}</h2>
+                                                    <form onSubmit={handleOkClick}>
+                                                        {selectedItem.customizations.map((customization) => (
+                                                            <div key={customization._id} className="mb-6">
+                                                                <label className="block text-gray-700 text-sm font-bold mb-3">
+                                                                    {customization.fieldName}
+                                                                </label>
+                                                                <div className="flex flex-wrap gap-3">
+                                                                    {customization.options.map((option) => (
+                                                                        <motion.button
+                                                                            key={option._id}
+                                                                            type="button"
+                                                                            onClick={() => handleCustomizationChange(customization.fieldName, option)}
+                                                                            className={`px-4 py-2.5 rounded-lg shadow-sm ${
+                                                                                selectedCustomizations[customization.fieldName]?._id === option._id
+                                                                                    ? 'bg-blue-500 text-white shadow-blue-200' 
+                                                                                    : 'bg-white border border-gray-200 hover:border-blue-300'
+                                                                            }`}
+                                                                            whileHover={{ scale: 1.03, transition: { duration: 0.2 } }}
+                                                                            whileTap={{ scale: 0.97 }}
+                                                                        >
+                                                                            {option.name} - ₹{option.price}
+                                                                        </motion.button>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        ))}
 
-                                                {selectedItem.customizations.map((customization) => (
-                                                    <div key={customization._id}>
-                                                        <h3 className="font-semibold">{customization.fieldName}</h3>
-                                                        <div className="flex gap-4">
-                                                            {customization.options.map((option) => (
-                                                                <button
-                                                                    key={option._id}
-                                                                    onClick={() => handleCustomizationChange(customization.fieldName, option)}
-                                                                    className={`px-4 py-2 rounded-lg ${
-                                                                        selectedCustomizations[customization.fieldName]?.name === option.name 
-                                                                            ? 'bg-blue-500 text-white' 
-                                                                            : 'bg-gray-200'
-                                                                    }`}
-                                                                >
-                                                                    {option.name} - ₹{option.price}
-                                                                </button>
-                                                            ))}
+                                                        <div className="flex justify-end mt-8 gap-3">
+                                                            <motion.button
+                                                                type="button"
+                                                                onClick={closeModal}
+                                                                className="px-5 py-2.5 bg-white border border-gray-200 rounded-lg hover:border-gray-300"
+                                                                whileHover={{ scale: 1.03, transition: { duration: 0.2 } }}
+                                                                whileTap={{ scale: 0.97 }}
+                                                            >
+                                                                Cancel
+                                                            </motion.button>
+                                                            <motion.button
+                                                                type="submit"
+                                                                className="px-5 py-2.5 bg-green-500 text-white rounded-lg shadow-sm shadow-green-200"
+                                                                whileHover={{ 
+                                                                    scale: 1.03,
+                                                                    backgroundColor: "#22c55e",
+                                                                    transition: { duration: 0.2 }
+                                                                }}
+                                                                whileTap={{ scale: 0.97 }}
+                                                            >
+                                                                Add to Cart
+                                                            </motion.button>
                                                         </div>
-                                                    </div>
-                                                ))}
-
-                                                <div className="mt-4 flex justify-between">
-                                                    <button
-                                                        onClick={closeModal}
-                                                        className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                    <button
-                                                        onClick={handleOkClick}
-                                                        className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-                                                    >
-                                                        Add to Cart
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
+                                                    </form>
+                                                </motion.div>
+                                            </motion.div>
                                     )}
+                                    </AnimatePresence>
                                 </div>
                             </div>
                         ))}
