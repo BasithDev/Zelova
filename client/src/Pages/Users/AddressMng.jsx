@@ -224,7 +224,7 @@ const AddressMng = () => {
                     onClick={() => setIsAdding(true)}
                     className="fixed bottom-8 right-8 bg-blue-500 text-white py-2 px-3 text-xl font-semibold rounded-md shadow-lg hover:bg-blue-600 transition-colors z-10"
                 >
-                    Add Address
+                    New Address
                 </motion.button>
             )}
         </div>

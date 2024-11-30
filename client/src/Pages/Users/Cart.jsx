@@ -1,14 +1,33 @@
 import { motion } from 'framer-motion';
 import { FaMapMarkerAlt, FaMinus, FaPlus, FaChevronDown } from 'react-icons/fa';
 import { useCart } from '../../Hooks/useCart';
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useNavigate} from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { getAddresses } from '../../Services/apiServices';
+import { AnimatePresence } from 'framer-motion';
 
 const Cart = () => {
     const navigate = useNavigate();
     const { cart, updateCartMutation } = useCart();
+    const userPhoneNumber = useSelector((state) => state?.userData?.data?.phoneNumber);
+    const userAddress = useSelector((state) => state?.userLocation?.address)
+    const [savedAddresses, setSavedAddresses] = useState({ addresses: [] });
     const cartData = cart?.data?.cart;
     const restaurant = cart?.data?.cart?.restaurantId;
+
+    const fetchSavedAddresses = async () => {
+        try {
+            const response = await getAddresses();
+            setSavedAddresses(response?.data);
+        } catch (error) {
+            console.error('Error fetching saved addresses:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchSavedAddresses();
+    }, []);
 
     const coupons = [
         {
@@ -41,29 +60,10 @@ const Cart = () => {
     const [couponCode, setCouponCode] = useState('');
     const [showAddresses, setShowAddresses] = useState(false);
     const [selectedAddress, setSelectedAddress] = useState('');
-    const [deliveryAddress, setDeliveryAddress] = useState('123 Main St, Apartment 4B, New York, NY 10001');
-    const [phoneNumber, setPhoneNumber] = useState('+1 (555) 123-4567');
+    const [deliveryAddress, setDeliveryAddress] = useState(userAddress);
+    const [phoneNumber, setPhoneNumber] = useState(userPhoneNumber);
+    const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(false);
 
-    const savedAddresses = [
-        {
-            _id: '1',
-            label: 'Home',
-            address: '123 Main St, Apartment 4B, New York, NY 10001',
-            phone: '+1 (555) 123-4567'
-        },
-        {
-            _id: '2',
-            label: 'Work',
-            address: '456 Business Ave, Suite 200, New York, NY 10002',
-            phone: '+1 (555) 987-6543'
-        },
-        {
-            _id: '3',
-            label: 'Parents',
-            address: '789 Family Lane, House 12, New York, NY 10003',
-            phone: '+1 (555) 246-8135'
-        }
-    ];
 
     const handleCopyCode = (code) => {
         navigator.clipboard.writeText(code);
@@ -125,9 +125,22 @@ const Cart = () => {
     };
 
     const handleSelectAddress = (address) => {
+        setIsUsingCurrentLocation(false);
         setDeliveryAddress(address.address);
         setPhoneNumber(address.phone);
         setSelectedAddress(address._id);
+        setShowAddresses(false);
+    };
+
+    const handleUseCurrentLocation = () => {
+        setIsUsingCurrentLocation(true);
+        setSelectedAddress('');
+        setDeliveryAddress(userAddress);
+        setShowAddresses(false);
+    };
+
+    const handleUseRegisteredPhone = () => {
+        setPhoneNumber(userPhoneNumber);
         setShowAddresses(false);
     };
 
@@ -151,7 +164,7 @@ const Cart = () => {
     }
 
     return (
-        <div className="max-w-4xl mx-auto p-6">
+        <div className="max-w-7xl mx-auto px-4 py-8">
             <h1 className='text-4xl font-bold text-gray-800 mb-6 text-center'>Checkout</h1>
             <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
                 <div className="h-32 bg-gradient-to-br from-orange-500 via-orange-400 to-yellow-400 relative">
@@ -366,85 +379,126 @@ const Cart = () => {
                 )}
             </div>
 
-            <div className="bg-white rounded-lg shadow-md p-3 my-6">
-                <div className="mb-1">
-                    <h2 className="text-xl font-bold mb-4">Confirm Delivery Details</h2>
-                    <div className="space-y-3 mb-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Address</label>
-                            <textarea
-                                value={deliveryAddress}
-                                onChange={(e) => setDeliveryAddress(e.target.value)}
-                                className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-orange-500 resize-none"
-                                rows="2"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                            <input
-                                type="text"
-                                value={phoneNumber}
-                                onChange={(e) => setPhoneNumber(e.target.value)}
-                                className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-orange-500"
-                            />
-                        </div>
+            <motion.div 
+                className="bg-white rounded-lg shadow-md p-4 mb-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+            >
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center">
+                        <FaMapMarkerAlt className="text-orange-500 mr-2" />
+                        <h2 className="text-lg font-semibold">Confirm Delivery Details</h2>
                     </div>
-
-                    <div className="relative">
-                        <button
-                            onClick={() => setShowAddresses(!showAddresses)}
-                            className="text-orange-500 hover:text-orange-600 text-sm font-medium flex items-center"
+                    <motion.button
+                        onClick={() => setShowAddresses(!showAddresses)}
+                        className="flex items-center text-orange-500"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                    >
+                        Change
+                        <motion.div
+                            animate={{ rotate: showAddresses ? 180 : 0 }}
+                            transition={{ duration: 0.3 }}
                         >
-                            View Saved Addresses
-                            <FaChevronDown 
-                                className={`ms-1 transform transition-transform ${showAddresses ? 'rotate-180' : ''}`}
-                                size={12}
-                            />
-                        </button>
-                    </div>
+                            <FaChevronDown className="ml-1" />
+                        </motion.div>
+                    </motion.button>
                 </div>
 
-                {showAddresses && (
-                    <div className="border-t border-gray-100 pt-4 px-4">
-                        <div className="space-y-3 hide-scrollbar max-h-56 overflow-y-auto">
-                            {savedAddresses.map(addr => (
-                                <div 
-                                    key={addr._id} 
-                                    className={`border rounded-lg p-3 transition-colors ${
-                                        selectedAddress === addr._id 
-                                        ? 'border-orange-500 bg-orange-50' 
-                                        : 'border-gray-100 bg-gray-50 hover:border-orange-500'
+                <AnimatePresence>
+                    {showAddresses && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="space-y-4 overflow-hidden"
+                        >
+                            <motion.div
+                                className="grid grid-cols-1 gap-3"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.1 }}
+                            >
+                                {/* Current Location Option */}
+                                <motion.button
+                                    onClick={handleUseCurrentLocation}
+                                    className={`p-3 border rounded-lg cursor-pointer flex items-center transition-all duration-300 ${
+                                        isUsingCurrentLocation ? 'border-orange-500 bg-orange-50 shadow-md' : 'border-gray-200 hover:border-orange-300 hover:shadow-sm'
                                     }`}
+                                    whileTap={{ scale: 0.98 }}
                                 >
-                                    <div className="flex justify-between items-start">
-                                        <div className="flex-1 mr-4">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span className="bg-orange-100 text-orange-800 px-2 py-0.5 rounded text-sm font-medium">
-                                                    {addr.label}
-                                                </span>
-                                                <span className="text-sm text-gray-600">
-                                                    {addr.phone}
-                                                </span>
-                                            </div>
-                                            <p className="text-sm text-gray-600">{addr.address}</p>
-                                        </div>
-                                        <button
-                                            onClick={() => handleSelectAddress(addr)}
-                                            className={`px-4 py-1 rounded-md text-sm font-medium ${
-                                                selectedAddress === addr._id
-                                                ? 'bg-orange-500 text-white'
-                                                : 'text-orange-500 border border-orange-500 hover:bg-orange-500 hover:text-white'
-                                            }`}
-                                        >
-                                            {selectedAddress === addr._id ? 'Selected' : 'Select'}
-                                        </button>
+                                    <FaMapMarkerAlt className="text-orange-500 mr-2" />
+                                    <div className="text-left">
+                                        <p className="font-medium">Use Current Location</p>
+                                        <p className="text-gray-600 text-sm">{userAddress || 'No location available'}</p>
                                     </div>
-                                </div>
-                            ))}
+                                </motion.button>
+
+                                {/* Saved Addresses */}
+                                {savedAddresses?.addresses?.map((address) => (
+                                    <motion.div
+                                        key={address._id}
+                                        onClick={() => handleSelectAddress(address)}
+                                        className={`p-3 border rounded-lg cursor-pointer transition-all duration-300 ${
+                                            selectedAddress === address._id ? 'border-orange-500 bg-orange-50 shadow-md' : 'border-gray-200 hover:border-orange-300 hover:shadow-sm'
+                                        }`}
+                                        whileTap={{ scale: 0.98 }}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-gray-600">{address.address}</p>
+                                                <p className="text-gray-600 text-sm mt-1">{address.phone}</p>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+
+                                {/* Add New Address Button */}
+                                <motion.button
+                                    onClick={() => navigate('/address-manage')}
+                                    className="w-full py-2 text-orange-500 border border-orange-500 rounded-lg transition-all duration-300 hover:bg-orange-50 hover:border-orange-300 hover:shadow-sm"
+                                    whileTap={{ scale: 0.98 }}
+                                >
+                                    Add New Address
+                                </motion.button>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {!showAddresses && (
+                    <motion.div 
+                        className="space-y-3"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <div>
+                            <p className="text-gray-600">{deliveryAddress || 'Please select a delivery address'}</p>
+                            <div className="flex items-center mt-2">
+                                <input
+                                    type="text"
+                                    value={phoneNumber}
+                                    onChange={(e) => setPhoneNumber(e.target.value)}
+                                    placeholder="Enter phone number"
+                                    className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-orange-500"
+                                />
+                                {userPhoneNumber && (
+                                    <motion.button
+                                        onClick={handleUseRegisteredPhone}
+                                        className="ml-2 bg-orange-500 text-md text-white py-1 px-2 rounded-md hover:bg-orange-600 transition-all duration-300"
+                                        whileTap={{ scale: 0.95 }}
+                                    >
+                                        Use registered
+                                    </motion.button>
+                                )}
+                            </div>
                         </div>
-                    </div>
+                    </motion.div>
                 )}
-            </div>
+            </motion.div>
 
             <div className="bg-white rounded-lg shadow-md p-6">
                 <h2 className="text-xl font-bold mb-4">Bill Details</h2>
