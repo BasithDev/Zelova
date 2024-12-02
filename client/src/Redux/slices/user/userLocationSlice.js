@@ -1,9 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
+  coordinates: null,
   address: null,
-  coordinates: { lat: null, lng: null },
-  status: 'idle',
+  loading: false,
   error: null,
 };
 
@@ -11,39 +11,33 @@ const userLocationSlice = createSlice({
   name: 'userLocation',
   initialState,
   reducers: {
-    setAddress(state, action) {
-      state.address = action.payload;
-    },
-    setCoordinates(state, action) {
+    setCoordinates: (state, action) => {
       state.coordinates = action.payload;
     },
-    setLoading(state) {
-      state.status = 'loading';
+    setAddress: (state, action) => {
+      state.address = action.payload;
     },
-    setSuccess(state) {
-      state.status = 'idle';
-      state.error = null;
+    setLoading: (state, action) => {
+      state.loading = action.payload;
     },
-    setError(state, action) {
-      state.status = 'failed';
+    setError: (state, action) => {
       state.error = action.payload;
     },
-    clearLocation(state) {
+    resetLocation: (state) => {
+      state.coordinates = null;
       state.address = null;
-      state.coordinates = { lat: null, lng: null };
-      state.status = 'idle';
+      state.loading = false;
       state.error = null;
     },
   },
 });
 
 export const {
-  setAddress,
   setCoordinates,
+  setAddress,
   setLoading,
-  setSuccess,
   setError,
-  clearLocation,
+  resetLocation,
 } = userLocationSlice.actions;
 
 export const selectUserLocation = (state) => state.userLocation;

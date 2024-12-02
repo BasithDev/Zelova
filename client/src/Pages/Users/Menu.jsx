@@ -3,7 +3,7 @@ import { FiMenu } from 'react-icons/fi';
 import { FaPlus, FaMinus } from "react-icons/fa";
 import { useParams } from 'react-router-dom';
 import { getMenuForUser } from '../../Services/apiServices';
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { calculateDistanceAndTime } from '../../utils/distanceUtils';
 import RestaurantCard from "../../Components/RestaurantCard/RestaurantCard";
 import { AnimatePresence, motion } from "framer-motion";
@@ -22,6 +22,9 @@ const Menu = () => {
         cart,
         updateCartMutation,
     } = useCart();
+
+    const dispatch = useDispatch();
+    const userCoordinates = useSelector((state) => state.userLocation.coordinates);
 
     const handleCartUpdation = (itemId, action, customizations = null) => {
         const payload = {
@@ -145,17 +148,20 @@ const Menu = () => {
     useEffect(() => {
         const fetchMenu = async () => {
             try {
+                setLoading(true);
                 const response = await getMenuForUser(id, lat, lon);
+
                 if (response?.data) {
                     setRestaurant(response.data.restaurant);
                     setMenuItems(response.data.menu);
                 } else {
                     toast.error("No menu data found");
                 }
+
+                setLoading(false);
             } catch (error) {
                 console.log(error);
                 toast.error("Failed to load menu");
-            } finally {
                 setLoading(false);
             }
         };
@@ -166,7 +172,7 @@ const Menu = () => {
             toast.error("Invalid restaurant or location details");
             setLoading(false);
         }
-    }, [id, lat, lon]);
+    }, [id, lat, lon, dispatch, userCoordinates]);
 
     if (loading) {
         return <LoadingSpinner message="Loading menu..." />;

@@ -11,9 +11,11 @@ const userReqVendorRouter = require('./routes/user/reqVendorRoute')
 const userRouter = require('./routes/user/userRoute')
 const restaurantListing = require('./routes/user/restaurantListing')
 const cartRouter = require('./routes/user/cartMngRoute')
+const userCouponRouter = require('./routes/user/reedemCouponRoute')
 
 const adminManageRouter = require('./routes/admin/manageRoutes')
 const adminRouter = require('./routes/admin/adminRoute')
+const adminCouponRouter = require('./routes/admin/couponMngRoute')
 
 const venodrRouter = require('./routes/vendor/restaurantRoute')
 const offerRouter = require('./routes/vendor/offerMng')
@@ -48,9 +50,11 @@ app.use('/api/user/req-vendor',userReqVendorRouter)
 app.use('/api/user',userRouter)
 app.use('/api/user',restaurantListing)
 app.use('/api/user/cart',cartRouter)
+app.use('/api/user/coupons',userCouponRouter)
 
 app.use('/api/admin/manage',adminManageRouter)
 app.use('/api/admin',adminRouter)
+app.use('/api/admin/coupon',adminCouponRouter)
 
 app.use('/api/vendor',venodrRouter)
 app.use('/api/vendor',categoriesRouter)

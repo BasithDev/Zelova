@@ -1,4 +1,4 @@
-import { FaTicketAlt, FaEdit, FaKey, FaStore, FaPalette, FaAddressCard, FaUserEdit } from "react-icons/fa";
+import { FaEdit, FaKey, FaStore, FaPalette, FaAddressCard, FaUserEdit } from "react-icons/fa";
 import PropTypes from "prop-types";
 import { useSelector } from 'react-redux';
 import { useNavigate } from "react-router-dom";
@@ -23,7 +23,6 @@ const userData = useSelector((state)=>state.userData.data)
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <ProfileOption icon={<FaTicketAlt />} color="text-yellow-500" label="Coupons" />
 
           <ProfileOption 
           onClick={()=>navigate('/edit-user')}
