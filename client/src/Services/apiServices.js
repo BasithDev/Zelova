@@ -14,15 +14,23 @@ export const uploadToCloud = (data) => cloudinaryInstance.post(`/image/upload`,d
 //admin routes
 export const getAdmin = () => api.get(`/admin`)
 export const deleteImage = (data) => api.post('/admin/manage/delete-image',data)
+export const getCategoriesToMng = ()=>api.get('/admin/manage/categories')
+export const getSubCategoriesToMng = ()=>api.get('/admin/manage/subcategories')
+export const deleteCategory = (id)=>api.delete(`/admin/manage/category/delete/${id}`)
+export const deleteSubCategory = (id)=>api.delete(`/admin/manage/subcategory/delete/${id}`)
+
+//admin routes - users and vendor management
 export const fetchVendorRequests = () => api.get('/admin/manage/requests')
 export const acceptVenodrRequests = (requestId) => api.post(`/admin/manage/accept-vendor/${requestId}`)
 export const denyVenodrRequests = (applicationId) => api.post(`/admin/manage/deny-vendor/${applicationId}`)
 export const blockUnblockUser = (userId,status) => api.patch(`/admin/manage/block-unblock-user/${userId}`,status)
 export const blockUnblockVendor = (vendorId,status) => api.patch(`/admin/manage/block-unblock-user/${vendorId}`,status)
-export const getCategoriesToMng = ()=>api.get('/admin/manage/categories')
-export const getSubCategoriesToMng = ()=>api.get('/admin/manage/subcategories')
-export const deleteCategory = (id)=>api.delete(`/admin/manage/category/delete/${id}`)
-export const deleteSubCategory = (id)=>api.delete(`/admin/manage/subcategory/delete/${id}`)
+
+//admin routes - coupons management
+export const addCoupon = (data) => api.post('/admin/coupon/add',data)
+export const getCoupons = () => api.get('/admin/coupon')
+export const updateCoupon = (id,data) => api.put(`/admin/coupon/update/${id}`,data)
+export const deleteCoupon = (id) => api.delete(`/admin/coupon/delete/${id}`)
 
 //user routes
 export const getUser = () => api.get(`/user`)
@@ -44,6 +52,7 @@ export const getCart = () => api.get('/user/cart')
 export const getTotalItemsFromCart = () => api.get('/user/cart/total-items')
 export const getTotalPriceFromCart = () => api.get('/user/cart/total-price')
 export const updateCart = (data) => api.put('/user/cart/update',data)
+export const getUserCoupons = () => api.get('/user/coupons')
 
 //vendor routes - restaruant management
 export const getRestaurant = () => api.get(`vendor/restaurant`)
