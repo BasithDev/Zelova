@@ -6,19 +6,22 @@ import { RiSecurePaymentLine } from 'react-icons/ri';
 import { SiZcash } from 'react-icons/si';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import {placeOrder} from '../../Services/apiServices';
+import { useDispatch } from 'react-redux';
+import { completeOrder } from '../../Redux/slices/orderSlice';
+import { useNavigate } from 'react-router-dom';
+import { placeOrder } from '../../Services/apiServices';
 
-const PaymentConfirmation = ({ 
-    isOpen, 
-    onClose, 
-    items, 
-    totalAmount, 
-    tax, 
-    platformFee, 
-    appliedCoupon, 
-    totalSavings, 
-    isFreeDelivery, 
-    deliveryFee, 
+const PaymentConfirmation = ({
+    isOpen,
+    onClose,
+    items,
+    totalAmount,
+    tax,
+    platformFee,
+    appliedCoupon,
+    totalSavings,
+    isFreeDelivery,
+    deliveryFee,
     offerSavings,
     selectedAddress,
     selectedPhoneNumber,
@@ -27,7 +30,9 @@ const PaymentConfirmation = ({
 }) => {
     const [selectedPayment, setSelectedPayment] = useState('COD');
     const finalTotal = totalAmount + tax + platformFee - (appliedCoupon?.discountAmount || 0);
-    
+
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
     // Get user name from Redux store
     const userData = useSelector((state) => state.userData.data);
 
@@ -52,8 +57,47 @@ const PaymentConfirmation = ({
         }
     ];
 
-    if (!isOpen) return null;
+    const handleProceedToPay = () => {
+        if (selectedPayment === 'COD') {
+            const orderDetails = {
+                user: {
+                    name: userData?.fullname,
+                    phoneNumber: selectedPhoneNumber,
+                    address: selectedAddress
+                },
+                restaurantId: restaurantId._id,
+                cartId: cartId,
+                couponCode: appliedCoupon ? appliedCoupon.code : null,
+                items: items.map(item => ({
+                    name: item.item.name,
+                    quantity: item.quantity,
+                    price: item.itemPrice,
+                    totalPrice: item.itemPrice * item.quantity,
+                    customizations: item.selectedCustomizations?.map(customization => ({
+                        fieldName: customization.fieldName,
+                        selectedOption: customization.options
+                    })) || []
+                })),
+                billDetails: {
+                    itemTotal: totalAmount,
+                    platformFee,
+                    deliveryFee: isFreeDelivery ? 0 : deliveryFee,
+                    tax,
+                    discount: appliedCoupon ? appliedCoupon.discountAmount : 0,
+                    offerSavings,
+                    totalSavings,
+                    finalAmount: finalTotal,
+                    paymentMethod: 'COD'
+                }
+            };
+            placeOrder(orderDetails);
+            dispatch(completeOrder()); // Dispatch action to set order state
+            navigate('/order-success', { state: { orderId: 'ZEL-20241203-5798', coinsWon: 100 } });
+            onClose();
+        }
+    };
 
+    if (!isOpen) return null;
 
     return (
         <motion.div
@@ -192,44 +236,8 @@ const PaymentConfirmation = ({
                         </div>
 
                         <button
+                            onClick={handleProceedToPay}
                             className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition duration-300"
-                            onClick={() => {
-                                if (selectedPayment === 'COD') {
-                                    const orderDetails = {
-                                        user: {
-                                            name: userData?.fullname,
-                                            phoneNumber: selectedPhoneNumber,
-                                            address: selectedAddress
-                                        },
-                                        restaurantId: restaurantId._id,
-                                        cartId: cartId,
-                                        couponCode:appliedCoupon ? appliedCoupon.code : null,
-                                        items: items.map(item => ({
-                                            name: item.item.name,
-                                            quantity: item.quantity,
-                                            price: item.itemPrice,
-                                            totalPrice: item.itemPrice * item.quantity,
-                                            customizations: item.selectedCustomizations?.map(customization => ({
-                                                fieldName: customization.fieldName,
-                                                selectedOption: customization.options
-                                            })) || []
-                                        })),
-                                        billDetails: {
-                                            itemTotal: totalAmount,
-                                            platformFee,
-                                            deliveryFee: isFreeDelivery ? 0 : deliveryFee,
-                                            tax,
-                                            discount: appliedCoupon ? appliedCoupon.discountAmount : 0,
-                                            offerSavings,
-                                            totalSavings,
-                                            finalAmount: finalTotal,
-                                            paymentMethod: 'COD'
-                                        }
-                                    };
-                                    placeOrder(orderDetails);
-                                    onClose();
-                                }
-                            }}
                         >
                             Proceed to Payment
                         </button>

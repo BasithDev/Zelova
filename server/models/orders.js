@@ -17,11 +17,6 @@ const orderSchema = new Schema({
         ref: 'Restaurant',
         required: true
     },
-    cartId: {
-        type: Schema.Types.ObjectId,
-        ref: 'Cart',
-        required: true
-    },
     user: {
         name: {
             type: String,

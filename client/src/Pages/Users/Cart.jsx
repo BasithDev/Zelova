@@ -327,7 +327,7 @@ const Cart = () => {
                             className="overflow-hidden border-t border-gray-100 pt-4 px-4"
                         >
                             <div className="space-y-3 hide-scrollbar max-h-56 overflow-y-auto">
-                                {coupons.map(coupon => (
+                                {coupons && coupons.map(coupon => (
                                     <div 
                                         key={coupon._id} 
                                         className="border border-gray-100 rounded-lg p-3 hover:border-orange-500 transition-colors bg-gray-50"
@@ -357,6 +357,9 @@ const Cart = () => {
                                         </div>
                                     </div>
                                 ))}
+                                {coupons.length === 0 && (
+                                    <p className="text-sm text-gray-600">No coupons available for you right now.</p>
+                                )}
                             </div>
                         </motion.div>
                     )}
