@@ -587,6 +587,7 @@ const Cart = () => {
                             selectedAddress={selectedAddress || userAddress}
                             selectedPhoneNumber={phoneNumber || userPhoneNumber}
                             restaurantId={restaurant}
+                            cartId={cart.data.cart._id}
                         />
                     )}
                 </AnimatePresence>
