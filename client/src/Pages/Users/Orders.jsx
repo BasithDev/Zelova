@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import Header from '../../Components/Common/Header';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
+import { getCurrentOrders } from '../../Services/apiServices';
+import { useQuery } from '@tanstack/react-query';
 
 const OrderStatus = ({ status }) => {
   const getStatusColor = () => {
@@ -10,7 +12,7 @@ const OrderStatus = ({ status }) => {
       case 'preparing': return 'bg-yellow-500';
       case 'on the way': return 'bg-blue-500';
       case 'delivered': return 'bg-green-500';
-      default: return 'bg-gray-500';
+      default: return 'bg-purple-500';
     }
   };
 
@@ -29,27 +31,27 @@ OrderStatus.propTypes = {
 const OrderCard = ({ order }) => {
   return (
     <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
-      {/* Header Section */}
       <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-6">
         <div className="flex justify-between items-start">
           <div>
             <div className="flex items-center gap-3">
-              <h3 className="text-xl font-bold text-gray-800">Order #{order.id}</h3>
+              <h3 className="text-xl font-bold text-gray-800">Order #{order.orderId}</h3>
               <OrderStatus status={order.status} />
             </div>
             <p className="text-sm text-gray-600 mt-1">
-              {new Date(order.date).toLocaleDateString('en-US', {
+              {new Date(order.createdAt).toLocaleDateString('en-US', {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
                 hour: '2-digit',
-                minute: '2-digit'
+                minute: '2-digit',
+                hour12: true
               })}
             </p>
           </div>
           <div className="text-right">
-            <p className="text-lg font-bold text-primary">${order.total.toFixed(2)}</p>
+            <p className="text-lg font-bold text-primary">₹{order.billDetails.finalAmount.toFixed(2)}</p>
             <p className="text-sm text-gray-600">Total Amount</p>
           </div>
         </div>
@@ -64,24 +66,22 @@ const OrderCard = ({ order }) => {
                 <div className="flex items-center">
                   <h4 className="font-medium text-gray-800">{item.name}</h4>
                 </div>
-                {item.addOns && item.addOns.length > 0 && (
+                {item.customizations && item.customizations.length > 0 && (
                   <div className="mt-2">
                     <p className="text-sm text-gray-600">
-                      Add-ons: 
-                      {item.addOns.map((addon, idx) => (
+                      Customizations: 
+                      {item.customizations.map((customization, idx) => (
                         <span key={idx} className="inline-block px-2 py-1 ml-2 bg-gray-200 rounded-full text-xs">
-                          {addon}
+                          {customization.fieldName}: {customization.selectedOption.name}
                         </span>
                       ))}
                     </p>
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col items-end gap-1">
                 <span className="text-sm text-gray-600">x{item.quantity}</span>
-                <p className="font-medium text-gray-800">
-                  ${(item.price * item.quantity).toFixed(2)}
-                </p>
+                <p className="font-medium text-gray-800">₹{item.totalPrice.toFixed(2)}</p>
               </div>
             </div>
           ))}
@@ -90,20 +90,35 @@ const OrderCard = ({ order }) => {
         {/* Price Breakdown */}
         <div className="mt-6 space-y-3 border-t border-dashed border-gray-200 pt-4">
           <div className="flex justify-between text-sm text-gray-600">
-            <span>Subtotal</span>
-            <span>${order.subtotal.toFixed(2)}</span>
+            <span>Item Total</span>
+            <span>₹{order.billDetails.itemTotal.toFixed(2)}</span>
+          </div>
+          {order.billDetails.deliveryFee > 0 && (
+            <div className="flex justify-between text-sm text-gray-600">
+              <span>Delivery Fee</span>
+              <span>₹{order.billDetails.deliveryFee.toFixed(2)}</span>
+            </div>
+          )}
+          <div className="flex justify-between text-sm text-gray-600">
+            <span>Platform Fee</span>
+            <span>₹{order.billDetails.platformFee.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm text-gray-600">
             <span>Tax</span>
-            <span>${order.tax.toFixed(2)}</span>
+            <span>₹{order.billDetails.tax.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-sm text-gray-600">
-            <span>Platform Fee</span>
-            <span>${order.platformFee.toFixed(2)}</span>
-          </div>
+          {order.billDetails.totalSavings > 0 && (
+            <div className="flex justify-between text-sm text-green-600">
+              <span>Total Savings</span>
+              <span>-₹{order.billDetails.totalSavings.toFixed(2)}</span>
+            </div>
+          )}
           <div className="flex justify-between font-bold text-gray-800 pt-3 border-t border-gray-200">
             <span>Total</span>
-            <span>${order.total.toFixed(2)}</span>
+            <span>₹{order.billDetails.finalAmount.toFixed(2)}</span>
+          </div>
+          <div className="text-gray-600 text-md">
+          Payment Method: <span className='font-bold text-xl'>{order.billDetails.paymentMethod === 'COD' ? 'Cash on Delivery' : 'Online Payment'}</span>
           </div>
         </div>
 
@@ -116,7 +131,7 @@ const OrderCard = ({ order }) => {
             </svg>
             <h4 className="font-medium text-gray-800">Delivery Address</h4>
           </div>
-          <p className="text-sm text-gray-600 ml-7">{order.address}</p>
+          <p className="text-sm text-gray-600 ml-7">{order.user.address}</p>
         </div>
       </div>
     </div>
@@ -125,22 +140,37 @@ const OrderCard = ({ order }) => {
 
 OrderCard.propTypes = {
   order: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    date: PropTypes.instanceOf(Date).isRequired,
+    orderId: PropTypes.string.isRequired,
     status: PropTypes.oneOf(['preparing', 'on the way', 'delivered']).isRequired,
     items: PropTypes.arrayOf(
       PropTypes.shape({
         name: PropTypes.string.isRequired,
         quantity: PropTypes.number.isRequired,
-        price: PropTypes.number.isRequired,
-        addOns: PropTypes.arrayOf(PropTypes.string)
+        totalPrice: PropTypes.number.isRequired,
+        customizations: PropTypes.arrayOf(
+          PropTypes.shape({
+            fieldName: PropTypes.string.isRequired,
+            selectedOption: PropTypes.shape({
+              name: PropTypes.string.isRequired,
+              price: PropTypes.number.isRequired
+            }).isRequired
+          })
+        )
       })
     ).isRequired,
-    subtotal: PropTypes.number.isRequired,
-    tax: PropTypes.number.isRequired,
-    platformFee: PropTypes.number.isRequired,
-    total: PropTypes.number.isRequired,
-    address: PropTypes.string.isRequired
+    billDetails: PropTypes.shape({
+      itemTotal: PropTypes.number.isRequired,
+      deliveryFee: PropTypes.number.isRequired,
+      platformFee: PropTypes.number.isRequired,
+      tax: PropTypes.number.isRequired,
+      totalSavings: PropTypes.number.isRequired,
+      finalAmount: PropTypes.number.isRequired,
+      paymentMethod: PropTypes.string.isRequired
+    }).isRequired,
+    user: PropTypes.shape({
+      address: PropTypes.string.isRequired
+    }).isRequired,
+    createdAt: PropTypes.string.isRequired
   }).isRequired
 };
 
@@ -149,32 +179,12 @@ const Orders = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState('current');
 
-  // Example data - replace with actual API calls
-  const currentOrders = [
-    {
-      id: '12345',
-      date: new Date(),
-      status: 'On the way',
-      items: [
-        {
-          name: 'Margherita Pizza',
-          quantity: 2,
-          price: 12.99,
-          addOns: ['Extra Cheese', 'Mushrooms']
-        },
-        {
-          name: 'Garlic Bread',
-          quantity: 1,
-          price: 4.99,
-        }
-      ],
-      subtotal: 30.97,
-      tax: 2.48,
-      platformFee: 1.99,
-      total: 35.44,
-      address: '123 Main St, Apt 4B, New York, NY 10001'
-    }
-  ];
+  const { data: currentOrders, isLoading, isError } = useQuery({
+    queryKey: ['currentOrders'],
+    queryFn: getCurrentOrders,
+    refetchInterval: 30000, // Refetch every 30 seconds
+    select: (data) => data.data // Transform the response to get the data directly
+  });
 
   const previousOrders = [
     {
@@ -263,6 +273,50 @@ const Orders = () => {
     }
   ];
 
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <p className="mt-4 text-gray-600">Loading your orders...</p>
+        </div>
+      );
+    }
+
+    if (isError) {
+      return (
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="bg-red-100 p-4 rounded-lg">
+            <p className="text-red-600">Failed to load orders. Please try again later.</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (!currentOrders?.orders?.length) {
+      return (
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="bg-gray-100 p-8 rounded-lg text-center">
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">No Orders Found</h3>
+            <p className="text-gray-600">{`You haven't placed any orders yet.`}</p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        {activeTab === 'current'
+          ? currentOrders.orders.map((order) => (
+              <OrderCard key={order.orderId} order={order} />
+            ))
+          : previousOrders.map((order) => (
+              <OrderCard key={order.id} order={order} />
+            ))}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header 
@@ -308,15 +362,7 @@ const Orders = () => {
           </div>
         )}
 
-        <div className="space-y-6">
-          {activeTab === 'current'
-            ? currentOrders.map((order) => (
-                <OrderCard key={order.id} order={order} />
-              ))
-            : previousOrders.map((order) => (
-                <OrderCard key={order.id} order={order} />
-              ))}
-        </div>
+        {renderContent()}
       </div>
     </div>
   );
