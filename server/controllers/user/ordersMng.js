@@ -64,3 +64,21 @@ exports.placeOrder = async (req, res) => {
         });
     }
 }
+exports.getCurrentOrders = async (req, res) => {
+    try {
+        const token = req.cookies.user_token;
+        if (!token) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+        const userId = getUserId(token, process.env.JWT_SECRET);
+        const orders = await Order.find({ userId, status: { $ne: 'DELIVERED' } });
+        res.status(200).json({ 
+            success: true,
+            message: 'Orders retrieved successfully',
+            orders
+        });
+    } catch (error) {
+        console.error('Error retrieving orders:', error);
+        res.status(500).json({ message: 'Failed to retrieve orders',});
+    }
+}
