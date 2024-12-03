@@ -13,10 +13,15 @@ const orderSchema = new Schema({
         required: true
     },
     restaurantId: {
-      type: Schema.Types.ObjectId,
-      ref: 'Restaurant',
-      required: true
-  },
+        type: Schema.Types.ObjectId,
+        ref: 'Restaurant',
+        required: true
+    },
+    cartId: {
+        type: Schema.Types.ObjectId,
+        ref: 'Cart',
+        required: true
+    },
     user: {
         name: {
             type: String,
@@ -112,13 +117,19 @@ const orderSchema = new Schema({
     status: {
         type: String,
         required: true,
-        enum: ['PENDING', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED'],
         default: 'PENDING'
     },
     rating: {
         type: Number,
         min: 0,
         max: 5
+    },
+    usedCoupon: {
+        code: {
+            type: String,
+            ref: 'Coupon',
+            trim: true
+        }
     }
 }, {
     timestamps: true
@@ -126,9 +137,8 @@ const orderSchema = new Schema({
 
 orderSchema.index({ userId: 1, createdAt: -1 });
 
-orderSchema.pre('save', async function(next) {
+orderSchema.pre('validate', function (next) {
     if (!this.orderId) {
-        // Generate a unique order ID (e.g., ZEL-YYYY-MM-DD-XXXX)
         const date = new Date();
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');

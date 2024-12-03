@@ -6,6 +6,7 @@ import { RiSecurePaymentLine } from 'react-icons/ri';
 import { SiZcash } from 'react-icons/si';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
+import {placeOrder} from '../../Services/apiServices';
 
 const PaymentConfirmation = ({ 
     isOpen, 
@@ -21,7 +22,8 @@ const PaymentConfirmation = ({
     offerSavings,
     selectedAddress,
     selectedPhoneNumber,
-    restaurantId
+    restaurantId,
+    cartId
 }) => {
     const [selectedPayment, setSelectedPayment] = useState('COD');
     const finalTotal = totalAmount + tax + platformFee - (appliedCoupon?.discountAmount || 0);
@@ -200,6 +202,8 @@ const PaymentConfirmation = ({
                                             address: selectedAddress
                                         },
                                         restaurantId: restaurantId._id,
+                                        cartId: cartId,
+                                        couponCode:appliedCoupon ? appliedCoupon.code : null,
                                         items: items.map(item => ({
                                             name: item.item.name,
                                             quantity: item.quantity,
@@ -222,7 +226,8 @@ const PaymentConfirmation = ({
                                             paymentMethod: 'COD'
                                         }
                                     };
-                                    console.log('Order Details:', orderDetails);
+                                    placeOrder(orderDetails);
+                                    onClose();
                                 }
                             }}
                         >
@@ -259,7 +264,8 @@ PaymentConfirmation.propTypes = {
     offerSavings: PropTypes.number.isRequired,
     selectedAddress: PropTypes.string.isRequired,
     selectedPhoneNumber: PropTypes.string.isRequired,
-    restaurantId: PropTypes.string.isRequired
+    restaurantId: PropTypes.object.isRequired,
+    cartId: PropTypes.string.isRequired,
 };
 
 export default PaymentConfirmation;
