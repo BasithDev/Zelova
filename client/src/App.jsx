@@ -10,6 +10,7 @@ import AdminAuthChecker from './Components/AdminAuthChecker'
 import { UserProtectedRoute} from './Routers/ProtectedRoute';
 import { AdminNoAuthRoute , UserNoAuthRoute} from './Routers/NoAuthRouter';
 import {AdminRoleProtectedRoute , UserRoleProtectedRoute} from './Routers/ProtectedRoute'
+import OrderProtectedRoute from './Routers/OrderProtectedRoute';
 
 import Home from './Pages/Users/Home';
 import Login from './Pages/Users/Login';
@@ -45,9 +46,9 @@ import GoogleResponse from './Routers/GoogleResponse';
 import CouponMng from './Pages/Admins/CouponMng';
 import Cart from './Pages/Users/Cart';
 import ConfirmPayment from './Pages/Users/ConfirmPayment';
+import OrderSuccess from './Pages/OrderSuccess';
 
 const queryClient = new QueryClient();
-
 
 
 
@@ -91,6 +92,9 @@ function App() {
                   <Route path='/restaurant/:id/menu' element={<Menu/>}/>
                   <Route path='cart' element={<Cart/>} />
                   <Route path='confirm-payment' element={<ConfirmPayment/>}/>
+                  <Route element={<OrderProtectedRoute />}>
+                    <Route path='order-success' element={<OrderSuccess/>}/>
+                  </Route>
                 </Route>
               </Route>
 

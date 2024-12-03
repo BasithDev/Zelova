@@ -1,6 +1,7 @@
 const Order = require('../../models/orders')
 const Coupon = require('../../models/coupons')
 const RedeemedCoupon = require('../../models/reedemedCoupon')
+const Cart = require('../../models/cart') // Assuming Cart model is in this location
 const {getUserId} = require('../../helpers/getUserId')
 
 exports.placeOrder = async (req, res) => {
@@ -15,7 +16,6 @@ exports.placeOrder = async (req, res) => {
 
         const orderData = {
             userId,
-            cartId,
             restaurantId,
             user,
             items,
@@ -38,6 +38,8 @@ exports.placeOrder = async (req, res) => {
         }
 
         const order = await Order.create(orderData);
+
+        await Cart.deleteOne({ _id: cartId });
 
         if (couponCode) {
             const coupon = await Coupon.findOne({ code: couponCode });

@@ -14,7 +14,7 @@ const CartSnackbar = () => {
     const totalItemsCount = totalItems?.data?.totalItems || 0;
     const totalPriceCount = totalPrice?.data?.totalPrice || 0;
 
-    const shouldShowSnackbar = totalItemsCount > 0 && location.pathname !== '/cart' && isVisible;
+    const shouldShowSnackbar = totalItemsCount > 0 && location.pathname !== '/cart' && location.pathname !== '/order-success' && isVisible;
 
     const handleClose = () => {
         setIsVisible(false);
