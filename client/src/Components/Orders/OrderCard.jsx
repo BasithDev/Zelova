@@ -23,7 +23,7 @@ const OrderStatus = ({ status }) => {
 };
 
 OrderStatus.propTypes = {
-  status: PropTypes.oneOf(['PREPARING', 'ON THE WAY', 'DELIVERED', 'NOT RECEIVED BY CUSTOMER', 'NOT DELIVERED']).isRequired,
+  status: PropTypes.oneOf(['PENDING','PAID','PREPARING', 'ON THE WAY', 'DELIVERED', 'NOT RECEIVED BY CUSTOMER', 'NOT DELIVERED']).isRequired,
 };
 
 const OrderCard = ({ order, setShowDeliveryPopup, setSelectedOrderId, isPreviousOrder }) => {

@@ -10,6 +10,8 @@ import { useDispatch } from 'react-redux';
 import { completeOrder } from '../../Redux/slices/orderSlice';
 import { useNavigate } from 'react-router-dom';
 import { placeOrder } from '../../Services/apiServices';
+import { toast } from 'react-hot-toast';
+import { createRazorpayOrder , verifyRazorpayPayment } from '../../Services/apiServices';
 
 const PaymentConfirmation = ({
     isOpen,
@@ -29,11 +31,11 @@ const PaymentConfirmation = ({
     cartId
 }) => {
     const [selectedPayment, setSelectedPayment] = useState('COD');
+    const [loading, setLoading] = useState(false);
     const finalTotal = totalAmount + tax + platformFee - (appliedCoupon?.discountAmount || 0);
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    // Get user name from Redux store
     const userData = useSelector((state) => state.userData.data);
 
     const paymentOptions = [
@@ -57,43 +59,191 @@ const PaymentConfirmation = ({
         }
     ];
 
-    const handleProceedToPay = () => {
-        if (selectedPayment === 'COD') {
-            const orderDetails = {
-                user: {
-                    name: userData?.fullname,
-                    phoneNumber: selectedPhoneNumber,
-                    address: selectedAddress
+    const loadRazorpayScript = () => {
+        return new Promise((resolve) => {
+            const script = document.createElement('script');
+            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
+        });
+    }
+
+    const prepareOrderDetails = (paymentMethod) => {
+        return {
+            user: {
+                name: userData?.fullname,
+                phoneNumber: selectedPhoneNumber,
+                address: selectedAddress
+            },
+            restaurantId: restaurantId._id,
+            cartId: cartId,
+            couponCode: appliedCoupon ? appliedCoupon.code : null,
+            items: items.map(item => ({
+                name: item.item.name,
+                quantity: item.quantity,
+                price: item.itemPrice,
+                totalPrice: item.itemPrice * item.quantity,
+                customizations: item.selectedCustomizations?.map(customization => ({
+                    fieldName: customization.fieldName,
+                    selectedOption: customization.options
+                })) || []
+            })),
+            billDetails: {
+                itemTotal: totalAmount,
+                platformFee,
+                deliveryFee: isFreeDelivery ? 0 : deliveryFee,
+                tax,
+                discount: appliedCoupon ? appliedCoupon.discountAmount : 0,
+                offerSavings,
+                totalSavings,
+                finalAmount: finalTotal,
+                paymentMethod
+            }
+        };
+    };
+
+    const handleRazorpayPayment = async () => {
+        try {
+            setLoading(true);
+            const scriptLoaded = await loadRazorpayScript();
+            if (!scriptLoaded) {
+                toast.error('Failed to load payment gateway');
+                return;
+            }
+
+            const response = await createRazorpayOrder({ amount: finalTotal });
+            
+            if (!response.data?.success) {
+                toast.error('Failed to create order');
+                return;
+            }
+
+            const orderDetails = prepareOrderDetails('RAZORPAY');
+
+            const options = {
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+                amount: response.data.order.amount,
+                currency: response.data.order.currency,
+                name: "Zelova",
+                description: "Food Order Payment",
+                order_id: response.data.order.id,
+                handler: async function (response) {
+                    try {
+                        const verificationResponse = await verifyRazorpayPayment({
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                            orderDetails
+                        });
+
+                        if (verificationResponse.data?.success) {
+                            toast.success('Payment successful!');
+                            dispatch(completeOrder());
+                            navigate('/order-success', {
+                                state: {
+                                    orderId: verificationResponse.data.order.orderId,
+                                    coinsWon: 100
+                                }
+                            });
+                            onClose();
+                        } else {
+                            toast.error('Payment verification failed');
+                        }
+                    } catch (error) {
+                        console.error('Error verifying payment:', error);
+                        toast.error('Payment verification failed');
+                    }
                 },
-                restaurantId: restaurantId._id,
-                cartId: cartId,
-                couponCode: appliedCoupon ? appliedCoupon.code : null,
-                items: items.map(item => ({
-                    name: item.item.name,
-                    quantity: item.quantity,
-                    price: item.itemPrice,
-                    totalPrice: item.itemPrice * item.quantity,
-                    customizations: item.selectedCustomizations?.map(customization => ({
-                        fieldName: customization.fieldName,
-                        selectedOption: customization.options
-                    })) || []
-                })),
-                billDetails: {
-                    itemTotal: totalAmount,
-                    platformFee,
-                    deliveryFee: isFreeDelivery ? 0 : deliveryFee,
-                    tax,
-                    discount: appliedCoupon ? appliedCoupon.discountAmount : 0,
-                    offerSavings,
-                    totalSavings,
-                    finalAmount: finalTotal,
-                    paymentMethod: 'COD'
-                }
+                prefill: {
+                    name: userData?.fullname,
+                    email: userData?.email,
+                    contact: selectedPhoneNumber,
+                },
+                config: {
+                    display: {
+                        blocks: {
+                            otpEmail: {
+                                name: 'Pay using Email OTP',
+                                instruments: [
+                                    {
+                                        method: 'otp',
+                                        channels: ['email'],
+                                        value: userData?.email
+                                    }
+                                ]
+                            },
+                            otpSMS: {
+                                name: 'Pay using SMS OTP',
+                                instruments: [
+                                    {
+                                        method: 'otp',
+                                        channels: ['sms'],
+                                        value: selectedPhoneNumber
+                                    }
+                                ]
+                            }
+                        },
+                        sequence: ['block.otpEmail', 'block.otpSMS'],
+                        preferences: {
+                            show_default_blocks: true
+                        }
+                    }
+                },
+                modal: {
+                    ondismiss: function() {
+                        setLoading(false);
+                    },
+                    confirm_close: true,
+                    escape: false
+                },
+                theme: {
+                    color: "#f97316"
+                },
+                retry: {
+                    enabled: true,
+                    max_count: 3
+                },
+                notes: {
+                    email: userData?.email,
+                    phoneNumber: selectedPhoneNumber
+                },
+                method: ['card', 'netbanking', 'upi']
             };
-            placeOrder(orderDetails);
-            dispatch(completeOrder()); // Dispatch action to set order state
-            navigate('/order-success', { state: { orderId: 'ZEL-20241203-5798', coinsWon: 100 } });
-            onClose();
+            const razorpayInstance = new window.Razorpay(options);
+            razorpayInstance.open();
+
+        } catch (error) {
+            console.error('Error during payment:', error);
+            toast.error('Payment failed. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    const handleProceedToPay = async () => {
+        if (selectedPayment === 'COD') {
+            const orderDetails = prepareOrderDetails('COD');
+            try {
+                setLoading(true);
+                await placeOrder(orderDetails);
+                dispatch(completeOrder());
+                navigate('/order-success', { 
+                    state: { 
+                        orderId: 'ZEL-' + Date.now(), 
+                        coinsWon: 100 
+                    } 
+                });
+                onClose();
+            } catch (error) {
+                console.error('Error placing order:', error);
+                toast.error('Failed to place order');
+            } finally {
+                setLoading(false);
+            }
+        } else if (selectedPayment === 'RAZORPAY') {
+            handleRazorpayPayment();
         }
     };
 
@@ -126,7 +276,6 @@ const PaymentConfirmation = ({
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Left Column - Amount and Order Summary */}
                     <div className="space-y-6">
                         <div className="text-center">
                             <p className="text-gray-600 mb-2">Total Amount to Pay</p>
@@ -197,7 +346,6 @@ const PaymentConfirmation = ({
                         </div>
                     </div>
 
-                    {/* Right Column - Payment Method and Button */}
                     <div className="space-y-6">
                         <div className="bg-gray-50 rounded-lg p-4">
                             <h3 className="font-semibold text-gray-700 mb-3">Select Payment Method</h3>
@@ -235,12 +383,26 @@ const PaymentConfirmation = ({
                             </div>
                         </div>
 
-                        <button
-                            onClick={handleProceedToPay}
-                            className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition duration-300"
-                        >
-                            Proceed to Payment
-                        </button>
+
+                    <button
+                        onClick={handleProceedToPay}
+                        disabled={loading}
+                        className={`w-full py-4 rounded-lg text-white font-medium transition-all ${
+                            loading
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-orange-500 hover:bg-primary/90'
+                        }`}
+                    >
+                        {loading ? (
+                            <div className="flex items-center justify-center gap-2">
+                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                Processing...
+                            </div>
+                        ) : (
+                            `Confirm Order - ₹${finalTotal.toFixed(2)}`
+                        )}
+                    </button>
+                
                     </div>
                 </div>
             </motion.div>

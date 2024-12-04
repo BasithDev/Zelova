@@ -1,8 +1,25 @@
 const Order = require('../../models/orders')
 const Coupon = require('../../models/coupons')
 const RedeemedCoupon = require('../../models/reedemedCoupon')
-const Cart = require('../../models/cart') // Assuming Cart model is in this location
+const Cart = require('../../models/cart')
 const {getUserId} = require('../../helpers/getUserId')
+const crypto = require('crypto');
+const Razorpay = require('razorpay');
+
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
+});
+
+// Function to generate orderId
+function generateOrderId() {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    return `ZEL-${year}${month}${day}-${random}`;
+}
 
 exports.placeOrder = async (req, res) => {
     try {
@@ -21,7 +38,8 @@ exports.placeOrder = async (req, res) => {
             items,
             billDetails,
             rating: 0,
-            status: 'PENDING' 
+            status: 'PENDING',
+            orderId: generateOrderId()
         };
 
         if (couponCode) {
@@ -82,6 +100,40 @@ exports.getCurrentOrders = async (req, res) => {
         res.status(500).json({ message: 'Failed to retrieve orders',});
     }
 }
+exports.createRazorpayOrder = async (req, res) => {
+    try {
+        const token = req.cookies.user_token;
+        if (!token) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+        const userId = getUserId(token, process.env.JWT_SECRET);
+
+        if (!userId) {
+            return res.status(400).json({ message: 'User ID is required' });
+        }
+        
+        const { amount } = req.body;
+
+        const options = {
+            amount: Math.round(amount * 100),
+            currency: 'INR',
+            receipt: 'receipt_' + Math.random().toString(36).substring(7),
+        };
+
+        const razorpayOrder = await razorpay.orders.create(options);
+
+        res.status(200).json({
+            success: true,
+            order: razorpayOrder
+        });
+    } catch (error) {
+        console.error('Error creating Razorpay order:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to create payment order'
+        });
+    }
+};
 exports.getPreviousOrdersOnDate = async (req, res) => {
     try {
         const token = req.cookies.user_token;
@@ -120,7 +172,77 @@ exports.getPreviousOrdersOnDate = async (req, res) => {
         });
     }
 };
+exports.verifyRazorpayPayment = async (req, res) => {
+    try {
+        const token = req.cookies.user_token;
+        if (!token) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+        const userId = getUserId(token, process.env.JWT_SECRET);
 
+        const { 
+            razorpay_order_id, 
+            razorpay_payment_id, 
+            razorpay_signature,
+            orderDetails 
+        } = req.body;
+
+        // Validate required fields
+        if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !orderDetails) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required payment details'
+            });
+        }
+
+        const sign = razorpay_order_id + "|" + razorpay_payment_id;
+        const expectedSign = crypto
+            .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+            .update(sign.toString())
+            .digest("hex");
+
+        if (razorpay_signature !== expectedSign) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid payment signature'
+            });
+        }
+
+        // Generate orderId
+        const orderId = generateOrderId();
+
+        const finalOrderDetails = {
+            ...orderDetails,
+            userId,
+            orderId,
+            paymentDetails: {
+                razorpay_order_id,
+                razorpay_payment_id,
+                razorpay_signature
+            },
+            status: 'PAID'
+        };
+
+        const order = await Order.create(finalOrderDetails);
+        
+        if (orderDetails.cartId) {
+            await Cart.deleteOne({ _id: orderDetails.cartId });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Payment verified successfully',
+            order
+        });
+    } catch (error) {
+        console.error('Error verifying payment:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Payment verification failed',
+            error: error.message
+        });
+    }
+};
 exports.updateOrderStatus = async (req, res) => {
     try {
         const token = req.cookies.user_token;
