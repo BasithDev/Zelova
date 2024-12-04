@@ -1,12 +1,14 @@
 import { FaShoppingBag, FaClock, FaMoneyBillWave, FaCheckCircle, FaTruck, FaSpinner } from "react-icons/fa";
-import { getCurrentOrdersForVendor } from "../../Services/apiServices";
-import { useQuery } from '@tanstack/react-query';
+import { getCurrentOrdersForVendor, updateOrderStatus } from "../../Services/apiServices";
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const VendorHome = () => {
     const { data: response = {}, isLoading, isError } = useQuery({
         queryKey: ['vendorOrders'],
         queryFn: getCurrentOrdersForVendor,
-        refetchInterval: 30000, // Refetch every 30 seconds
+        refetchInterval: 5000,
     });
 
     const orders = response?.data || [];
@@ -16,6 +18,31 @@ const VendorHome = () => {
         return orders.filter(order => 
             order?.status?.toUpperCase() === status.toUpperCase()
         ).length;
+    };
+
+    const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, orderId: null, newStatus: null, customerName: null });
+    const queryClient = useQueryClient();
+
+    const handleStatusChange = async (orderId, newStatus, customerName) => {
+        setConfirmDialog({ isOpen: true, orderId, newStatus, customerName });
+    };
+
+    const confirmStatusChange = async () => {
+        try {
+            await updateOrderStatus({
+                orderId: confirmDialog.orderId,
+                status: confirmDialog.newStatus
+            });
+            await queryClient.invalidateQueries(['vendorOrders']);
+            setConfirmDialog({ isOpen: false, orderId: null, newStatus: null, customerName: null });
+        } catch (error) {
+            console.error('Failed to update order status:', error);
+            if (error.response?.data?.message) {
+                console.log(error.response.data.message);
+            } else {
+                console.log('Failed to update order status. Please try again.');
+            }
+        }
     };
 
     if (isLoading) {
@@ -36,8 +63,6 @@ const VendorHome = () => {
             </div>
         );
     }
-
-    console.log(orders);
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -130,11 +155,13 @@ const VendorHome = () => {
                                                     ${order?.status?.toUpperCase() === 'PREPARING' ? 'bg-yellow-100 text-yellow-800' : ''}
                                                     ${order?.status?.toUpperCase() === 'ON THE WAY' ? 'bg-blue-100 text-blue-800' : ''}
                                                     ${order?.status?.toUpperCase() === 'DELIVERED' ? 'bg-green-100 text-green-800' : ''}
+                                                    ${order?.status?.toUpperCase() === 'NOT RECEIVED BY CUSTOMER' ? 'bg-red-100 text-red-800' : ''}
                                                 `}>
                                                     {order?.status?.toUpperCase() === 'PENDING' ? <FaClock className="w-4 h-4 mr-2" /> : ''}
                                                     {order?.status?.toUpperCase() === 'PREPARING' ? <FaSpinner className="w-4 h-4 mr-2 animate-spin" /> : ''}
                                                     {order?.status?.toUpperCase() === 'ON THE WAY' ? <FaTruck className="w-4 h-4 mr-2" /> : ''}
                                                     {order?.status?.toUpperCase() === 'DELIVERED' ? <FaCheckCircle className="w-4 h-4 mr-2" /> : ''}
+                                                    {order?.status?.toUpperCase() === 'NOT RECEIVED BY CUSTOMER' ? <FaCheckCircle className="w-4 h-4 mr-2" /> : ''}
                                                     {order?.status}
                                                 </span>
                                                 <span className="text-lg font-semibold text-gray-900">{order.orderId}</span>
@@ -190,7 +217,11 @@ const VendorHome = () => {
                                         </div>
 
                                         <div className="flex-shrink-0 self-start mt-4 md:mt-0">
-                                            <select value={order.status} onChange={(e) => console.log(e.target.value)} className="block w-full md:w-48 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
+                                            <select 
+                                                value={order.status} 
+                                                onChange={(e) => handleStatusChange(order.orderId, e.target.value, order.user.name)} 
+                                                className="block w-full md:w-48 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                                            >
                                                 <option value="PENDING">Pending</option>
                                                 <option value="PREPARING">Preparing</option>
                                                 <option value="ON THE WAY">On The Way</option>
@@ -208,6 +239,61 @@ const VendorHome = () => {
                     </div>
                 </div>
             </main>
+
+            {/* Confirmation Dialog */}
+            <AnimatePresence>
+                {confirmDialog.isOpen && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+                    >
+                        <motion.div 
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-xl"
+                        >
+                            <div className="flex flex-col items-center text-center">
+                                <div className="mb-4 p-3 rounded-full bg-blue-100">
+                                    <FaSpinner className="w-8 h-8 text-blue-600 animate-spin" />
+                                </div>
+                                <h3 className="text-xl font-semibold text-gray-900 mb-2">Update Order Status</h3>
+                                <p className="text-gray-600 mb-2">
+                                    Order ID: <span className="font-semibold">{confirmDialog.orderId}</span>
+                                </p>
+                                <p className="text-gray-600 mb-2">
+                                    Customer: <span className="font-semibold">{confirmDialog.customerName}</span>
+                                </p>
+                                <p className="text-gray-600 mb-8">
+                                    Are you sure you want to change the order status to{' '}
+                                    <span className="font-semibold text-blue-600">{confirmDialog.newStatus}</span>?
+                                </p>
+                                <div className="flex gap-3 w-full">
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={() => setConfirmDialog({ isOpen: false, orderId: null, newStatus: null, customerName: null })}
+                                        className="flex-1 px-6 py-3 text-gray-700 bg-gray-100 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+                                    >
+                                        Cancel
+                                    </motion.button>
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={confirmStatusChange}
+                                        className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
+                                    >
+                                        Confirm
+                                    </motion.button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

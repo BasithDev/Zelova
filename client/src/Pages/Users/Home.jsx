@@ -13,7 +13,7 @@ const Home = () => {
     const navigate = useNavigate();
     const [restaurantData, setRestaurantData] = useState([])
     const [locationAvailable, setLocationAvailable] = useState(false);
-    const userLocation = useSelector((state) => state.userLocation)
+    const userLocation = useSelector((state) => state?.userLocation)
     const { lat: lat, lng: lon } = userLocation.coordinates
     const [searchQuery, setSearchQuery] = useState('');
 

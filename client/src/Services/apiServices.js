@@ -57,7 +57,8 @@ export const getUserCoupons = () => api.get('/user/coupons')
 //user routes - order management
 export const placeOrder = (data) => api.post('/user/orders/place-order',data)
 export const getCurrentOrders = () => api.get('/user/orders/current')
-
+export const userUpdateOrderStatus = (data) => api.patch('/user/orders/update-status',data)
+export const getPreviousOrdersOnDate = (date) => api.get(`/user/orders/previous/${date}`)
 //vendor routes - restaruant management
 export const getRestaurant = () => api.get(`vendor/restaurant`)
 export const updateRestaurantDetails = (data) => api.put(`vendor/restaurant/details`, data);
@@ -86,3 +87,4 @@ export const deleteOffer = (offerId) => api.delete(`/vendor/offer/delete/${offer
 
 //vendor routes - orders management
 export const getCurrentOrdersForVendor = () => api.get(`/vendor/orders/current`)
+export const updateOrderStatus = (data) => api.patch(`/vendor/orders/update-status`,data)
