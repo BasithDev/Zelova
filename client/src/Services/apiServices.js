@@ -59,6 +59,9 @@ export const placeOrder = (data) => api.post('/user/orders/place-order',data)
 export const getCurrentOrders = () => api.get('/user/orders/current')
 export const userUpdateOrderStatus = (data) => api.patch('/user/orders/update-status',data)
 export const getPreviousOrdersOnDate = (date) => api.get(`/user/orders/previous/${date}`)
+export const createRazorpayOrder = (data) => api.post('/user/orders/create-razorpay-order', data)
+export const verifyRazorpayPayment = (data) => api.post('/user/orders/verify-razorpay-payment', data)
+
 //vendor routes - restaruant management
 export const getRestaurant = () => api.get(`vendor/restaurant`)
 export const updateRestaurantDetails = (data) => api.put(`vendor/restaurant/details`, data);
