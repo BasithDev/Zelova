@@ -206,7 +206,7 @@ const UserLayout = () => {
                     className={`text-sm whitespace-nowrap overflow-hidden text-ellipsis ${location.pathname === "/profile" ? "text-orange-100" : "text-gray-500"
                       } w-full max-w-full`}
                   >
-                    {userAddress || "Address not available"}
+                    {userAddress || "Loading..."}
                   </p>
                 </div>
               </div>

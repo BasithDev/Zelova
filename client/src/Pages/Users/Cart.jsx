@@ -4,9 +4,8 @@ import { useCart } from '../../Hooks/useCart';
 import { useNavigate} from 'react-router-dom';
 import { useState, useEffect,useCallback } from 'react';
 import { useSelector } from 'react-redux';
-import { getAddresses } from '../../Services/apiServices';
+import { getAddresses , getUserCoupons , getDeliveryFee } from '../../Services/apiServices';
 import { AnimatePresence } from 'framer-motion';
-import { getUserCoupons } from '../../Services/apiServices';
 import { calculateItemPrice, calculateItemTotal } from '../../utils/cartCalculations';
 import { useCartState } from '../../Hooks/useCartState';
 import RestaurantHeader from '../../components/Restaurant/RestaurantHeader';
@@ -31,29 +30,40 @@ const Cart = () => {
         isUsingCurrentLocation
     } = cartState;
 
+    const [deliveryFee, setDeliveryFee] = useState(10);
+    const userLocation = useSelector((state) => state?.userLocation);
+    const restaurantId = cart?.data?.cart?.restaurantId?._id;
+
     const fetchData = useCallback(async () => {
         try {
-            const [addressesResponse, couponsResponse] = await Promise.all([
+            const [addressesResponse, couponsResponse, deliveryFeeResponse] = await Promise.all([
                 getAddresses(),
-                getUserCoupons()
+                getUserCoupons(),
+                userLocation?.coordinates && restaurantId ? getDeliveryFee(userLocation?.coordinates?.lat, userLocation?.coordinates?.lng, restaurantId) : Promise.resolve({ data: { deliveryFee: 10 } })
             ]);
+
             setSavedAddresses(addressesResponse?.data || []);
             updateCartState({ coupons: couponsResponse?.data || [] });
+
+            if (deliveryFeeResponse && deliveryFeeResponse.data) {
+                setDeliveryFee(deliveryFeeResponse.data.deliveryFee);
+            }
         } catch (error) {
             console.error('Error fetching data:', error);
         }
-    }, [updateCartState]);
+    }, [updateCartState, userLocation, restaurantId]);
 
     useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+        if (userLocation?.coordinates && restaurantId) {
+            fetchData();
+        }
+    }, []);
 
     const totalPrice = calculateItemTotal(cartData);
     const originalPrice = cartData?.items?.reduce((total, item) => total + (item.itemPrice * item.quantity), 0) || 0;
     const totalSavings = originalPrice - totalPrice;
     const tax = totalPrice * 0.05; // 5% tax
     const platformFee = 8;
-    const deliveryFee = 40; // Fixed delivery fee
 
     const handleQuantity = (itemId, action) => {
         const cartItem = cartData?.items?.find(
@@ -193,12 +203,13 @@ const Cart = () => {
                                                 </div>
                                             </div>
                                         )}
-    
+
                                         {cartItem.item.offers && (
                                             <div className='bg-green-200 text-green-500 font-semibold text-md py-1 px-2 rounded-md mt-2 w-fit'>
                                                 <p>{cartItem.item.offers.offerName}</p>
                                             </div>
                                             
+
                                         )}
                                     </div>
                                     <div className="flex items-center gap-4">
@@ -517,11 +528,11 @@ const Cart = () => {
                         <span className="flex items-center gap-2">
                             {totalPrice >= 500 ? (
                                 <>
-                                    <span className="text-gray-400 line-through">₹{deliveryFee}</span>
+                                    <span className="text-gray-400 line-through">₹{deliveryFee.toFixed(2)}</span>
                                     <span className="text-green-600">FREE</span>
                                 </>
                             ) : (
-                                `₹${deliveryFee}`
+                                `₹${deliveryFee.toFixed(2)}`
                             )}
                         </span>
                     </div>

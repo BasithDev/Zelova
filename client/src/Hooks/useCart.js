@@ -8,18 +8,24 @@ export const useCart = () => {
     const { data: cart, isLoading, isError } = useQuery({
         queryKey: ['cart'],
         queryFn: getCart,
+        cacheTime: 1000 * 60 * 10,
+        staleTime: 1000 * 60 * 5
     });
 
     // Fetch total items in cart
     const { data: totalItems, isLoading: totalItemsLoading, isError: totalItemsError } = useQuery({
         queryKey: ['totalItems'],
         queryFn: getTotalItemsFromCart,
+        cacheTime: 1000 * 60 * 10,
+        staleTime: 1000 * 60 * 5
     });
 
     // Fetch total price of cart
     const { data: totalPrice, isLoading: totalPriceLoading, isError: totalPriceError } = useQuery({
         queryKey: ['totalPrice'],
         queryFn: getTotalPriceFromCart,
+        cacheTime: 1000 * 60 * 10,
+        staleTime: 1000 * 60 * 5
     });
 
     // Mutation to update cart

@@ -14,7 +14,7 @@ const Home = () => {
     const [restaurantData, setRestaurantData] = useState([])
     const [locationAvailable, setLocationAvailable] = useState(false);
     const userLocation = useSelector((state) => state?.userLocation)
-    const { lat: lat, lng: lon } = userLocation.coordinates
+    const { lat, lng: lon } = userLocation.coordinates || {}
     const [searchQuery, setSearchQuery] = useState('');
 
     const fetchRestaurants = useCallback(async () => {
@@ -26,7 +26,7 @@ const Home = () => {
     }, [lat, lon])
 
     useEffect(() => {
-        if (lat && lon) {
+        if (lat !== undefined && lon !== undefined) {
             fetchRestaurants()
         } else {
             toast.error("Please enable location services to view nearby restaurants")
