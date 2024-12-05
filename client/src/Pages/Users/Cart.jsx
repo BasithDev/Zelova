@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { FaMinus, FaPlus, FaChevronDown, FaMapMarkerAlt } from 'react-icons/fa';
 import { useCart } from '../../Hooks/useCart';
 import { useNavigate} from 'react-router-dom';
-import { useState, useEffect,useCallback } from 'react';
+import { useState, useEffect,useCallback,useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { getAddresses , getUserCoupons , getDeliveryFee } from '../../Services/apiServices';
 import { AnimatePresence } from 'framer-motion';
@@ -34,6 +34,9 @@ const Cart = () => {
     const userLocation = useSelector((state) => state?.userLocation);
     const restaurantId = cart?.data?.cart?.restaurantId?._id;
 
+    const initialFetch = useRef(true);
+
+
     const fetchData = useCallback(async () => {
         try {
             const [addressesResponse, couponsResponse, deliveryFeeResponse] = await Promise.all([
@@ -54,10 +57,11 @@ const Cart = () => {
     }, [updateCartState, userLocation, restaurantId]);
 
     useEffect(() => {
-        if (userLocation?.coordinates && restaurantId) {
+        if (initialFetch.current && userLocation?.coordinates && restaurantId) {
             fetchData();
+            initialFetch.current = false; // Prevent further calls
         }
-    }, []);
+    }, [fetchData, userLocation?.coordinates, restaurantId]);
 
     const totalPrice = calculateItemTotal(cartData);
     const originalPrice = cartData?.items?.reduce((total, item) => total + (item.itemPrice * item.quantity), 0) || 0;
