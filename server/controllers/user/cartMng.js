@@ -1,5 +1,7 @@
 const Cart = require('../../models/cart');
 const {getUserId} = require('../../helpers/getUserId');
+const Restaurant = require('../../models/restaurant');
+const mongoose = require('mongoose');
 exports.getCart = async (req, res) => {
     try {
         const token = req.cookies.user_token;
@@ -68,18 +70,15 @@ exports.updateCart = async (req, res) => {
                 }],
             });
         } else {
-            // Update existing cart
             const itemIndex = cart.items.findIndex(item => item.item.toString() === itemId);
 
             if (itemIndex === -1) {
-                // Add new item
                 cart.items.push({
                     item: itemId,
                     quantity: action === 'add' ? 1 : 0,
                     selectedCustomizations: selectedCustomizations || [],
                 });
             } else {
-                // Update quantity for existing item
                 if (action === 'add') {
                     cart.items[itemIndex].quantity += 1;
                 } else if (action === 'remove') {
@@ -90,21 +89,68 @@ exports.updateCart = async (req, res) => {
                 }
             }
 
-            // If cart is empty after updates, delete it
             if (cart.items.length === 0) {
                 await Cart.findByIdAndDelete(cart._id);
                 return res.json({ message: 'Cart is empty and deleted.' });
             }
         }
 
-        // Save cart (middleware ensures validation and restaurantId consistency)
         await cart.save();
 
-        // Return updated cart
         const updatedCart = await Cart.findById(cart._id).populate('items.item');
         res.json({ message: 'Cart updated successfully', cart: updatedCart });
     } catch (error) {
         console.error('Error updating cart:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
-};
+}
+exports.generateDeliveryFee = async (req, res) => {
+    try {
+        const token = req.cookies.user_token;
+        if (!token) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+        const userId = getUserId(token, process.env.JWT_SECRET);
+        if (!userId) {
+            return res.status(400).json({ message: 'User ID is required' });
+        }
+        let { lat, lon, restaurantId } = req.query;
+        if (!lat || !lon || !restaurantId) {
+            return res.status(400).json({ message: 'Latitude, Longitude, and Restaurant ID are required' });
+        }
+
+        lat = parseFloat(lat);
+        lon = parseFloat(lon);
+
+
+        try {
+            const distanceResult = await Restaurant.aggregate([
+                {
+                    $geoNear: {
+                        near: { type: "Point", coordinates: [lat, lon] },
+                        distanceField: "distance",
+                        spherical: true,
+                        maxDistance: 50000
+                    }
+                },
+                {
+                    $match: { _id: new mongoose.Types.ObjectId(restaurantId) }
+                }
+            ]);
+
+            if (!distanceResult.length) {
+                return res.status(404).json({ message: 'Distance calculation failed' });
+            }
+
+            const deliveryFee = (distanceResult[0].distance / 1000) * 8;
+
+            res.json({ deliveryFee });
+        } catch (error) {
+            console.error('Error during distance calculation:', error);
+            return res.status(500).json({ message: 'Internal server error' });
+        }
+    } catch (error) {
+        console.error('Error getting delivery fee:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}

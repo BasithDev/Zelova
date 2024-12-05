@@ -53,6 +53,7 @@ export const getTotalItemsFromCart = () => api.get('/user/cart/total-items')
 export const getTotalPriceFromCart = () => api.get('/user/cart/total-price')
 export const updateCart = (data) => api.put('/user/cart/update',data)
 export const getUserCoupons = () => api.get('/user/coupons')
+export const getDeliveryFee = (lat,lon,restaurantId) => api.get(`/user/cart/delivery-fee?lat=${lat}&lon=${lon}&restaurantId=${restaurantId}`)
 
 //user routes - order management
 export const placeOrder = (data) => api.post('/user/orders/place-order',data)
