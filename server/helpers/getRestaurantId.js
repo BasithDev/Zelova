@@ -5,4 +5,4 @@ const getRestaurantId = (token, secret) => {
     return decoded && decoded.restaurantId ? decoded.restaurantId : null;
 };
 
-module.exports = {getRestaurantId};
+module.exports = getRestaurantId

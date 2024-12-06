@@ -1,5 +1,5 @@
 const Orders = require('../../models/orders')
-const {getUserId} = require('../../helpers/getUserId')
+const getUserId = require('../../helpers/getUserId')
 const getRestaurantId = require('../../helpers/getRestaurantId')
 const statusCodes = require('../../config/statusCodes')
 
@@ -38,7 +38,42 @@ const updateOrderStatus = async (req, res, next) => {
         next(error);
     }
 };
+const getPreviousOrdersOnDate = async (req, res, next) => {
+    try {
+        const token = req.cookies.user_token;
+        if (!token) {
+            return res.status(statusCodes.UNAUTHORIZED).json({ message: 'Not authorized' });
+        }
+        const restaurantId = getRestaurantId(token, process.env.JWT_SECRET);
+        if (!restaurantId) {
+            return res.status(statusCodes.BAD_REQUEST).json({ message: 'Restaurant ID is required' });
+        }
+        const { date } = req.params;
+        const searchDate = new Date(date);
+        const startOfDay = new Date(searchDate.setHours(0, 0, 0, 0));
+        const endOfDay = new Date(searchDate.setHours(23, 59, 59, 999));
+
+        const orders = await Orders.find({ 
+            restaurantId,
+            status: 'ORDER ACCEPTED',
+            updatedAt: {
+                $gte: startOfDay,
+                $lte: endOfDay
+            }
+        });
+        
+        res.status(statusCodes.OK).json({ 
+            success: true,
+            message: 'Orders retrieved successfully',
+            orders 
+        });
+    } catch (error) {
+        console.error('Error retrieving orders:', error);
+        next(error);
+    }
+}   
 module.exports = {
     getCurrentOrdersForVendor,
-    updateOrderStatus
+    updateOrderStatus,
+    getPreviousOrdersOnDate
 }

@@ -4,7 +4,7 @@ const cloudinary = require('cloudinary').v2;
 const Otp = require('../../models/otp')
 const { sendOTPEmail } = require('../../config/mailer');
 const bcrypt = require('bcryptjs');
-const {getUserId} = require('../../helpers/getUserId')
+const getUserId = require('../../helpers/getUserId')
 const statusCodes = require('../../config/statusCodes');
 
 const getUserById = async (req, res, next) => {

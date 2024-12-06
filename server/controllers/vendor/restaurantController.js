@@ -1,6 +1,6 @@
 const Restaurant = require('../../models/restaurant')
 const cloudinary = require('cloudinary').v2;
-const {getUserId} = require('../../helpers/getUserId')
+const getUserId = require('../../helpers/getUserId')
 const statusCodes = require('../../config/statusCodes');
 
 const getRestaurant = async (req, res, next) => {

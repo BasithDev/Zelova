@@ -158,8 +158,4 @@ Header.propTypes = {
     placeholderText: PropTypes.string
 };
 
-Header.defaultProps = {
-    placeholderText: "Search..."
-};
-
 export default Header;
