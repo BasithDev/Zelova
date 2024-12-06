@@ -5,6 +5,7 @@ const Otp = require('../../models/otp')
 const { sendOTPEmail } = require('../../config/mailer');
 const bcrypt = require('bcryptjs');
 const {getUserId} = require('../../helpers/getUserId')
+const statusCodes = require('../../config/statusCodes');
 
 const getUserById = async (req, res) => {
   const token = req.cookies.user_token
@@ -13,15 +14,15 @@ const getUserById = async (req, res) => {
         const user = await User.findById(id);
 
         if (!user) {
-            return res.status(404).json({
+            return res.status(statusCodes.NOT_FOUND).json({
                 status: "Failed",
                 message: "User not found"
             });
         }
 
-        res.status(200).json(user);
+        res.status(statusCodes.OK).json(user);
     } catch (error) {
-        res.status(500).json({
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
             status: "Failed",
             message: "Error retrieving user",
             error
@@ -34,7 +35,7 @@ const updateProfile = async (req, res) => {
     const { userId, fullname, age, phoneNumber, profilePicture } = req.body;
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(statusCodes.NOT_FOUND).json({ message: "User not found" });
     }
     const updateData = {
       fullname,
@@ -47,14 +48,14 @@ const updateProfile = async (req, res) => {
       { $set: updateData },
       { new: true }
     );
-    if (!updatedUser) return res.status(404).json({ message: "User not found" });
-    res.status(200).json({
+    if (!updatedUser) return res.status(statusCodes.NOT_FOUND).json({ message: "User not found" });
+    res.status(statusCodes.OK).json({
       message: "Profile updated successfully",
       user: updatedUser,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "An error occurred while updating the profile" });
+    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: "An error occurred while updating the profile" });
   }
 };
 
@@ -62,19 +63,19 @@ const deleteImage = async (req, res) => {
   try {
     const { public_id, userId } = req.body;
     if (!public_id || !userId) {
-      return res.status(400).json({ message: "Public ID is required" });
+      return res.status(statusCodes.BAD_REQUEST).json({ message: "Public ID is required" });
     }
     await cloudinary.uploader.destroy(public_id);
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(statusCodes.NOT_FOUND).json({ message: "User not found" });
     }
     user.profilePicture = '';
     await user.save();
-    res.status(200).json({ message: "Image deleted successfully" });
+    res.status(statusCodes.OK).json({ message: "Image deleted successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Failed to delete image" });
+    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: "Failed to delete image" });
   }
 };
 
@@ -84,13 +85,13 @@ const sendOTP = async (req,res)=>{
   const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
   await Otp.create({ email, otp: otpCode , lastRequested: Date.now() });
   await sendOTPEmail(email, otpCode);
-  return res.status(201).json({
+  return res.status(statusCodes.CREATED).json({
     status: 'Success',
     message: 'OTP sent successfully',
 });
   } catch (error) {
     console.log(error)
-    return res.status(201).json({
+    return res.status(statusCodes.CREATED).json({
       status: 'Success',
       message: "couldn't sent OTP",
   });
@@ -102,26 +103,26 @@ const updateEmail = async (req,res)=>{
     const { userId, email, otp } = req.body;
     const otpEntry = await Otp.findOne({ email: email, otp });
     if (!otpEntry || Date.now() - otpEntry.lastRequested > 60000) {
-      return res.status(400).json({
+      return res.status(statusCodes.BAD_REQUEST).json({
         status: 'Failed',
         message: 'Invalid or expired OTP'
       });
     }
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(statusCodes.NOT_FOUND).json({ message: 'User not found' });
     }
     user.email = email;
     await user.save();
     await Otp.deleteOne({ email: email });
-    res.status(200).json({
+    res.status(statusCodes.OK).json({
       status: 'Success',
       message: 'Email updated successfully',
       user
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({
+    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
       status: 'Failed',
       message: 'Failed to update email'
     });
@@ -132,19 +133,19 @@ const resetPassword = async (req, res) => {
   const { userId, oldPassword, newPassword } = req.body;
   try {
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ status: 'Error', message: 'User not found.' });
+    if (!user) return res.status(statusCodes.NOT_FOUND).json({ status: 'Error', message: 'User not found.' });
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     const isNewSame = await bcrypt.compare(newPassword,user.password)
-    if (!isMatch) return res.status(400).json({ status: 'Error', message: 'Old password is incorrect.' });
-    if (isNewSame) return res.status(400).json({ status: 'Error', message: 'New password is same as old password' })
+    if (!isMatch) return res.status(statusCodes.BAD_REQUEST).json({ status: 'Error', message: 'Old password is incorrect.' });
+    if (isNewSame) return res.status(statusCodes.BAD_REQUEST).json({ status: 'Error', message: 'New password is same as old password' })
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
     await user.save();
-    res.status(200).json({ status: 'Success', message: 'Password updated successfully.' });
+    res.status(statusCodes.OK).json({ status: 'Success', message: 'Password updated successfully.' });
   } catch (error) {
     console.log(error)
     console.error("Error updating password:", error);
-    res.status(500).json({ status: 'Error', message: 'An error occurred while updating the password.' });
+    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ status: 'Error', message: 'An error occurred while updating the password.' });
   }
 };
 
@@ -154,13 +155,13 @@ const getUserStatus = async (req, res) => {
       const user = await User.findById(userId);
 
       if (!user) {
-          return res.status(404).json({ message: 'User not found' });
+          return res.status(statusCodes.NOT_FOUND).json({ message: 'User not found' });
       }
 
-      res.status(200).json({ status: user.status });
+      res.status(statusCodes.OK).json({ status: user.status });
   } catch (error) {
       console.error('Error fetching user status:', error);
-      res.status(500).json({ message: 'Server error' });
+      res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error' });
   }
 };
 
@@ -168,13 +169,13 @@ const addAddress = async (req,res) => {
   try {
     const token = req.cookies.user_token
     if (!token) {
-      return res.status(401).json({ message: "Unauthorized. No token provided." });
+      return res.status(statusCodes.UNAUTHORIZED).json({ message: "Unauthorized. No token provided." });
     }
     const userId = getUserId(token, process.env.JWT_SECRET);
     const { label, address, phone } = req.body;
 
     if (!label || !address || !phone) {
-      return res.status(400).json({ message: "All fields are required." });
+      return res.status(statusCodes.BAD_REQUEST).json({ message: "All fields are required." });
     }
 
     const newAddress = new Address({
@@ -186,11 +187,11 @@ const addAddress = async (req,res) => {
 
     await newAddress.save();
 
-    res.status(201).json({ message: "Address added successfully", address: newAddress });
+    res.status(statusCodes.CREATED).json({ message: "Address added successfully", address: newAddress });
 
   } catch (error) {
     console.error('Error adding new Address:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error' });
   }
 }
 
@@ -198,20 +199,20 @@ const getAddresses = async (req,res)=>{
   try {
     const token = req.cookies.user_token
     if (!token) {
-      return res.status(401).json({ message: "Unauthorized. No token provided." });
+      return res.status(statusCodes.UNAUTHORIZED).json({ message: "Unauthorized. No token provided." });
     }
     const userId  = getUserId(token,process.env.JWT_SECRET)
     const addresses = await Address.find({ userId });
 
     if (!addresses || addresses.length === 0) {
-      return res.status(200).json({ message: "No addresses found." });
+      return res.status(statusCodes.OK).json({ message: "No addresses found." });
     }
 
-    res.status(200).json({ message: "Addresses retrieved successfully", addresses });
+    res.status(statusCodes.OK).json({ message: "Addresses retrieved successfully", addresses });
 
   } catch (error) {
     console.error('Error getting addresses:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error' });
   }
 }
 
@@ -220,20 +221,20 @@ const deleteAddress = async (req,res) =>{
     const { addressId } = req.params;
     const token = req.cookies.user_token
     if (!token) {
-      return res.status(401).json({ message: "Unauthorized. No token provided." });
+      return res.status(statusCodes.UNAUTHORIZED).json({ message: "Unauthorized. No token provided." });
     }
     const userId  = getUserId(token,process.env.JWT_SECRET)
 
     const address = await Address.findOneAndDelete({ _id: addressId, userId });
 
     if (!address) {
-      return res.status(404).json({ message: "Address not found or not authorized" });
+      return res.status(statusCodes.NOT_FOUND).json({ message: "Address not found or not authorized" });
     }
 
-    res.status(200).json({ message: "Address deleted successfully" });
+    res.status(statusCodes.OK).json({ message: "Address deleted successfully" });
   } catch (error) {
     console.error("Error deleting address:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: "Server error" });
   }
 }
 
@@ -242,13 +243,13 @@ const updateAddress = async (req,res)=>{
     const { addressId } = req.params;
     const token = req.cookies.user_token
     if (!token) {
-      return res.status(401).json({ message: "Unauthorized. No token provided." });
+      return res.status(statusCodes.UNAUTHORIZED).json({ message: "Unauthorized. No token provided." });
     }
     const userId  = getUserId(token,process.env.JWT_SECRET)
     const { label, address, phone } = req.body;
 
     if (!label || !address || !phone) {
-      return res.status(400).json({ message: "All fields are required." });
+      return res.status(statusCodes.BAD_REQUEST).json({ message: "All fields are required." });
     }
 
     const updatedAddress = await Address.findOneAndUpdate(
@@ -258,13 +259,13 @@ const updateAddress = async (req,res)=>{
     );
 
     if (!updatedAddress) {
-      return res.status(404).json({ message: "Address not found or not authorized" });
+      return res.status(statusCodes.NOT_FOUND).json({ message: "Address not found or not authorized" });
     }
 
-    res.status(200).json({ message: "Address updated successfully", address: updatedAddress });
+    res.status(statusCodes.OK).json({ message: "Address updated successfully", address: updatedAddress });
   } catch (error) {
     console.error("Error updating address:", error);    
-    res.status(500).json({ message: "Server error" });
+    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: "Server error" });
   }
 }
 

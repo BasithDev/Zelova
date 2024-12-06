@@ -1,12 +1,13 @@
 const User = require('../../models/user')
 const Restaurant = require('../../models/restaurant')
+const statusCodes = require('../../config/statusCodes')
 
 const getVendors = async (req, res) => {
   try {
     const vendors = await User.find({ isVendor: true });
-    res.status(200).json(vendors);
+    res.status(statusCodes.OK).json(vendors);
   } catch (error) {
-    res.status(500).json({ 
+    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ 
       status: "Failed",
       message: "Error retrieving vendors", error });
   }
@@ -17,7 +18,7 @@ const blockUnblockVendor = async (req, res) => {
     const { userId } = req.params;
     const { status } = req.body;
     if (!["active", "blocked"].includes(status)) {
-      return res.status(400).json({
+      return res.status(statusCodes.BAD_REQUEST).json({
         status: "Failed",
         message: "Invalid status value. Use 'active' or 'blocked'.",
       });
@@ -28,7 +29,7 @@ const blockUnblockVendor = async (req, res) => {
       { new: true }
     );
     if (!updatedUser) {
-      return res.status(404).json({
+      return res.status(statusCodes.NOT_FOUND).json({
         status: "Failed",
         message: "User not found",
       });
@@ -41,13 +42,13 @@ const blockUnblockVendor = async (req, res) => {
       res.clearCookie('user_token');
       res.clearCookie('is_vendor');
     }
-    res.status(200).json({
+    res.status(statusCodes.OK).json({
       status: "Success",
       message: `User ${status === "blocked" ? "blocked" : "unblocked"} successfully`,
       user: updatedUser,
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
       status: "Failed",
       message: "Error blocking/unblocking user",
       error,

@@ -1,5 +1,7 @@
 const FoodItem = require('../../models/fooditem');
 const getRestaurantId = require('../../helpers/getRestaurantId');
+const statusCodes = require('../../config/statusCodes');
+
 const addProduct = async (req, res) => {
     try {
         const token = req.cookies.user_token
@@ -24,7 +26,7 @@ const addProduct = async (req, res) => {
 
         const restaurantId = getRestaurantId(token, process.env.JWT_SECRET);
         if (!restaurantId || !itemName || !price || !category) {
-            return res.status(400).json({
+            return res.status(statusCodes.BAD_REQUEST).json({
                 success: false,
                 message: "Missing required fields: restaurantId, name, price, or foodCategory."
             });
@@ -37,7 +39,7 @@ const addProduct = async (req, res) => {
         });
 
         if (existingFoodItem) {
-            return res.status(400).json({
+            return res.status(statusCodes.BAD_REQUEST).json({
                 success: false,
                 message: "This food item already exists in your menu for the selected category."
             });
@@ -57,13 +59,13 @@ const addProduct = async (req, res) => {
         });
         await newFoodItem.save();
 
-        res.status(201).json({
+        res.status(statusCodes.CREATED).json({
             success: true,
             message: "Food item added successfully.",
         });
     } catch (error) {
         console.error(error);
-        res.status(500).json({
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: "Internal Server Error. Unable to add food item.",
             error: error.message
@@ -75,7 +77,7 @@ const getProducts = async (req, res) => {
         const token = req.cookies.user_token;
         const restaurantId = getRestaurantId(token, process.env.JWT_SECRET);
         if (!restaurantId) {
-            return res.status(400).json({
+            return res.status(statusCodes.BAD_REQUEST).json({
                 success: false,
                 message: "Invalid or missing restaurant ID.",
             });
@@ -98,19 +100,19 @@ const getProducts = async (req, res) => {
             });
 
         if (!foodItems.length) {
-            return res.status(404).json({
+            return res.status(statusCodes.NOT_FOUND).json({
                 success: false,
                 message: "No food items found.",
             });
         }
-        res.status(200).json({
+        res.status(statusCodes.OK).json({
             success: true,
             message: "Food items retrieved successfully.",
             data: foodItems,
         });
     } catch (error) {
         console.error(error);
-        res.status(500).json({
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: "Internal Server Error. Unable to fetch food items.",
             error: error.message,
@@ -128,16 +130,16 @@ const listOrUnlist = async (req, res) => {
         );
 
         if (!updatedFoodItem) {
-            return res.status(404).json({ message: 'Food item not found' });
+            return res.status(statusCodes.NOT_FOUND).json({ message: 'Food item not found' });
         }
 
-        res.status(200).json({
+        res.status(statusCodes.OK).json({
             message: `Food item has been ${isActive ? 'listed' : 'unlisted'} successfully.`,
             data: updatedFoodItem,
         });
     } catch (error) {
         console.error('Error updating food item:', error);
-        res.status(500).json({ message: 'Internal server error', error: error.message });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error', error: error.message });
     }
 }
 
@@ -147,13 +149,13 @@ const deleteProduct = async (req, res) => {
         const product = await FoodItem.findByIdAndDelete(id);
 
         if (!product) {
-            return res.status(404).json({
+            return res.status(statusCodes.NOT_FOUND).json({
                 success: false,
                 message: "Product not found",
             });
         }
 
-        return res.status(200).json({
+        return res.status(statusCodes.OK).json({
             success: true,
             message: "Product deleted successfully",
         });
@@ -161,7 +163,7 @@ const deleteProduct = async (req, res) => {
     } catch (error) {
         console.error("Error deleting product:", error)
 
-        return res.status(500).json({
+        return res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: "Failed to delete product. Please try again.",
         });
@@ -197,17 +199,17 @@ const updateProduct = async (req, res) => {
             });
 
         if (!updatedProduct) {
-            return res.status(404).json({ message: "Product not found" });
+            return res.status(statusCodes.NOT_FOUND).json({ message: "Product not found" });
         }
 
-        res.status(200).json({
+        res.status(statusCodes.OK).json({
             message: "Product updated successfully",
             updatedProduct
         });
 
     } catch (error) {
         console.error("Error updating product:", error);
-        res.status(500).json({
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Failed to update product",
             error: error.message,
         });
@@ -218,12 +220,12 @@ const updateOffer = async (req, res) => {
       const { productId, offerId } = req.body;
   
       if (!productId) {
-        return res.status(400).json({ message: 'FoodItem ID is required.' });
+        return res.status(statusCodes.BAD_REQUEST).json({ message: 'FoodItem ID is required.' });
       }
   
       const foodItem = await FoodItem.findById(productId);
       if (!foodItem) {
-        return res.status(404).json({ message: 'FoodItem not found.' });
+        return res.status(statusCodes.NOT_FOUND).json({ message: 'FoodItem not found.' });
       }
 
       if(offerId){
@@ -233,13 +235,13 @@ const updateOffer = async (req, res) => {
       }
       await foodItem.save();
   
-      return res.status(200).json({
+      return res.status(statusCodes.OK).json({
         message: 'Offer updated successfully.',
         updatedOffer: offerId,
       });
     } catch (error) {
       console.error('Error updating offer:', error);
-      return res.status(500).json({ message: 'Internal server error.' });
+      return res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error.' });
     }
   };
 

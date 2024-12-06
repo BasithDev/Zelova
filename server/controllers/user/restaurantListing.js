@@ -1,6 +1,7 @@
 const Restaurant = require('../../models/restaurant')
 const FoodItem = require('../../models/fooditem');
 const mongoose = require('mongoose');
+const statusCodes = require('../../config/statusCodes');
 
 const getNearbyRestaurantsFromDB = async (userLat, userLong, maxDistance = 50000) => {
     try {
@@ -42,15 +43,15 @@ const getRestaurants = async (req,res) =>{
     const {lat,lon} = req.query
 
     if (!lat || !lon) {
-        return res.status(400).json({ error: "Latitude and Longitude are required." });
+        return res.status(statusCodes.BAD_REQUEST).json({ error: "Latitude and Longitude are required." });
       }
     
     try {
         const restaurant_res = await getNearbyRestaurantsFromDB(parseFloat(lat),parseFloat(lon))
-        res.status(200).json(restaurant_res)
+        res.status(statusCodes.OK).json(restaurant_res)
     } catch (error) {
         console.log(error)
-        res.status(500).json({error:error.message})
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({error:error.message})
     }
 }
 
@@ -59,7 +60,7 @@ const getMenu = async (req,res) =>{
     const { lat, lon } = req.query;
 
     if (!lat || !lon) {
-        return res.status(400).json({ error: "Latitude and Longitude are required." });
+        return res.status(statusCodes.BAD_REQUEST).json({ error: "Latitude and Longitude are required." });
     }
 
     try {
@@ -86,19 +87,19 @@ const getMenu = async (req,res) =>{
         ]);
 
         if (!restaurant || restaurant.length === 0) {
-            return res.status(404).json({ message: 'Restaurant not found' });
+            return res.status(statusCodes.NOT_FOUND).json({ message: 'Restaurant not found' });
         }
         const menu = await FoodItem.find({ restaurantId: id })
             .populate('foodCategory')
             .populate('offers')
             .lean();
-        res.status(200).json({
+        res.status(statusCodes.OK).json({
             restaurant: restaurant[0],
             menu
         });
     } catch (error) {
         console.log(error);
-        res.status(500).json({error:error.message});
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({error:error.message});
     }
 }
 

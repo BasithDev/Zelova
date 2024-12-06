@@ -1,5 +1,6 @@
 const getRestaurantId = require('../../helpers/getRestaurantId');
 const Offers = require('../../models/offers');
+const statusCodes = require('../../config/statusCodes');
 
 const addOffer = async (req, res) => {
     try {
@@ -13,10 +14,10 @@ const addOffer = async (req, res) => {
             restaurantId 
         });
         await newOffer.save();
-        res.status(201).json({ message: 'Offer added successfully!' });
+        res.status(statusCodes.CREATED).json({ message: 'Offer added successfully!' });
     } catch (error) {
         console.error('Error adding offer:', error);
-        res.status(500).json({ message: 'Server error. Please try again later.' });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error. Please try again later.' });
     }
 };
 
@@ -25,16 +26,16 @@ const getOffers = async (req, res) => {
         const token = req.cookies.user_token
         const restaurantId = getRestaurantId(token,process.env.JWT_SECRET)
         if (!restaurantId) {
-            return res.status(400).json({ message: 'Restaurant ID is required.' });
+            return res.status(statusCodes.BAD_REQUEST).json({ message: 'Restaurant ID is required.' });
         }
         const offers = await Offers.find({ restaurantId });
         if (!offers || offers.length === 0) {
-            return res.status(404).json({ message: 'No offers found for this restaurant.' });
+            return res.status(statusCodes.NOT_FOUND).json({ message: 'No offers found for this restaurant.' });
         }
-        res.status(200).json({ offers });
+        res.status(statusCodes.OK).json({ offers });
     } catch (error) {
         console.error('Error fetching offers:', error);
-        res.status(500).json({ message: 'Server error. Please try again later.' });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error. Please try again later.' });
     }
 };
 
@@ -42,11 +43,11 @@ const deleteOffer = async (req, res) => {
     const { offerId } = req.params;
     try {
         const offer = await Offers.findByIdAndDelete(offerId);
-        if (!offer) return res.status(404).json({ message: 'Offer not found' });
-        res.status(200).json({ message: 'Offer deleted successfully' });
+        if (!offer) return res.status(statusCodes.NOT_FOUND).json({ message: 'Offer not found' });
+        res.status(statusCodes.OK).json({ message: 'Offer deleted successfully' });
     } catch (error) {
         console.error('Error deleting offer:', error);
-        res.status(500).json({ message: 'Server error. Please try again later.' });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error. Please try again later.' });
     }
 };
 module.exports = { addOffer, getOffers, deleteOffer };
