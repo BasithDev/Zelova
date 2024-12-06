@@ -1,7 +1,7 @@
 const Category = require('../../models/category')
 const SubCategory = require('../../models/subCategory')
 
-exports.addCategory = async (req, res) => {
+const addCategory = async (req, res) => {
   console.log('hello')
   try {
     const { name } = req.body;
@@ -15,7 +15,7 @@ exports.addCategory = async (req, res) => {
   }
 };
 
-exports.getCategories = async (req, res) => {
+const getCategories = async (req, res) => {
   try {
     const categories = await Category.find().sort({ name: 1 });
     if (categories.length === 0) {
@@ -27,7 +27,7 @@ exports.getCategories = async (req, res) => {
   }
 };
 
-exports.getSubCategories = async (req, res) => {
+const getSubCategories = async (req, res) => {
   try {
     const subCategories = await SubCategory.find().sort({ name: 1 });
     if (subCategories.length === 0) {
@@ -39,7 +39,7 @@ exports.getSubCategories = async (req, res) => {
   }
 };
 
-exports.addSubCategory = async (req, res) => {
+const addSubCategory = async (req, res) => {
   try {
     const { name, categoryName } = req.body;
     if (!(await Category.findOne({ name: categoryName }))) {
@@ -53,4 +53,11 @@ exports.addSubCategory = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Internal server error.", error });
   }
-};
+}
+
+module.exports = {
+  addCategory,
+  getCategories,
+  addSubCategory,
+  getSubCategories
+}

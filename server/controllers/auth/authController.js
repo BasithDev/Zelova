@@ -7,7 +7,7 @@ const { sendOTPEmail } = require('../../config/mailer');
 
 const OTP_COOLDOWN_PERIOD_MS = 30000;
 
-exports.login = async (req, res) => {
+const login = async (req, res) => {
     const { email, password } = req.body;
     
     try {
@@ -60,7 +60,7 @@ exports.login = async (req, res) => {
         });
     }
 };
-exports.logout = (req, res) => {
+const logout = (req, res) => {
     const { role } = req.body;
     
     try {
@@ -88,7 +88,7 @@ exports.logout = (req, res) => {
         });
     }
 };
-exports.registerUser = async (req, res) => {
+const registerUser = async (req, res) => {
     try {
         const { fullname, email, password, age, phoneNumber } = req.body;
         const existingUser = await User.findOne({ email });
@@ -122,7 +122,7 @@ exports.registerUser = async (req, res) => {
         });
     }
 };
-exports.verifyOTP = async (req, res) => {
+const verifyOTP = async (req, res) => {
     try {
         const { email, otp } = req.body;
         const otpRecord = await Otp.findOne({ email, otp });
@@ -145,7 +145,7 @@ exports.verifyOTP = async (req, res) => {
         });
     }
 };
-exports.resendOTP = async (req, res) => {
+const resendOTP = async (req, res) => {
     try {
         const { email } = req.body;
         let otpRecord = await Otp.findOne({ email });
@@ -183,8 +183,8 @@ exports.resendOTP = async (req, res) => {
         });
     }
 };
-exports.initiateGoogleLogin = (passport) => passport.authenticate('google', { scope: ['profile', 'email'] });
-exports.handleGoogleCallback = (passport) => (req, res, next) => {
+const initiateGoogleLogin = (passport) => passport.authenticate('google', { scope: ['profile', 'email'] });
+const handleGoogleCallback = (passport) => (req, res, next) => {
     passport.authenticate('google', { session: false }, (err, user,info) => {
         if (err || !user) {
             console.log("Error or no user:", { err, info });
@@ -194,7 +194,7 @@ exports.handleGoogleCallback = (passport) => (req, res, next) => {
         next();
     })(req, res, next);
 };
-exports.generateTokenAndRedirect = (req, res) => {
+const generateTokenAndRedirect = (req, res) => {
     try {
         const { status } = req.user
         if (status === 'blocked') {
@@ -219,4 +219,15 @@ exports.generateTokenAndRedirect = (req, res) => {
         console.error('Token generation error:', error);
         res.status(500).json({ message: 'Server error during token generation' });
     }
+};
+
+module.exports = {
+    login,
+    logout,
+    registerUser,
+    verifyOTP,
+    resendOTP,
+    initiateGoogleLogin,
+    handleGoogleCallback,
+    generateTokenAndRedirect
 };

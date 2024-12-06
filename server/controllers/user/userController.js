@@ -6,7 +6,7 @@ const { sendOTPEmail } = require('../../config/mailer');
 const bcrypt = require('bcryptjs');
 const {getUserId} = require('../../helpers/getUserId')
 
-exports.getUserById = async (req, res) => {
+const getUserById = async (req, res) => {
   const token = req.cookies.user_token
     const id  = getUserId(token,process.env.JWT_SECRET)
     try {
@@ -29,7 +29,7 @@ exports.getUserById = async (req, res) => {
     }
 };
 
-exports.updateProfile = async (req, res) => {
+const updateProfile = async (req, res) => {
   try {
     const { userId, fullname, age, phoneNumber, profilePicture } = req.body;
     const user = await User.findById(userId);
@@ -58,7 +58,7 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-exports.deleteImage = async (req, res) => {
+const deleteImage = async (req, res) => {
   try {
     const { public_id, userId } = req.body;
     if (!public_id || !userId) {
@@ -77,7 +77,8 @@ exports.deleteImage = async (req, res) => {
     res.status(500).json({ message: "Failed to delete image" });
   }
 };
-exports.sendOTP = async (req,res)=>{
+
+const sendOTP = async (req,res)=>{
   try {
     const {email} = req.body
   const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -95,7 +96,8 @@ exports.sendOTP = async (req,res)=>{
   });
   }
 }
-exports.updateEmail = async (req,res)=>{
+
+const updateEmail = async (req,res)=>{
   try {
     const { userId, email, otp } = req.body;
     const otpEntry = await Otp.findOne({ email: email, otp });
@@ -125,7 +127,8 @@ exports.updateEmail = async (req,res)=>{
     });
   }
 }
-exports.resetPassword = async (req, res) => {
+
+const resetPassword = async (req, res) => {
   const { userId, oldPassword, newPassword } = req.body;
   try {
     const user = await User.findById(userId);
@@ -144,7 +147,8 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({ status: 'Error', message: 'An error occurred while updating the password.' });
   }
 };
-exports.getUserStatus = async (req, res) => {
+
+const getUserStatus = async (req, res) => {
   try {
       const userId = req.params.id;
       const user = await User.findById(userId);
@@ -159,7 +163,8 @@ exports.getUserStatus = async (req, res) => {
       res.status(500).json({ message: 'Server error' });
   }
 };
-exports.addAddress = async (req,res) => {
+
+const addAddress = async (req,res) => {
   try {
     const token = req.cookies.user_token
     if (!token) {
@@ -188,7 +193,8 @@ exports.addAddress = async (req,res) => {
     res.status(500).json({ message: 'Server error' });
   }
 }
-exports.getAddresses = async (req,res)=>{
+
+const getAddresses = async (req,res)=>{
   try {
     const token = req.cookies.user_token
     if (!token) {
@@ -209,7 +215,7 @@ exports.getAddresses = async (req,res)=>{
   }
 }
 
-exports.deleteAddress = async (req,res) =>{
+const deleteAddress = async (req,res) =>{
   try {
     const { addressId } = req.params;
     const token = req.cookies.user_token
@@ -230,7 +236,8 @@ exports.deleteAddress = async (req,res) =>{
     res.status(500).json({ message: "Server error" });
   }
 }
-exports.updateAddress = async (req,res)=>{
+
+const updateAddress = async (req,res)=>{
   try {
     const { addressId } = req.params;
     const token = req.cookies.user_token
@@ -260,3 +267,17 @@ exports.updateAddress = async (req,res)=>{
     res.status(500).json({ message: "Server error" });
   }
 }
+
+module.exports = {
+  getUserById,
+  updateProfile,
+  deleteImage,
+  sendOTP,
+  updateEmail,
+  resetPassword,
+  getUserStatus,
+  addAddress,
+  getAddresses,
+  deleteAddress,
+  updateAddress
+};

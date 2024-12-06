@@ -2,7 +2,7 @@ const Orders = require('../../models/orders')
 const {getUserId} = require('../../helpers/getUserId')
 const getRestaurantId = require('../../helpers/getRestaurantId')
 
-exports.getCurrentOrdersForVendor = async (req,res) =>{
+const getCurrentOrdersForVendor = async (req,res) =>{
     const token = req.cookies.user_token
     if (!token) return res.status(401).json({ error: "Unauthorized" });
 
@@ -16,7 +16,7 @@ exports.getCurrentOrdersForVendor = async (req,res) =>{
 
     res.status(200).json(orders)
 }
-exports.updateOrderStatus = async (req, res) => {
+const updateOrderStatus = async (req, res) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
@@ -37,3 +37,7 @@ exports.updateOrderStatus = async (req, res) => {
         res.status(500).json({ message: 'Failed to update order status', error: error.message });
     }
 };
+module.exports = {
+    getCurrentOrdersForVendor,
+    updateOrderStatus
+}

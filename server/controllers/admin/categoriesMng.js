@@ -1,7 +1,7 @@
 const Category = require('../../models/category')
 const SubCategory = require('../../models/subCategory')
 
-exports.getCategories = async (req, res) => {
+const getCategories = async (req, res) => {
     try {
       const categories = await Category.find();
       res.status(200).json({ success: true, data: categories });
@@ -10,7 +10,7 @@ exports.getCategories = async (req, res) => {
     }
 };
 
-exports.deleteCategory = async (req, res) => {
+const deleteCategory = async (req, res) => {
     const { id } = req.params;
     try {
       const category = await Category.findByIdAndDelete(id);
@@ -23,7 +23,7 @@ exports.deleteCategory = async (req, res) => {
     }
 };
 
-exports.getSubCategories = async (req, res) => {
+const getSubCategories = async (req, res) => {
     try {
       const subCategories = await SubCategory.find()
       res.status(200).json({ success: true, data: subCategories });
@@ -32,7 +32,7 @@ exports.getSubCategories = async (req, res) => {
     }
 };
 
-exports.deleteSubCategory = async (req, res) => {
+const deleteSubCategory = async (req, res) => {
     const { id } = req.params;
     try {
       const subCategory = await SubCategory.findByIdAndDelete(id);
@@ -43,4 +43,11 @@ exports.deleteSubCategory = async (req, res) => {
     } catch (error) {
       res.status(500).json({ success: false, message: 'Failed to delete subcategory', error: error.message });
     }
+};
+
+module.exports = {
+  getCategories,
+  deleteCategory,
+  getSubCategories,
+  deleteSubCategory
 };

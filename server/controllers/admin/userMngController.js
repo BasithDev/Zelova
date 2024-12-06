@@ -1,6 +1,6 @@
 const User = require('../../models/user')
 
-exports.getUsers= async (req,res)=>{
+const getUsers = async (req,res)=>{
 try {
     const users = await User.find({ isVendor: false });
     res.status(200).json(users);
@@ -11,7 +11,7 @@ try {
 }
 }
 
-exports.blockUnblockUser = async (req, res) => {
+const blockUnblockUser = async (req, res) => {
   try {
     const { userId } = req.params;
     const { status } = req.body;
@@ -48,4 +48,9 @@ exports.blockUnblockUser = async (req, res) => {
       error,
     });
   }
+};
+
+module.exports = {
+  getUsers,
+  blockUnblockUser
 };

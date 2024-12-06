@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const cloudinary = require('../../config/cloudinaryConfig');
-exports.generateDeleteSignature = (req, res) => {
+
+const generateDeleteSignature = (req, res) => {
     const { public_id, timestamp } = req.body;
     if (!public_id || !timestamp) {
       return res.status(400).json({ error: 'Missing required parameters.' });
@@ -10,4 +11,8 @@ exports.generateDeleteSignature = (req, res) => {
       .update(`public_id=${public_id}&timestamp=${timestamp}${cloudinary.config().api_secret}`)
       .digest('hex');
     res.json({ signature, timestamp, public_id });
-  }
+};
+
+module.exports = {
+  generateDeleteSignature
+};

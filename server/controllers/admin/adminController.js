@@ -1,6 +1,6 @@
 const User = require('../../models/user');
 const {getUserId} = require('../../helpers/getUserId')
-exports.getAdminById = async (req, res) => {
+const getAdminById = async (req, res) => {
     const token = req.cookies.admin_token
     const id  = getUserId(token,process.env.JWT_ADMIN_SECRET)
     try {
@@ -22,3 +22,4 @@ exports.getAdminById = async (req, res) => {
         });
     }
 };
+module.exports = { getAdminById };
