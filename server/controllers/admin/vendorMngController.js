@@ -2,18 +2,16 @@ const User = require('../../models/user')
 const Restaurant = require('../../models/restaurant')
 const statusCodes = require('../../config/statusCodes')
 
-const getVendors = async (req, res) => {
+const getVendors = async (req, res, next) => {
   try {
     const vendors = await User.find({ isVendor: true });
     res.status(statusCodes.OK).json(vendors);
   } catch (error) {
-    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ 
-      status: "Failed",
-      message: "Error retrieving vendors", error });
+    next(error);
   }
 }
 
-const blockUnblockVendor = async (req, res) => {
+const blockUnblockVendor = async (req, res, next) => {
   try {
     const { userId } = req.params;
     const { status } = req.body;
@@ -48,11 +46,7 @@ const blockUnblockVendor = async (req, res) => {
       user: updatedUser,
     });
   } catch (error) {
-    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
-      status: "Failed",
-      message: "Error blocking/unblocking user",
-      error,
-    });
+    next(error);
   }
 };
 

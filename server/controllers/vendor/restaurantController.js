@@ -3,7 +3,7 @@ const cloudinary = require('cloudinary').v2;
 const {getUserId} = require('../../helpers/getUserId')
 const statusCodes = require('../../config/statusCodes');
 
-const getRestaurant = async (req, res) => {
+const getRestaurant = async (req, res, next) => {
     try {
         const token = req.cookies.user_token
         const userId  = getUserId(token,process.env.JWT_SECRET)
@@ -13,11 +13,11 @@ const getRestaurant = async (req, res) => {
       res.status(statusCodes.OK).json({ restaurant });
     } catch (error) {
       console.error("Error fetching restaurant:", error);
-      res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ error: "An error occurred while fetching restaurant data" });
+      next(error);
     }
 };
 
-const updateRestaurantDetails = async (req,res)=>{
+const updateRestaurantDetails = async (req,res,next)=>{
     const token = req.cookies.user_token
     const userId  = getUserId(token,process.env.JWT_SECRET)
   const { name, description, phone, openingTime, closingTime } = req.body;
@@ -37,11 +37,11 @@ const updateRestaurantDetails = async (req,res)=>{
 
       res.status(statusCodes.OK).json({ message: "Restaurant details updated successfully" });
   } catch (error) {
-      res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ error: "Error updating restaurant details" });
+      next(error);
   }
 }
 
-const openOrCloseShop = async (req,res)=>{
+const openOrCloseShop = async (req,res,next)=>{
     const token = req.cookies.user_token
     const userId  = getUserId(token,process.env.JWT_SECRET)
     const { isActive } = req.body;
@@ -64,11 +64,11 @@ const openOrCloseShop = async (req,res)=>{
             restaurant: updatedRestaurant 
         });
     } catch (error) {
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ error: "Error updating restaurant status." });
+        next(error);
     }
 }
 
-const updateRestaurantPic = async (req,res)=>{
+const updateRestaurantPic = async (req,res,next)=>{
     const token = req.cookies.user_token
     const userId  = getUserId(token,process.env.JWT_SECRET)
     const { imageURL , public_id } = req.body;
@@ -92,11 +92,11 @@ const updateRestaurantPic = async (req,res)=>{
         res.status(statusCodes.OK).json({ message: "Restaurant image updated successfully", restaurant: updatedRestaurant });
     } catch (error) {
         console.log(error)
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ error: "Error updating restaurant image" });
+        next(error);
     }
 }
 
-const setLocation = async (req,res)=>{
+const setLocation = async (req,res,next)=>{
     const token = req.cookies.user_token
     const userId  = getUserId(token,process.env.JWT_SECRET)
     const { address, coordinates } = req.body;
@@ -118,7 +118,7 @@ const setLocation = async (req,res)=>{
         res.status(statusCodes.OK).json({ message: "Location updated successfully", restaurant: updatedRestaurant });
     } catch (error) {
       console.log(error)
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ error: "Error updating location" });
+        next(error);
     }
 }
 

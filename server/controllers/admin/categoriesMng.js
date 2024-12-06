@@ -2,16 +2,16 @@ const Category = require('../../models/category')
 const SubCategory = require('../../models/subCategory')
 const statusCodes = require('../../config/statusCodes')
 
-const getCategories = async (req, res) => {
+const getCategories = async (req, res, next) => {
     try {
       const categories = await Category.find();
       res.status(statusCodes.OK).json({ success: true, data: categories });
     } catch (error) {
-      res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Failed to fetch categories', error: error.message });
+      next(error);
     }
 };
 
-const deleteCategory = async (req, res) => {
+const deleteCategory = async (req, res, next) => {
     const { id } = req.params;
     try {
       const category = await Category.findByIdAndDelete(id);
@@ -20,20 +20,20 @@ const deleteCategory = async (req, res) => {
       }
       res.status(statusCodes.OK).json({ success: true, message: 'Category deleted successfully' });
     } catch (error) {
-      res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Failed to delete category', error: error.message });
+      next(error);
     }
 };
 
-const getSubCategories = async (req, res) => {
+const getSubCategories = async (req, res, next) => {
     try {
       const subCategories = await SubCategory.find()
       res.status(statusCodes.OK).json({ success: true, data: subCategories });
     } catch (error) {
-      res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Failed to fetch subcategories', error: error.message });
+      next(error);
     }
 };
 
-const deleteSubCategory = async (req, res) => {
+const deleteSubCategory = async (req, res, next) => {
     const { id } = req.params;
     try {
       const subCategory = await SubCategory.findByIdAndDelete(id);
@@ -42,7 +42,7 @@ const deleteSubCategory = async (req, res) => {
       }
       res.status(statusCodes.OK).json({ success: true, message: 'Subcategory deleted successfully' });
     } catch (error) {
-      res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Failed to delete subcategory', error: error.message });
+      next(error);
     }
 };
 

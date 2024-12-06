@@ -17,7 +17,13 @@ const Login = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
     const handleLogin = async () => {
+        if (!passwordRegex.test(password)) {
+            console.error('Password does not meet the required criteria.');
+            return;
+        }
         try {
             const response = await loginUser({ email, password });
             const { Id,token, isVendor,status } = response.data;

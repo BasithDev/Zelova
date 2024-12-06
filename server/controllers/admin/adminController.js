@@ -1,9 +1,9 @@
 const User = require('../../models/user');
-const {getUserId} = require('../../helpers/getUserId')
+const getUserId = require('../../helpers/getUserId')
 const statusCodes = require('../../config/statusCodes');
-const getAdminById = async (req, res) => {
-    const token = req.cookies.admin_token
-    const id  = getUserId(token,process.env.JWT_ADMIN_SECRET)
+const getAdminById = async (req, res, next) => {
+    const token = req.cookies.admin_token;
+    const id = getUserId(token, process.env.JWT_ADMIN_SECRET);
     try {
         const user = await User.findById(id);
 
@@ -16,11 +16,9 @@ const getAdminById = async (req, res) => {
 
         res.status(statusCodes.OK).json(user);
     } catch (error) {
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
-            status: "Failed",
-            message: "Error retrieving user",
-            error
-        });
+        error.statusCode = statusCodes.INTERNAL_SERVER_ERROR;
+        error.message = "Error retrieving user";
+        next(error);
     }
 };
 module.exports = { getAdminById };

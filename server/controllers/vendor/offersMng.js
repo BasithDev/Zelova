@@ -2,7 +2,7 @@ const getRestaurantId = require('../../helpers/getRestaurantId');
 const Offers = require('../../models/offers');
 const statusCodes = require('../../config/statusCodes');
 
-const addOffer = async (req, res) => {
+const addOffer = async (req, res, next) => {
     try {
         const token = req.cookies.user_token
         const restaurantId = getRestaurantId(token,process.env.JWT_SECRET)
@@ -17,11 +17,11 @@ const addOffer = async (req, res) => {
         res.status(statusCodes.CREATED).json({ message: 'Offer added successfully!' });
     } catch (error) {
         console.error('Error adding offer:', error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error. Please try again later.' });
+        next(error);
     }
 };
 
-const getOffers = async (req, res) => {
+const getOffers = async (req, res, next) => {
     try {
         const token = req.cookies.user_token
         const restaurantId = getRestaurantId(token,process.env.JWT_SECRET)
@@ -35,11 +35,11 @@ const getOffers = async (req, res) => {
         res.status(statusCodes.OK).json({ offers });
     } catch (error) {
         console.error('Error fetching offers:', error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error. Please try again later.' });
+        next(error);
     }
 };
 
-const deleteOffer = async (req, res) => {
+const deleteOffer = async (req, res, next) => {
     const { offerId } = req.params;
     try {
         const offer = await Offers.findByIdAndDelete(offerId);
@@ -47,7 +47,7 @@ const deleteOffer = async (req, res) => {
         res.status(statusCodes.OK).json({ message: 'Offer deleted successfully' });
     } catch (error) {
         console.error('Error deleting offer:', error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error. Please try again later.' });
+        next(error);
     }
 };
 module.exports = { addOffer, getOffers, deleteOffer };

@@ -23,6 +23,8 @@ export const deleteSubCategory = (id)=>api.delete(`/admin/manage/subcategory/del
 export const fetchVendorRequests = () => api.get('/admin/manage/requests')
 export const acceptVenodrRequests = (requestId) => api.post(`/admin/manage/accept-vendor/${requestId}`)
 export const denyVenodrRequests = (applicationId) => api.post(`/admin/manage/deny-vendor/${applicationId}`)
+export const fetchUsers = () => api.get('/admin/manage/users')
+export const fetchVendors = () => api.get('/admin/manage/vendors')
 export const blockUnblockUser = (userId,status) => api.patch(`/admin/manage/block-unblock-user/${userId}`,status)
 export const blockUnblockVendor = (vendorId,status) => api.patch(`/admin/manage/block-unblock-user/${vendorId}`,status)
 

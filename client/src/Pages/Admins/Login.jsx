@@ -8,13 +8,11 @@ import { useDispatch } from 'react-redux';
 import { setAdminAuth } from '../../Redux/slices/admin/authAdminSlice';
 import { useNavigate } from 'react-router-dom';
 
-// Validation schema using Yup
 const validationSchema = Yup.object().shape({
     email: Yup.string()
         .email('Invalid email format')
         .required('Email is required'),
     password: Yup.string()
-        .min(6, 'Password must be at least 6 characters')
         .required('Password is required'),
 });
 

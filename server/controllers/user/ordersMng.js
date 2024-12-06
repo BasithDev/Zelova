@@ -21,7 +21,7 @@ function generateOrderId() {
     return `ZEL-${year}${month}${day}-${random}`;
 }
 
-const placeOrder = async (req, res) => {
+const placeOrder = async (req, res, next) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
@@ -75,15 +75,11 @@ const placeOrder = async (req, res) => {
 
     } catch (error) {
         console.error('Error placing order:', error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ 
-            success: false,
-            message: 'Failed to place order',
-            error: error.message 
-        });
+        next(error);
     }
 }
 
-const getCurrentOrders = async (req, res) => {
+const getCurrentOrders = async (req, res, next) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
@@ -98,11 +94,11 @@ const getCurrentOrders = async (req, res) => {
         });
     } catch (error) {
         console.error('Error retrieving orders:', error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to retrieve orders',});
+        next(error);
     }
 }
 
-const createRazorpayOrder = async (req, res) => {
+const createRazorpayOrder = async (req, res, next) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
@@ -130,14 +126,11 @@ const createRazorpayOrder = async (req, res) => {
         });
     } catch (error) {
         console.error('Error creating Razorpay order:', error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
-            success: false,
-            message: 'Failed to create payment order'
-        });
+        next(error);
     }
 };
 
-const getPreviousOrdersOnDate = async (req, res) => {
+const getPreviousOrdersOnDate = async (req, res, next) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
@@ -168,15 +161,11 @@ const getPreviousOrdersOnDate = async (req, res) => {
         });
     } catch (error) {
         console.error('Error in getPreviousOrdersOnDate:', error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ 
-            success: false,
-            message: 'Failed to retrieve orders',
-            error: error.message 
-        });
+        next(error);
     }
 };
 
-const verifyRazorpayPayment = async (req, res) => {
+const verifyRazorpayPayment = async (req, res, next) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
@@ -240,15 +229,11 @@ const verifyRazorpayPayment = async (req, res) => {
         });
     } catch (error) {
         console.error('Error verifying payment:', error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
-            success: false,
-            message: 'Payment verification failed',
-            error: error.message
-        });
+        next(error);
     }
 };
 
-const updateOrderStatus = async (req, res) => {
+const updateOrderStatus = async (req, res, next) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
@@ -266,7 +251,7 @@ const updateOrderStatus = async (req, res) => {
         res.status(statusCodes.OK).json({ message: 'Order status updated successfully', order: updatedOrder });
     } catch (error) {
         console.error('Error updating order status:', error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to update order status', error: error.message });
+        next(error);
     }
 };
 

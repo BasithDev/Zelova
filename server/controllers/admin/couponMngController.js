@@ -2,7 +2,7 @@ const Coupons = require('../../models/coupons');
 const jwt = require('jsonwebtoken');
 const statusCodes = require('../../config/statusCodes');
 
-const getCoupons = async (req, res) => {
+const getCoupons = async (req, res, next) => {
     try {
         const token = req.cookies.admin_token;
         if (!token) {
@@ -17,12 +17,11 @@ const getCoupons = async (req, res) => {
         const coupons = await Coupons.find();
         res.json(coupons);
     } catch (error) {
-        console.error(error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server Error' });
+        next(error); // Pass the error to the error middleware
     }
 };
 
-const addCoupon = async (req, res) => {
+const addCoupon = async (req, res, next) => {
     try {
         const token = req.cookies.admin_token;
         if (!token) {
@@ -44,15 +43,15 @@ const addCoupon = async (req, res) => {
             minPrice,
             expiry
         });
+
         await newCoupon.save();
-        res.json(newCoupon);
+        res.status(statusCodes.CREATED).json(newCoupon);
     } catch (error) {
-        console.error(error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server Error' });
+        next(error); // Pass the error to the error middleware
     }
 };
 
-const updateCoupon = async (req, res) => {
+const updateCoupon = async (req, res, next) => {
     try {
         const token = req.cookies.admin_token;
         if (!token) {
@@ -66,23 +65,23 @@ const updateCoupon = async (req, res) => {
 
         const { id } = req.params;
         const { name, code, description, type, discount, minPrice, expiry } = req.body;
-        const updatedCoupon = await Coupons.findByIdAndUpdate(id, {
-            name,
-            code: code.toUpperCase(),
-            description,
-            type,
-            discount,
-            minPrice,
-            expiry
-        }, { new: true });
-        res.json(updatedCoupon);
+        const updatedCoupon = await Coupons.findByIdAndUpdate(
+            id,
+            { name, code: code.toUpperCase(), description, type, discount, minPrice, expiry },
+            { new: true }
+        );
+
+        if (!updatedCoupon) {
+            return res.status(statusCodes.NOT_FOUND).json({ message: 'Coupon not found' });
+        }
+
+        res.status(statusCodes.OK).json(updatedCoupon);
     } catch (error) {
-        console.error(error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server Error' });
+        next(error); // Pass the error to the error middleware
     }
 };
 
-const deleteCoupon = async (req, res) => {
+const deleteCoupon = async (req, res, next) => {
     try {
         const token = req.cookies.admin_token;
         if (!token) {
@@ -95,11 +94,15 @@ const deleteCoupon = async (req, res) => {
         }
 
         const { id } = req.params;
-        await Coupons.findByIdAndDelete(id);
-        res.json({ message: 'Coupon deleted successfully' });
+        const deletedCoupon = await Coupons.findByIdAndDelete(id);
+
+        if (!deletedCoupon) {
+            return res.status(statusCodes.NOT_FOUND).json({ message: 'Coupon not found' });
+        }
+
+        res.status(statusCodes.OK).json({ message: 'Coupon deleted successfully' });
     } catch (error) {
-        console.error(error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server Error' });
+        next(error); // Pass the error to the error middleware
     }
 };
 

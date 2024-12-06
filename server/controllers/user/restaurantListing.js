@@ -36,27 +36,28 @@ const getNearbyRestaurantsFromDB = async (userLat, userLong, maxDistance = 50000
         return nearbyRestaurants;
     } catch (error) {
         console.error("Error fetching nearby restaurants:", error);
+        throw error;
     }
 };
 
-const getRestaurants = async (req,res) =>{
-    const {lat,lon} = req.query
+const getRestaurants = async (req, res, next) => {
+    const { lat, lon } = req.query
 
     if (!lat || !lon) {
         return res.status(statusCodes.BAD_REQUEST).json({ error: "Latitude and Longitude are required." });
-      }
-    
+    }
+
     try {
-        const restaurant_res = await getNearbyRestaurantsFromDB(parseFloat(lat),parseFloat(lon))
+        const restaurant_res = await getNearbyRestaurantsFromDB(parseFloat(lat), parseFloat(lon))
         res.status(statusCodes.OK).json(restaurant_res)
     } catch (error) {
-        console.log(error)
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({error:error.message})
+        console.error("Error fetching restaurants:", error);
+        next(error);
     }
 }
 
-const getMenu = async (req,res) =>{    
-    const {id} = req.params;
+const getMenu = async (req, res, next) => {
+    const { id } = req.params;
     const { lat, lon } = req.query;
 
     if (!lat || !lon) {
@@ -81,7 +82,7 @@ const getMenu = async (req,res) =>{
                     address: 1,
                     distance: 1,
                     phone: 1,
-                    image:1
+                    image: 1
                 }
             }
         ]);
@@ -98,8 +99,8 @@ const getMenu = async (req,res) =>{
             menu
         });
     } catch (error) {
-        console.log(error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({error:error.message});
+        console.error('Error fetching menu:', error);
+        next(error);
     }
 }
 
