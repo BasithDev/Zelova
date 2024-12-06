@@ -1,5 +1,5 @@
 const Cart = require('../../models/cart');
-const {getUserId} = require('../../helpers/getUserId');
+const getUserId = require('../../helpers/getUserId');
 const Restaurant = require('../../models/restaurant');
 const mongoose = require('mongoose');
 const statusCodes = require('../../config/statusCodes');

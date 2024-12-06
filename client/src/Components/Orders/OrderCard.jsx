@@ -26,7 +26,7 @@ OrderStatus.propTypes = {
   status: PropTypes.oneOf(['PENDING','PAID','PREPARING', 'ON THE WAY', 'DELIVERED', 'NOT RECEIVED BY CUSTOMER', 'NOT DELIVERED']).isRequired,
 };
 
-const OrderCard = ({ order, setShowDeliveryPopup, setSelectedOrderId, isPreviousOrder }) => {
+const OrderCard = ({ order, setShowDeliveryPopup, setSelectedOrderId, isPreviousOrder , fromSeller }) => {
   useEffect(() => {
     if (order.status?.toUpperCase() === 'DELIVERED') {
       setShowDeliveryPopup(true);
@@ -141,7 +141,7 @@ const OrderCard = ({ order, setShowDeliveryPopup, setSelectedOrderId, isPrevious
           <p className="text-sm text-gray-600 ml-7">{order.user.address}</p>
         </div>
       </div>
-      {isPreviousOrder && (
+      {isPreviousOrder && !fromSeller && (
         <div className="mt-4 p-6">
           <div className="flex items-center gap-1">
             <span className="text-gray-600">Rate this order:</span>
@@ -195,7 +195,8 @@ OrderCard.propTypes = {
   }).isRequired,
   setShowDeliveryPopup: PropTypes.func.isRequired,
   setSelectedOrderId: PropTypes.func.isRequired,
-  isPreviousOrder: PropTypes.bool
+  isPreviousOrder: PropTypes.bool,
+  fromSeller: PropTypes.bool
 };
 
 export { OrderStatus, OrderCard };

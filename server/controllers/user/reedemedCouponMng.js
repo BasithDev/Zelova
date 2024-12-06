@@ -1,6 +1,6 @@
 const Coupon = require('../../models/coupons');
 const RedeemedCoupon = require('../../models/reedemedCoupon');
-const { getUserId } = require('../../helpers/getUserId');
+const getUserId = require('../../helpers/getUserId');
 const statusCodes = require('../../config/statusCodes');
 
 const getAvailableCoupons = async (req, res, next) => {

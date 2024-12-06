@@ -97,6 +97,7 @@ const Orders = () => {
                 setShowDeliveryPopup={setShowDeliveryPopup}
                 setSelectedOrderId={setSelectedOrderId}
                 isPreviousOrder={false}
+                fromSeller={false}
               />
             ))
           : (Array.isArray(previousOrders) && previousOrders.length > 0 ? previousOrders.map((order) => {
@@ -107,6 +108,7 @@ const Orders = () => {
                   setShowDeliveryPopup={setShowDeliveryPopup}
                   setSelectedOrderId={setSelectedOrderId}
                   isPreviousOrder={true}
+                  fromSeller={false}
                 />
               );
              }) : 
@@ -120,6 +122,14 @@ const Orders = () => {
              )}
       </div>
     );
+  };
+
+  const datePickerProps = {
+    selected: selectedDate,
+    onChange: (date) => setSelectedDate(date),
+    maxDate: new Date(),
+    dateFormat: "yyyy/MM/dd",
+    className: "w-full p-2 border border-gray-300 rounded-lg"
   };
 
   return (
@@ -155,23 +165,13 @@ const Orders = () => {
             </button>
           </div>
         </div>
-
         {activeTab === 'previous' && (
-          <div className="mb-6">
-            <DatePicker
-              selected={selectedDate}
-              onChange={(date) => {
-                setSelectedDate(date);
-                fetchPreviousOrders(date);
-              }}
-              className="px-4 py-2 border border-gray-300 rounded-lg"
-              dateFormat="MMMM d, yyyy"
-            />
+          <div className="mb-8">
+            <label className="block text-gray-700 mb-2">Select Date:</label>
+            <DatePicker {...datePickerProps} />
           </div>
         )}
-
         {renderContent()}
-
         <AnimatePresence>
           {showDeliveryPopup && (
             <motion.div 

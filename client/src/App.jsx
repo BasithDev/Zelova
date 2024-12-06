@@ -47,6 +47,7 @@ import CouponMng from './Pages/Admins/CouponMng';
 import Cart from './Pages/Users/Cart';
 import ConfirmPayment from './Pages/Users/ConfirmPayment';
 import OrderSuccess from './Pages/OrderSuccess';
+import SendMail from './Pages/Admins/SendMail';
 
 const queryClient = new QueryClient();
 
@@ -116,8 +117,9 @@ function App() {
                   <Route path="user-manage" element={<UserManagement />} />
                   <Route path="vendor-manage" element={<SellerManagement />} />
                   <Route path="requests" element={<Requests />} />
-                  <Route path='items' element={<CategoryMng/>}/>
+                  <Route path='category-manage' element={<CategoryMng/>}/>
                   <Route path='coupon-manage' element={<CouponMng/>}/> 
+                  <Route path="send-mail" element={<SendMail/>} />
                 </Route>
               </Route>
               

@@ -94,3 +94,4 @@ export const deleteOffer = (offerId) => api.delete(`/vendor/offer/delete/${offer
 //vendor routes - orders management
 export const getCurrentOrdersForVendor = () => api.get(`/vendor/orders/current`)
 export const updateOrderStatus = (data) => api.patch(`/vendor/orders/update-status`,data)
+export const getPreviousOrdersOnDateForVendor = (date) => api.get(`/vendor/orders/previous/${date}`)
