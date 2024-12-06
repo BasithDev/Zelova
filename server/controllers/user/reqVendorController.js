@@ -2,7 +2,7 @@ const VendorRequest = require('../../models/vendorRequest')
 const jwt = require('jsonwebtoken')
 const statusCodes = require('../../config/statusCodes')
 
-const submitReqVendor = async (req,res)=>{
+const submitReqVendor = async (req, res, next) => {
     try {
       const token = req.cookies.user_token || req.headers.authorization.split(' ')[1]; 
       if (!token) {
@@ -24,7 +24,7 @@ const submitReqVendor = async (req,res)=>{
         res.status(statusCodes.CREATED).json({ message: 'Vendor request submitted successfully' });
       } catch (error) {
         console.error('Error in submitReqVendor:', error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+        next(error);
       }
 }
 module.exports= {

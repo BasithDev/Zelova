@@ -5,7 +5,7 @@ const Restaurant = require('../../models/restaurant')
 const {sendEmail} = require('../../utils/emailService')
 const statusCodes = require('../../config/statusCodes');
 
-const getVendorApplications = async (req, res) => {
+const getVendorApplications = async (req, res, next) => {
     try {
         const applications = await vendorRequest.find()
             .populate('userId')
@@ -17,11 +17,11 @@ const getVendorApplications = async (req, res) => {
 
         res.status(statusCodes.OK).json(formattedApplications);
     } catch (error) {
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Error fetching vendor applications' });
+        next(error);
     }
 };
 
-const acceptReq = async (req,res)=>{
+const acceptReq = async (req, res, next) => {
     try {
         const { id } = req.params;
         const requestId = id
@@ -47,11 +47,11 @@ const acceptReq = async (req,res)=>{
         res.status(statusCodes.OK).json({ message: 'Vendor request accepted and user notified' });
     } catch (error) {
         console.error('Error accepting vendor request:', error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ error: 'An error occurred while processing the request' });
+        next(error);
     }
 };
 
-const denyReq = async (req, res) => {
+const denyReq = async (req, res, next) => {
     try {
         const { id } = req.params;
         const applicationId = id
@@ -70,11 +70,11 @@ const denyReq = async (req, res) => {
         res.status(statusCodes.OK).json({ message: 'Vendor request denied and email sent to the user' });
     } catch (error) {
         console.error('Error denying vendor request:', error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Error processing the request' });
+        next(error);
     }
 };
 
-const deleteImage = async (req, res) => {
+const deleteImage = async (req, res, next) => {
     try {
       const { public_id } = req.body;
       if (!public_id) {
@@ -84,7 +84,7 @@ const deleteImage = async (req, res) => {
       res.status(statusCodes.OK).json({ message: "Image deleted successfully" });
     } catch (error) {
       console.error(error);
-      res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: "Failed to delete image" });
+      next(error);
     }
   };
 

@@ -3,7 +3,7 @@ const RedeemedCoupon = require('../../models/reedemedCoupon');
 const { getUserId } = require('../../helpers/getUserId');
 const statusCodes = require('../../config/statusCodes');
 
-const getAvailableCoupons = async (req, res) => {
+const getAvailableCoupons = async (req, res, next) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
@@ -16,7 +16,7 @@ const getAvailableCoupons = async (req, res) => {
         res.status(statusCodes.OK).json(availableCoupons);
     } catch (error) {
         console.error('Error fetching available coupons:', error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error' });
+        next(error);
     }
 };
 

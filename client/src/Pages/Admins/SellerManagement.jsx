@@ -1,48 +1,51 @@
 import { LuUsers } from "react-icons/lu";
 import { TfiPackage } from "react-icons/tfi";
-import axios from 'axios';
-import { useQuery,useMutation, useQueryClient } from '@tanstack/react-query';
 import AdminSearchBar from "../../Components/SearchBar/AdminSearchBar";
-import React,{ useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from "framer-motion";
-import { blockUnblockVendor } from "../../Services/apiServices";
+import { blockUnblockVendor, fetchVendors } from "../../Services/apiServices";
 import { toast } from "react-toastify";
 import { ToastContainer } from 'react-toastify';
 
-const fetchVendors = async () => {
-  const { data } = await axios.get("http://localhost:3000/api/admin/manage/vendors");
-  return data;
-};
-
 const VendorManagement = () => {
-  const queryClient = useQueryClient();
-  const { data: vendors, isLoading, isError } = useQuery({
-    queryKey: ['vendors'],
-    queryFn: fetchVendors,
-    staleTime: 60000,
-    cacheTime: 300000,
-  });
+  const [vendors, setVendors] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
 
-  const mutation = useMutation({
-    mutationFn: ({ vendorId, status }) => blockUnblockVendor(vendorId, {status}),
-    onSuccess: (res) => {
-      queryClient.invalidateQueries(['vendors']);
+  useEffect(() => {
+    const fetchVendorsDetails = async () => {
+      try {
+        const { data } = await fetchVendors();
+        setVendors(data);
+        setIsLoading(false);
+      } catch (error) {
+        console.log(error);
+        setIsError(true);
+        setIsLoading(false);
+      }
+    };
+    fetchVendorsDetails();
+  }, []);
+
+  const handleBlockUnblock = async (vendorId, currentStatus) => {
+    const newStatus = currentStatus === "blocked" ? "active" : "blocked";
+    try {
+      const res = await blockUnblockVendor(vendorId, { status: newStatus });
+      setVendors((prevVendors) =>
+        prevVendors.map((vendor) =>
+          vendor._id === vendorId ? { ...vendor, status: newStatus } : vendor
+        )
+      );
       toast.success(res.data.message);
-    },
-    onError: (error) => {
-      console.log(error)
-    },
-  });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const [openVendor, setOpenVendor] = useState(null);
 
   const toggleVendorDetails = (vendorId) => {
     setOpenVendor(openVendor === vendorId ? null : vendorId);
-  };
-
-  const handleBlockUnblock = (vendorId, currentStatus) => {
-    const newStatus = currentStatus === "blocked" ? "active" : "blocked";
-    mutation.mutate({ vendorId, status: newStatus });
   };
 
   return (

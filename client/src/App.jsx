@@ -29,7 +29,7 @@ import Dashboard from './Pages/Admins/Dashboard';
 import Requests from './Pages/Admins/Requests';
 import UserManagement from './Pages/Admins/UserManagement';
 import SellerManagement from './Pages/Admins/SellerManagement';
-import ItemsAndCategoryMng from './Pages/Admins/ItemsAndCategoryMng'
+import CategoryMng from './Pages/Admins/CategoryMng'
 
 import AddItem from './Pages/Seller/AddItem';
 import VendorHome from './Pages/Seller/VendorHome';
@@ -116,7 +116,7 @@ function App() {
                   <Route path="user-manage" element={<UserManagement />} />
                   <Route path="vendor-manage" element={<SellerManagement />} />
                   <Route path="requests" element={<Requests />} />
-                  <Route path='items' element={<ItemsAndCategoryMng/>}/>
+                  <Route path='items' element={<CategoryMng/>}/>
                   <Route path='coupon-manage' element={<CouponMng/>}/> 
                 </Route>
               </Route>

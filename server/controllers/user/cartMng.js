@@ -4,7 +4,7 @@ const Restaurant = require('../../models/restaurant');
 const mongoose = require('mongoose');
 const statusCodes = require('../../config/statusCodes');
 
-const getCart = async (req, res) => {
+const getCart = async (req, res, next) => {
     try {
         const token = req.cookies.user_token;
         const userId = getUserId(token, process.env.JWT_SECRET);
@@ -21,11 +21,11 @@ const getCart = async (req, res) => {
         res.json({ cart: cart || null });
     } catch (error) {
         console.error('Error getting cart:', error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Error retrieving cart', error });
+        next(error);
     }
 }
 
-const getTotalItemsFromCart = async (req, res) => {
+const getTotalItemsFromCart = async (req, res, next) => {
     try {
         const token = req.cookies.user_token;
         const userId = getUserId(token, process.env.JWT_SECRET);
@@ -33,11 +33,11 @@ const getTotalItemsFromCart = async (req, res) => {
         res.json({ totalItems: cart ? cart.totalItems : 0 });
     } catch (error) {
         console.error('Error getting cart total items:', error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+        next(error);
     }
 }
 
-const getTotalPriceFromCart = async (req, res) => {
+const getTotalPriceFromCart = async (req, res, next) => {
     try {
         const token = req.cookies.user_token;
         const userId = getUserId(token, process.env.JWT_SECRET);
@@ -45,10 +45,11 @@ const getTotalPriceFromCart = async (req, res) => {
         res.json({ totalPrice: cart ? cart.totalPrice : 0 });
     } catch (error) {
         console.error('Error getting cart total price:', error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+        next(error);
     }
 }
-const updateCart = async (req, res) => {
+
+const updateCart = async (req, res, next) => {
     try {
         const token = req.cookies.user_token;
         const userId = getUserId(token, process.env.JWT_SECRET);
@@ -103,10 +104,11 @@ const updateCart = async (req, res) => {
         res.json({ message: 'Cart updated successfully', cart: updatedCart });
     } catch (error) {
         console.error('Error updating cart:', error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+        next(error);
     }
 }
-const generateDeliveryFee = async (req, res) => {
+
+const generateDeliveryFee = async (req, res, next) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
@@ -153,7 +155,7 @@ const generateDeliveryFee = async (req, res) => {
         }
     } catch (error) {
         console.error('Error getting delivery fee:', error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+        next(error);
     }
 }
 

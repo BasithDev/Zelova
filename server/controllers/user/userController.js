@@ -7,7 +7,7 @@ const bcrypt = require('bcryptjs');
 const {getUserId} = require('../../helpers/getUserId')
 const statusCodes = require('../../config/statusCodes');
 
-const getUserById = async (req, res) => {
+const getUserById = async (req, res, next) => {
   const token = req.cookies.user_token
     const id  = getUserId(token,process.env.JWT_SECRET)
     try {
@@ -22,15 +22,11 @@ const getUserById = async (req, res) => {
 
         res.status(statusCodes.OK).json(user);
     } catch (error) {
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
-            status: "Failed",
-            message: "Error retrieving user",
-            error
-        });
+        next(error);
     }
 };
 
-const updateProfile = async (req, res) => {
+const updateProfile = async (req, res, next) => {
   try {
     const { userId, fullname, age, phoneNumber, profilePicture } = req.body;
     const user = await User.findById(userId);
@@ -54,12 +50,11 @@ const updateProfile = async (req, res) => {
       user: updatedUser,
     });
   } catch (error) {
-    console.error(error);
-    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: "An error occurred while updating the profile" });
+    next(error);
   }
 };
 
-const deleteImage = async (req, res) => {
+const deleteImage = async (req, res, next) => {
   try {
     const { public_id, userId } = req.body;
     if (!public_id || !userId) {
@@ -74,12 +69,11 @@ const deleteImage = async (req, res) => {
     await user.save();
     res.status(statusCodes.OK).json({ message: "Image deleted successfully" });
   } catch (error) {
-    console.error(error);
-    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: "Failed to delete image" });
+    next(error);
   }
 };
 
-const sendOTP = async (req,res)=>{
+const sendOTP = async (req,res,next)=>{
   try {
     const {email} = req.body
   const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -90,15 +84,11 @@ const sendOTP = async (req,res)=>{
     message: 'OTP sent successfully',
 });
   } catch (error) {
-    console.log(error)
-    return res.status(statusCodes.CREATED).json({
-      status: 'Success',
-      message: "couldn't sent OTP",
-  });
+    next(error);
   }
 }
 
-const updateEmail = async (req,res)=>{
+const updateEmail = async (req,res,next)=>{
   try {
     const { userId, email, otp } = req.body;
     const otpEntry = await Otp.findOne({ email: email, otp });
@@ -121,15 +111,11 @@ const updateEmail = async (req,res)=>{
       user
     });
   } catch (error) {
-    console.error(error);
-    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
-      status: 'Failed',
-      message: 'Failed to update email'
-    });
+    next(error);
   }
 }
 
-const resetPassword = async (req, res) => {
+const resetPassword = async (req, res, next) => {
   const { userId, oldPassword, newPassword } = req.body;
   try {
     const user = await User.findById(userId);
@@ -143,13 +129,11 @@ const resetPassword = async (req, res) => {
     await user.save();
     res.status(statusCodes.OK).json({ status: 'Success', message: 'Password updated successfully.' });
   } catch (error) {
-    console.log(error)
-    console.error("Error updating password:", error);
-    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ status: 'Error', message: 'An error occurred while updating the password.' });
+    next(error);
   }
 };
 
-const getUserStatus = async (req, res) => {
+const getUserStatus = async (req, res, next) => {
   try {
       const userId = req.params.id;
       const user = await User.findById(userId);
@@ -160,12 +144,11 @@ const getUserStatus = async (req, res) => {
 
       res.status(statusCodes.OK).json({ status: user.status });
   } catch (error) {
-      console.error('Error fetching user status:', error);
-      res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error' });
+      next(error);
   }
 };
 
-const addAddress = async (req,res) => {
+const addAddress = async (req,res,next) => {
   try {
     const token = req.cookies.user_token
     if (!token) {
@@ -190,12 +173,11 @@ const addAddress = async (req,res) => {
     res.status(statusCodes.CREATED).json({ message: "Address added successfully", address: newAddress });
 
   } catch (error) {
-    console.error('Error adding new Address:', error);
-    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error' });
+    next(error);
   }
 }
 
-const getAddresses = async (req,res)=>{
+const getAddresses = async (req,res,next)=>{
   try {
     const token = req.cookies.user_token
     if (!token) {
@@ -211,12 +193,11 @@ const getAddresses = async (req,res)=>{
     res.status(statusCodes.OK).json({ message: "Addresses retrieved successfully", addresses });
 
   } catch (error) {
-    console.error('Error getting addresses:', error);
-    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error' });
+    next(error);
   }
 }
 
-const deleteAddress = async (req,res) =>{
+const deleteAddress = async (req,res,next) =>{
   try {
     const { addressId } = req.params;
     const token = req.cookies.user_token
@@ -233,12 +214,11 @@ const deleteAddress = async (req,res) =>{
 
     res.status(statusCodes.OK).json({ message: "Address deleted successfully" });
   } catch (error) {
-    console.error("Error deleting address:", error);
-    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: "Server error" });
+    next(error);
   }
 }
 
-const updateAddress = async (req,res)=>{
+const updateAddress = async (req,res,next)=>{
   try {
     const { addressId } = req.params;
     const token = req.cookies.user_token
@@ -264,8 +244,7 @@ const updateAddress = async (req,res)=>{
 
     res.status(statusCodes.OK).json({ message: "Address updated successfully", address: updatedAddress });
   } catch (error) {
-    console.error("Error updating address:", error);    
-    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: "Server error" });
+    next(error);
   }
 }
 

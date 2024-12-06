@@ -1,18 +1,16 @@
 const User = require('../../models/user')
 const statusCodes = require('../../config/statusCodes')
 
-const getUsers = async (req,res)=>{
-try {
+const getUsers = async (req, res, next) => {
+  try {
     const users = await User.find({ isVendor: false });
     res.status(statusCodes.OK).json(users);
-} catch (error) {
-    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ 
-        status:"Failed",
-        message: "Error retrieving users", error });
-}
+  } catch (error) {
+    next(error);
+  }
 }
 
-const blockUnblockUser = async (req, res) => {
+const blockUnblockUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
     const { status } = req.body;
@@ -43,11 +41,7 @@ const blockUnblockUser = async (req, res) => {
       user: updatedUser,
     });
   } catch (error) {
-    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
-      status: "Failed",
-      message: "Error blocking/unblocking user",
-      error,
-    });
+    next(error);
   }
 };
 

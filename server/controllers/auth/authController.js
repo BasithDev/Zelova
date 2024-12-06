@@ -8,7 +8,7 @@ const statusCodes = require('../../config/statusCodes');
 
 const OTP_COOLDOWN_PERIOD_MS = 30000;
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
     const { email, password } = req.body;
     
     try {
@@ -50,18 +50,13 @@ const login = async (req, res) => {
             token: token,
             isVendor:user.isVendor,
             isAdmin:user.isAdmin,
-            status:user.status,
-            message: "Login successful"
+            restaurantId:restaurant ? restaurant._id : null
         });
     } catch (error) {
-        console.error(error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ 
-            status: "Failed",
-            message: "Server error"
-        });
+        next(error);
     }
 };
-const logout = (req, res) => {
+const logout = (req, res, next) => {
     const { role } = req.body;
     
     try {
@@ -82,14 +77,10 @@ const logout = (req, res) => {
             });
         }
     } catch (error) {
-        console.error(error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
-            status: "Failed",
-            message: "Server error"
-        });
+        next(error);
     }
 };
-const registerUser = async (req, res) => {
+const registerUser = async (req, res, next) => {
     try {
         const { fullname, email, password, age, phoneNumber } = req.body;
         const existingUser = await User.findOne({ email });
@@ -116,14 +107,10 @@ const registerUser = async (req, res) => {
             message: 'User registered successfully',
         });
     } catch (error) {
-        console.log(error)
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
-            status: 'Failed',
-            message: 'Server error'
-        });
+        next(error);
     }
 };
-const verifyOTP = async (req, res) => {
+const verifyOTP = async (req, res, next) => {
     try {
         const { email, otp } = req.body;
         const otpRecord = await Otp.findOne({ email, otp });
@@ -139,14 +126,10 @@ const verifyOTP = async (req, res) => {
             message: 'OTP verified successfully',
         });
     } catch (error) {
-        console.error(error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
-            status: 'Failed',
-            message: 'Server error',
-        });
+        next(error);
     }
 };
-const resendOTP = async (req, res) => {
+const resendOTP = async (req, res, next) => {
     try {
         const { email } = req.body;
         let otpRecord = await Otp.findOne({ email });
@@ -177,11 +160,7 @@ const resendOTP = async (req, res) => {
             message: 'New OTP generated and sent successfully',
         });
     } catch (error) {
-        console.error('Error resending OTP:', error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
-            status: 'Failed',
-            message: 'Server error',
-        });
+        next(error);
     }
 };
 const initiateGoogleLogin = (passport) => passport.authenticate('google', { scope: ['profile', 'email'] });
@@ -195,7 +174,7 @@ const handleGoogleCallback = (passport) => (req, res, next) => {
         next();
     })(req, res, next);
 };
-const generateTokenAndRedirect = (req, res) => {
+const generateTokenAndRedirect = (req, res, next) => {
     try {
         const { status } = req.user
         if (status === 'blocked') {
@@ -217,8 +196,7 @@ const generateTokenAndRedirect = (req, res) => {
             : process.env.APP_URL;
         res.redirect(redirectUrl);
     } catch (error) {
-        console.error('Token generation error:', error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error during token generation' });
+        next(error);
     }
 };
 

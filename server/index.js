@@ -25,7 +25,7 @@ const productMngRouter = require('./routes/vendor/productMng')
 const vendorOrderRouter = require('./routes/vendor/orderMngRoute')
 
 const passport = require('passport');
-
+const errorMiddleware = require('./middlewares/errorMiddleware')
 
 require('dotenv').config()
 
@@ -64,5 +64,7 @@ app.use('/api/vendor',categoriesRouter)
 app.use('/api/vendor',productMngRouter)
 app.use('/api/vendor/offer',offerRouter)
 app.use('/api/vendor/orders',vendorOrderRouter)
+
+app.use(errorMiddleware);
 
 app.listen(port, () => console.log(`Server is listening on port ${port}!`))

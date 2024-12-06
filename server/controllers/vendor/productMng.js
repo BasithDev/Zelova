@@ -2,7 +2,7 @@ const FoodItem = require('../../models/fooditem');
 const getRestaurantId = require('../../helpers/getRestaurantId');
 const statusCodes = require('../../config/statusCodes');
 
-const addProduct = async (req, res) => {
+const addProduct = async (req, res, next) => {
     try {
         const token = req.cookies.user_token
         const {
@@ -65,14 +65,10 @@ const addProduct = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
-            success: false,
-            message: "Internal Server Error. Unable to add food item.",
-            error: error.message
-        });
+        next(error);
     }
 };
-const getProducts = async (req, res) => {
+const getProducts = async (req, res, next) => {
     try {
         const token = req.cookies.user_token;
         const restaurantId = getRestaurantId(token, process.env.JWT_SECRET);
@@ -112,14 +108,10 @@ const getProducts = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
-            success: false,
-            message: "Internal Server Error. Unable to fetch food items.",
-            error: error.message,
-        });
+        next(error);
     }
 };
-const listOrUnlist = async (req, res) => {
+const listOrUnlist = async (req, res, next) => {
     const { id } = req.params;
     const { isActive } = req.body;
     try {
@@ -139,11 +131,11 @@ const listOrUnlist = async (req, res) => {
         });
     } catch (error) {
         console.error('Error updating food item:', error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error', error: error.message });
+        next(error);
     }
 }
 
-const deleteProduct = async (req, res) => {
+const deleteProduct = async (req, res, next) => {
     const { id } = req.params;
     try {
         const product = await FoodItem.findByIdAndDelete(id);
@@ -162,16 +154,11 @@ const deleteProduct = async (req, res) => {
 
     } catch (error) {
         console.error("Error deleting product:", error)
-
-        return res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
-            success: false,
-            message: "Failed to delete product. Please try again.",
-        });
-
+        next(error);
     }
 }
 
-const updateProduct = async (req, res) => {
+const updateProduct = async (req, res, next) => {
     try {
         const { id, name, price, description } = req.body;
 
@@ -209,13 +196,10 @@ const updateProduct = async (req, res) => {
 
     } catch (error) {
         console.error("Error updating product:", error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
-            message: "Failed to update product",
-            error: error.message,
-        });
+        next(error);
     }
 }
-const updateOffer = async (req, res) => {
+const updateOffer = async (req, res, next) => {
     try {
       const { productId, offerId } = req.body;
   
@@ -241,7 +225,7 @@ const updateOffer = async (req, res) => {
       });
     } catch (error) {
       console.error('Error updating offer:', error);
-      return res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error.' });
+      next(error);
     }
   };
 

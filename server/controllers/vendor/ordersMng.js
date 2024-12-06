@@ -17,7 +17,7 @@ const getCurrentOrdersForVendor = async (req,res) =>{
 
     res.status(statusCodes.OK).json(orders)
 }
-const updateOrderStatus = async (req, res) => {
+const updateOrderStatus = async (req, res, next) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
@@ -35,7 +35,7 @@ const updateOrderStatus = async (req, res) => {
         res.status(statusCodes.OK).json({ message: 'Order status updated successfully', order: updatedOrder });
     } catch (error) {
         console.error('Error updating order status:', error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to update order status', error: error.message });
+        next(error);
     }
 };
 module.exports = {

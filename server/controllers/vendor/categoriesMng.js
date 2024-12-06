@@ -2,7 +2,7 @@ const Category = require('../../models/category')
 const SubCategory = require('../../models/subCategory')
 const statusCodes = require('../../config/statusCodes')
 
-const addCategory = async (req, res) => {
+const addCategory = async (req, res, next) => {
   console.log('hello')
   try {
     const { name } = req.body;
@@ -12,11 +12,11 @@ const addCategory = async (req, res) => {
     const category = await new Category({ name }).save();
     res.status(statusCodes.CREATED).json({ message: "Category added successfully." });
   } catch (error) {
-    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: "Internal server error.", error });
+    next(error);
   }
 };
 
-const getCategories = async (req, res) => {
+const getCategories = async (req, res, next) => {
   try {
     const categories = await Category.find().sort({ name: 1 });
     if (categories.length === 0) {
@@ -24,11 +24,11 @@ const getCategories = async (req, res) => {
     }
     res.status(statusCodes.OK).json({ message: "Categories retrieved successfully.", categories });
   } catch (error) {
-    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: "Internal server error.", error });
+    next(error);
   }
 };
 
-const getSubCategories = async (req, res) => {
+const getSubCategories = async (req, res, next) => {
   try {
     const subCategories = await SubCategory.find().sort({ name: 1 });
     if (subCategories.length === 0) {
@@ -36,11 +36,11 @@ const getSubCategories = async (req, res) => {
     }
     res.status(statusCodes.OK).json({ message: "Categories retrieved successfully.", subCategories });
   } catch (error) {
-    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: "Internal server error.", error });
+    next(error);
   }
 };
 
-const addSubCategory = async (req, res) => {
+const addSubCategory = async (req, res, next) => {
   try {
     const { name, categoryName } = req.body;
     if (!(await Category.findOne({ name: categoryName }))) {
@@ -52,7 +52,7 @@ const addSubCategory = async (req, res) => {
     const subCategory = await new SubCategory({ name, categoryName }).save();
     res.status(statusCodes.CREATED).json({ message: "Subcategory added successfully." });
   } catch (error) {
-    res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: "Internal server error.", error });
+    next(error);
   }
 }
 
