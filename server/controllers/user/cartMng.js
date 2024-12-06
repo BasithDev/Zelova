@@ -2,7 +2,7 @@ const Cart = require('../../models/cart');
 const {getUserId} = require('../../helpers/getUserId');
 const Restaurant = require('../../models/restaurant');
 const mongoose = require('mongoose');
-exports.getCart = async (req, res) => {
+const getCart = async (req, res) => {
     try {
         const token = req.cookies.user_token;
         const userId = getUserId(token, process.env.JWT_SECRET);
@@ -23,7 +23,7 @@ exports.getCart = async (req, res) => {
     }
 }
 
-exports.getTotalItemsFromCart = async (req, res) => {
+const getTotalItemsFromCart = async (req, res) => {
     try {
         const token = req.cookies.user_token;
         const userId = getUserId(token, process.env.JWT_SECRET);
@@ -35,7 +35,7 @@ exports.getTotalItemsFromCart = async (req, res) => {
     }
 }
 
-exports.getTotalPriceFromCart = async (req, res) => {
+const getTotalPriceFromCart = async (req, res) => {
     try {
         const token = req.cookies.user_token;
         const userId = getUserId(token, process.env.JWT_SECRET);
@@ -46,7 +46,7 @@ exports.getTotalPriceFromCart = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 }
-exports.updateCart = async (req, res) => {
+const updateCart = async (req, res) => {
     try {
         const token = req.cookies.user_token;
         const userId = getUserId(token, process.env.JWT_SECRET);
@@ -104,7 +104,7 @@ exports.updateCart = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 }
-exports.generateDeliveryFee = async (req, res) => {
+const generateDeliveryFee = async (req, res) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
@@ -153,4 +153,12 @@ exports.generateDeliveryFee = async (req, res) => {
         console.error('Error getting delivery fee:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
+}
+
+module.exports = {
+    getCart,
+    getTotalItemsFromCart,
+    getTotalPriceFromCart,
+    updateCart,
+    generateDeliveryFee
 }

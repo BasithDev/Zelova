@@ -1,7 +1,7 @@
 const Coupons = require('../../models/coupons');
 const jwt = require('jsonwebtoken');
 
-exports.getCoupons = async (req, res) => {
+const getCoupons = async (req, res) => {
     try {
         const token = req.cookies.admin_token;
         if (!token) {
@@ -21,7 +21,7 @@ exports.getCoupons = async (req, res) => {
     }
 };
 
-exports.addCoupon = async (req, res) => {
+const addCoupon = async (req, res) => {
     try {
         const token = req.cookies.admin_token;
         if (!token) {
@@ -51,7 +51,7 @@ exports.addCoupon = async (req, res) => {
     }
 };
 
-exports.updateCoupon = async (req, res) => {
+const updateCoupon = async (req, res) => {
     try {
         const token = req.cookies.admin_token;
         if (!token) {
@@ -81,7 +81,7 @@ exports.updateCoupon = async (req, res) => {
     }
 };
 
-exports.deleteCoupon = async (req, res) => {
+const deleteCoupon = async (req, res) => {
     try {
         const token = req.cookies.admin_token;
         if (!token) {
@@ -100,4 +100,11 @@ exports.deleteCoupon = async (req, res) => {
         console.error(error);
         res.status(500).json({ message: 'Server Error' });
     }
+};
+
+module.exports = {
+  getCoupons,
+  addCoupon,
+  updateCoupon,
+  deleteCoupon
 };

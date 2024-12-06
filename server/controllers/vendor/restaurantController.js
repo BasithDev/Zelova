@@ -2,7 +2,7 @@ const Restaurant = require('../../models/restaurant')
 const cloudinary = require('cloudinary').v2;
 const {getUserId} = require('../../helpers/getUserId')
 
-exports.getRestaurant = async (req, res) => {
+const getRestaurant = async (req, res) => {
     try {
         const token = req.cookies.user_token
         const userId  = getUserId(token,process.env.JWT_SECRET)
@@ -16,7 +16,7 @@ exports.getRestaurant = async (req, res) => {
     }
 };
 
-exports.updateRestaurantDetails = async (req,res)=>{
+const updateRestaurantDetails = async (req,res)=>{
     const token = req.cookies.user_token
     const userId  = getUserId(token,process.env.JWT_SECRET)
   const { name, description, phone, openingTime, closingTime } = req.body;
@@ -40,7 +40,7 @@ exports.updateRestaurantDetails = async (req,res)=>{
   }
 }
 
-exports.openOrCloseShop = async (req,res)=>{
+const openOrCloseShop = async (req,res)=>{
     const token = req.cookies.user_token
     const userId  = getUserId(token,process.env.JWT_SECRET)
     const { isActive } = req.body;
@@ -67,7 +67,7 @@ exports.openOrCloseShop = async (req,res)=>{
     }
 }
 
-exports.updateRestaurantPic = async (req,res)=>{
+const updateRestaurantPic = async (req,res)=>{
     const token = req.cookies.user_token
     const userId  = getUserId(token,process.env.JWT_SECRET)
     const { imageURL , public_id } = req.body;
@@ -95,7 +95,7 @@ exports.updateRestaurantPic = async (req,res)=>{
     }
 }
 
-exports.setLocation = async (req,res)=>{
+const setLocation = async (req,res)=>{
     const token = req.cookies.user_token
     const userId  = getUserId(token,process.env.JWT_SECRET)
     const { address, coordinates } = req.body;
@@ -119,4 +119,12 @@ exports.setLocation = async (req,res)=>{
       console.log(error)
         res.status(500).json({ error: "Error updating location" });
     }
+}
+
+module.exports = {
+    getRestaurant,
+    updateRestaurantDetails,
+    openOrCloseShop,
+    updateRestaurantPic,
+    setLocation
 }

@@ -1,7 +1,7 @@
 const getRestaurantId = require('../../helpers/getRestaurantId');
 const Offers = require('../../models/offers');
 
-exports.addOffer = async (req, res) => {
+const addOffer = async (req, res) => {
     try {
         const token = req.cookies.user_token
         const restaurantId = getRestaurantId(token,process.env.JWT_SECRET)
@@ -20,7 +20,7 @@ exports.addOffer = async (req, res) => {
     }
 };
 
-exports.getOffers = async (req, res) => {
+const getOffers = async (req, res) => {
     try {
         const token = req.cookies.user_token
         const restaurantId = getRestaurantId(token,process.env.JWT_SECRET)
@@ -38,7 +38,7 @@ exports.getOffers = async (req, res) => {
     }
 };
 
-exports.deleteOffer = async (req, res) => {
+const deleteOffer = async (req, res) => {
     const { offerId } = req.params;
     try {
         const offer = await Offers.findByIdAndDelete(offerId);
@@ -49,3 +49,4 @@ exports.deleteOffer = async (req, res) => {
         res.status(500).json({ message: 'Server error. Please try again later.' });
     }
 };
+module.exports = { addOffer, getOffers, deleteOffer };

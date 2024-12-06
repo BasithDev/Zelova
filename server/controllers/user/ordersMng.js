@@ -11,7 +11,6 @@ const razorpay = new Razorpay({
     key_secret: process.env.RAZORPAY_KEY_SECRET
 });
 
-// Function to generate orderId
 function generateOrderId() {
     const date = new Date();
     const year = date.getFullYear();
@@ -21,7 +20,7 @@ function generateOrderId() {
     return `ZEL-${year}${month}${day}-${random}`;
 }
 
-exports.placeOrder = async (req, res) => {
+const placeOrder = async (req, res) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
@@ -82,7 +81,8 @@ exports.placeOrder = async (req, res) => {
         });
     }
 }
-exports.getCurrentOrders = async (req, res) => {
+
+const getCurrentOrders = async (req, res) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
@@ -100,7 +100,8 @@ exports.getCurrentOrders = async (req, res) => {
         res.status(500).json({ message: 'Failed to retrieve orders',});
     }
 }
-exports.createRazorpayOrder = async (req, res) => {
+
+const createRazorpayOrder = async (req, res) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
@@ -134,7 +135,8 @@ exports.createRazorpayOrder = async (req, res) => {
         });
     }
 };
-exports.getPreviousOrdersOnDate = async (req, res) => {
+
+const getPreviousOrdersOnDate = async (req, res) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
@@ -172,7 +174,8 @@ exports.getPreviousOrdersOnDate = async (req, res) => {
         });
     }
 };
-exports.verifyRazorpayPayment = async (req, res) => {
+
+const verifyRazorpayPayment = async (req, res) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
@@ -243,7 +246,8 @@ exports.verifyRazorpayPayment = async (req, res) => {
         });
     }
 };
-exports.updateOrderStatus = async (req, res) => {
+
+const updateOrderStatus = async (req, res) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
@@ -263,4 +267,13 @@ exports.updateOrderStatus = async (req, res) => {
         console.error('Error updating order status:', error);
         res.status(500).json({ message: 'Failed to update order status', error: error.message });
     }
+};
+
+module.exports = {
+    placeOrder,
+    getCurrentOrders,
+    createRazorpayOrder,
+    getPreviousOrdersOnDate,
+    verifyRazorpayPayment,
+    updateOrderStatus
 };

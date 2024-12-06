@@ -4,7 +4,7 @@ const User = require('../../models/user')
 const Restaurant = require('../../models/restaurant')
 const {sendEmail} = require('../../utils/emailService')
 
-exports.getVendorApplications = async (req, res) => {
+const getVendorApplications = async (req, res) => {
     try {
         const applications = await vendorRequest.find()
             .populate('userId')
@@ -19,7 +19,8 @@ exports.getVendorApplications = async (req, res) => {
         res.status(500).json({ error: 'Error fetching vendor applications' });
     }
 };
-exports.acceptReq = async (req,res)=>{
+
+const acceptReq = async (req,res)=>{
     try {
         const { id } = req.params;
         const requestId = id
@@ -47,8 +48,9 @@ exports.acceptReq = async (req,res)=>{
         console.error('Error accepting vendor request:', error);
         res.status(500).json({ error: 'An error occurred while processing the request' });
     }
-}
-exports.denyReq = async (req, res) => {
+};
+
+const denyReq = async (req, res) => {
     try {
         const { id } = req.params;
         const applicationId = id
@@ -70,7 +72,8 @@ exports.denyReq = async (req, res) => {
         res.status(500).json({ error: 'Error processing the request' });
     }
 };
-exports.deleteImage = async (req, res) => {
+
+const deleteImage = async (req, res) => {
     try {
       const { public_id } = req.body;
       if (!public_id) {
@@ -83,3 +86,10 @@ exports.deleteImage = async (req, res) => {
       res.status(500).json({ message: "Failed to delete image" });
     }
   };
+
+module.exports = {
+  getVendorApplications,
+  acceptReq,
+  denyReq,
+  deleteImage
+};

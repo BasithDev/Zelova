@@ -1,6 +1,6 @@
 const FoodItem = require('../../models/fooditem');
 const getRestaurantId = require('../../helpers/getRestaurantId');
-exports.addProduct = async (req, res) => {
+const addProduct = async (req, res) => {
     try {
         const token = req.cookies.user_token
         const {
@@ -70,7 +70,7 @@ exports.addProduct = async (req, res) => {
         });
     }
 };
-exports.getProducts = async (req, res) => {
+const getProducts = async (req, res) => {
     try {
         const token = req.cookies.user_token;
         const restaurantId = getRestaurantId(token, process.env.JWT_SECRET);
@@ -117,7 +117,7 @@ exports.getProducts = async (req, res) => {
         });
     }
 };
-exports.listOrUnlist = async (req, res) => {
+const listOrUnlist = async (req, res) => {
     const { id } = req.params;
     const { isActive } = req.body;
     try {
@@ -141,7 +141,7 @@ exports.listOrUnlist = async (req, res) => {
     }
 }
 
-exports.deleteProduct = async (req, res) => {
+const deleteProduct = async (req, res) => {
     const { id } = req.params;
     try {
         const product = await FoodItem.findByIdAndDelete(id);
@@ -169,7 +169,7 @@ exports.deleteProduct = async (req, res) => {
     }
 }
 
-exports.updateProduct = async (req, res) => {
+const updateProduct = async (req, res) => {
     try {
         const { id, name, price, description } = req.body;
 
@@ -213,7 +213,7 @@ exports.updateProduct = async (req, res) => {
         });
     }
 }
-exports.updateOffer = async (req, res) => {
+const updateOffer = async (req, res) => {
     try {
       const { productId, offerId } = req.body;
   
@@ -242,3 +242,12 @@ exports.updateOffer = async (req, res) => {
       return res.status(500).json({ message: 'Internal server error.' });
     }
   };
+
+  module.exports = {
+    addProduct,
+    getProducts,
+    listOrUnlist,
+    deleteProduct,
+    updateProduct,
+    updateOffer
+  }

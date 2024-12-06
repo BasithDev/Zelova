@@ -38,7 +38,7 @@ const getNearbyRestaurantsFromDB = async (userLat, userLong, maxDistance = 50000
     }
 };
 
-exports.getRestaurants = async (req,res) =>{
+const getRestaurants = async (req,res) =>{
     const {lat,lon} = req.query
 
     if (!lat || !lon) {
@@ -54,7 +54,7 @@ exports.getRestaurants = async (req,res) =>{
     }
 }
 
-exports.getMenu = async (req,res) =>{    
+const getMenu = async (req,res) =>{    
     const {id} = req.params;
     const { lat, lon } = req.query;
 
@@ -100,4 +100,9 @@ exports.getMenu = async (req,res) =>{
         console.log(error);
         res.status(500).json({error:error.message});
     }
+}
+
+module.exports = {
+    getRestaurants,
+    getMenu
 }
