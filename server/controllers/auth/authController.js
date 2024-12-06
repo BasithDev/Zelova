@@ -4,6 +4,7 @@ const User = require('../../models/user');
 const Restaurant = require('../../models/restaurant')
 const Otp = require('../../models/otp')
 const { sendOTPEmail } = require('../../config/mailer');
+const statusCodes = require('../../config/statusCodes');
 
 const OTP_COOLDOWN_PERIOD_MS = 30000;
 
@@ -13,11 +14,11 @@ const login = async (req, res) => {
     try {
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(401).json({ message: "User not found" });
+            return res.status(statusCodes.UNAUTHORIZED).json({ message: "User not found" });
         }
 
         if (user.status === "blocked") {
-            return res.status(403).json({ 
+            return res.status(statusCodes.FORBIDDEN).json({ 
                 status: "Failed",
                 message: "Your account is blocked. Please contact support." 
             });
@@ -25,7 +26,7 @@ const login = async (req, res) => {
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(401).json({ message: "Invalid credentials" });
+            return res.status(statusCodes.UNAUTHORIZED).json({ message: "Invalid credentials" });
         }
 
         const restaurant = await Restaurant.findOne({ vendorId: user._id });
@@ -43,7 +44,7 @@ const login = async (req, res) => {
 
         res.cookie(tokenName, token, { maxAge: 10800000 });
 
-        return res.status(200).json({ 
+        return res.status(statusCodes.OK).json({ 
             status: "Success",
             Id:user._id,
             token: token,
@@ -54,7 +55,7 @@ const login = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ 
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ 
             status: "Failed",
             message: "Server error"
         });
@@ -65,24 +66,24 @@ const logout = (req, res) => {
     
     try {
         if (role === 'admin') {
-            return res.status(200).json({
+            return res.status(statusCodes.OK).json({
                 status: "Success",
                 message: "Admin logout successful"
             });
         } else if (role === 'user') {
-            return res.status(200).json({
+            return res.status(statusCodes.OK).json({
                 status: "Success",
                 message: "User logout successful"
             });
         } else {
-            return res.status(400).json({
+            return res.status(statusCodes.BAD_REQUEST).json({
                 status: "Failed",
                 message: "Logged Out"
             });
         }
     } catch (error) {
         console.error(error);
-        res.status(500).json({
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
             status: "Failed",
             message: "Server error"
         });
@@ -93,7 +94,7 @@ const registerUser = async (req, res) => {
         const { fullname, email, password, age, phoneNumber } = req.body;
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({
+            return res.status(statusCodes.BAD_REQUEST).json({
                 status: 'Failed',
                 message: 'User already exists'
             });
@@ -110,13 +111,13 @@ const registerUser = async (req, res) => {
         const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
         await Otp.create({ email, otp: otpCode , lastRequested: Date.now() });
         await sendOTPEmail(email, otpCode);
-        return res.status(201).json({
+        return res.status(statusCodes.CREATED).json({
             status: 'Success',
             message: 'User registered successfully',
         });
     } catch (error) {
         console.log(error)
-        res.status(500).json({
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
             status: 'Failed',
             message: 'Server error'
         });
@@ -127,19 +128,19 @@ const verifyOTP = async (req, res) => {
         const { email, otp } = req.body;
         const otpRecord = await Otp.findOne({ email, otp });
         if (!otpRecord) {
-            return res.status(400).json({
+            return res.status(statusCodes.BAD_REQUEST).json({
                 status: 'Failed',
                 message: 'Invalid or expired OTP',
             });
         }
         await Otp.deleteMany({ email });
-        return res.status(200).json({
+        return res.status(statusCodes.OK).json({
             status: 'Success',
             message: 'OTP verified successfully',
         });
     } catch (error) {
         console.error(error);
-        res.status(500).json({
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
             status: 'Failed',
             message: 'Server error',
         });
@@ -154,7 +155,7 @@ const resendOTP = async (req, res) => {
             const now = Date.now();
             const timeSinceLastRequest = now - new Date(otpRecord.lastRequested).getTime();
             if (timeSinceLastRequest < OTP_COOLDOWN_PERIOD_MS) {
-                return res.status(429).json({
+                return res.status(statusCodes.TOO_MANY_REQUESTS).json({
                     status: 'Failed',
                     message: `Please wait for some time before requesting another OTP.`,
                 });
@@ -162,7 +163,7 @@ const resendOTP = async (req, res) => {
             otpRecord.lastRequested = now;
             await otpRecord.save();
             await sendOTPEmail(email, otpRecord.otp);
-            return res.status(200).json({
+            return res.status(statusCodes.OK).json({
                 status: 'Success',
                 message: 'OTP resent successfully',
             });
@@ -171,13 +172,13 @@ const resendOTP = async (req, res) => {
         const newOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
         otpRecord = await Otp.create({ email, otp: newOtpCode, lastRequested: Date.now() });
         await sendOTPEmail(email, newOtpCode);
-        return res.status(200).json({
+        return res.status(statusCodes.OK).json({
             status: 'Success',
             message: 'New OTP generated and sent successfully',
         });
     } catch (error) {
         console.error('Error resending OTP:', error);
-        res.status(500).json({
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
             status: 'Failed',
             message: 'Server error',
         });
@@ -217,7 +218,7 @@ const generateTokenAndRedirect = (req, res) => {
         res.redirect(redirectUrl);
     } catch (error) {
         console.error('Token generation error:', error);
-        res.status(500).json({ message: 'Server error during token generation' });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error during token generation' });
     }
 };
 

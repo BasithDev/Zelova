@@ -3,6 +3,7 @@ const vendorRequest = require('../../models/vendorRequest');
 const User = require('../../models/user')
 const Restaurant = require('../../models/restaurant')
 const {sendEmail} = require('../../utils/emailService')
+const statusCodes = require('../../config/statusCodes');
 
 const getVendorApplications = async (req, res) => {
     try {
@@ -14,9 +15,9 @@ const getVendorApplications = async (req, res) => {
             user: app.userId,
         }));
 
-        res.status(200).json(formattedApplications);
+        res.status(statusCodes.OK).json(formattedApplications);
     } catch (error) {
-        res.status(500).json({ error: 'Error fetching vendor applications' });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Error fetching vendor applications' });
     }
 };
 
@@ -26,7 +27,7 @@ const acceptReq = async (req,res)=>{
         const requestId = id
         const request = await vendorRequest.findById(requestId).populate('userId');
         if (!request) {
-            return res.status(404).json({ message: 'Vendor request not found' });
+            return res.status(statusCodes.NOT_FOUND).json({ message: 'Vendor request not found' });
         }
         const user = await User.findByIdAndUpdate(
             request.userId._id,
@@ -43,10 +44,10 @@ const acceptReq = async (req,res)=>{
         const message = `Hello ${user.fullname},\n\nCongratulations! Your vendor request has been approved. You can now log in as a vendor or continue as a regular user. Please re-login to begin using your vendor account.\n\nBest regards,\nZelova Team`;
         await sendEmail(user.email, subject, message);
         await vendorRequest.findByIdAndDelete(requestId);
-        res.status(200).json({ message: 'Vendor request accepted and user notified' });
+        res.status(statusCodes.OK).json({ message: 'Vendor request accepted and user notified' });
     } catch (error) {
         console.error('Error accepting vendor request:', error);
-        res.status(500).json({ error: 'An error occurred while processing the request' });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ error: 'An error occurred while processing the request' });
     }
 };
 
@@ -56,7 +57,7 @@ const denyReq = async (req, res) => {
         const applicationId = id
         const application = await vendorRequest.findById(applicationId).populate('userId', 'email fullname');
         if (!application) {
-            return res.status(404).json({ error: 'Vendor application not found' });
+            return res.status(statusCodes.NOT_FOUND).json({ error: 'Vendor application not found' });
         }
         const userEmail = application.userId.email;
         const userName = application.userId.fullname;
@@ -66,10 +67,10 @@ const denyReq = async (req, res) => {
             `Hello ${userName},\n\nWe regret to inform you that your vendor request has been denied. If you have any questions, please contact support.\n\nThank you for your interest.\nBest Regards,\nThe Zelova Team`
         );
         await vendorRequest.findByIdAndDelete(applicationId);
-        res.status(200).json({ message: 'Vendor request denied and email sent to the user' });
+        res.status(statusCodes.OK).json({ message: 'Vendor request denied and email sent to the user' });
     } catch (error) {
         console.error('Error denying vendor request:', error);
-        res.status(500).json({ error: 'Error processing the request' });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Error processing the request' });
     }
 };
 
@@ -77,13 +78,13 @@ const deleteImage = async (req, res) => {
     try {
       const { public_id } = req.body;
       if (!public_id) {
-        return res.status(400).json({ message: "Public ID is required" });
+        return res.status(statusCodes.BAD_REQUEST).json({ message: "Public ID is required" });
       }
       await cloudinary.uploader.destroy(public_id);
-      res.status(200).json({ message: "Image deleted successfully" });
+      res.status(statusCodes.OK).json({ message: "Image deleted successfully" });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: "Failed to delete image" });
+      res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: "Failed to delete image" });
     }
   };
 

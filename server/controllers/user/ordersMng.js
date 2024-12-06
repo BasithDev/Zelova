@@ -5,6 +5,7 @@ const Cart = require('../../models/cart')
 const {getUserId} = require('../../helpers/getUserId')
 const crypto = require('crypto');
 const Razorpay = require('razorpay');
+const statusCodes = require('../../config/statusCodes');
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -24,7 +25,7 @@ const placeOrder = async (req, res) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
-            return res.status(401).json({ message: 'Not authorized' });
+            return res.status(statusCodes.UNAUTHORIZED).json({ message: 'Not authorized' });
         }
         const userId = getUserId(token, process.env.JWT_SECRET);
         
@@ -44,7 +45,7 @@ const placeOrder = async (req, res) => {
         if (couponCode) {
             const coupon = await Coupon.findOne({ code: couponCode });
             if (!coupon) {
-                return res.status(400).json({ 
+                return res.status(statusCodes.BAD_REQUEST).json({ 
                     success: false,
                     message: 'Invalid coupon code'
                 });
@@ -66,7 +67,7 @@ const placeOrder = async (req, res) => {
             });
         }
 
-        res.status(201).json({
+        res.status(statusCodes.CREATED).json({
             success: true,
             message: 'Order placed successfully',
             order
@@ -74,7 +75,7 @@ const placeOrder = async (req, res) => {
 
     } catch (error) {
         console.error('Error placing order:', error);
-        res.status(500).json({ 
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ 
             success: false,
             message: 'Failed to place order',
             error: error.message 
@@ -86,18 +87,18 @@ const getCurrentOrders = async (req, res) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
-            return res.status(401).json({ message: 'Not authorized' });
+            return res.status(statusCodes.UNAUTHORIZED).json({ message: 'Not authorized' });
         }
         const userId = getUserId(token, process.env.JWT_SECRET);
         const orders = await Order.find({ userId, status: { $ne: 'ORDER ACCEPTED' } });
-        res.status(200).json({ 
+        res.status(statusCodes.OK).json({ 
             success: true,
             message: 'Orders retrieved successfully',
             orders
         });
     } catch (error) {
         console.error('Error retrieving orders:', error);
-        res.status(500).json({ message: 'Failed to retrieve orders',});
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to retrieve orders',});
     }
 }
 
@@ -105,12 +106,12 @@ const createRazorpayOrder = async (req, res) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
-            return res.status(401).json({ message: 'Not authorized' });
+            return res.status(statusCodes.UNAUTHORIZED).json({ message: 'Not authorized' });
         }
         const userId = getUserId(token, process.env.JWT_SECRET);
 
         if (!userId) {
-            return res.status(400).json({ message: 'User ID is required' });
+            return res.status(statusCodes.BAD_REQUEST).json({ message: 'User ID is required' });
         }
         
         const { amount } = req.body;
@@ -123,13 +124,13 @@ const createRazorpayOrder = async (req, res) => {
 
         const razorpayOrder = await razorpay.orders.create(options);
 
-        res.status(200).json({
+        res.status(statusCodes.OK).json({
             success: true,
             order: razorpayOrder
         });
     } catch (error) {
         console.error('Error creating Razorpay order:', error);
-        res.status(500).json({
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: 'Failed to create payment order'
         });
@@ -140,11 +141,11 @@ const getPreviousOrdersOnDate = async (req, res) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
-            return res.status(401).json({ message: 'Not authorized' });
+            return res.status(statusCodes.UNAUTHORIZED).json({ message: 'Not authorized' });
         }
         const userId = getUserId(token, process.env.JWT_SECRET);
         if (!userId) {
-            return res.status(400).json({ message: 'User ID is required'});
+            return res.status(statusCodes.BAD_REQUEST).json({ message: 'User ID is required'});
         }
         const { date } = req.params;
         const searchDate = new Date(date);
@@ -160,14 +161,14 @@ const getPreviousOrdersOnDate = async (req, res) => {
             }
         });
         
-        res.status(200).json({ 
+        res.status(statusCodes.OK).json({ 
             success: true,
             message: 'Orders retrieved successfully',
             orders 
         });
     } catch (error) {
         console.error('Error in getPreviousOrdersOnDate:', error);
-        res.status(500).json({ 
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ 
             success: false,
             message: 'Failed to retrieve orders',
             error: error.message 
@@ -179,7 +180,7 @@ const verifyRazorpayPayment = async (req, res) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
-            return res.status(401).json({ message: 'Not authorized' });
+            return res.status(statusCodes.UNAUTHORIZED).json({ message: 'Not authorized' });
         }
         const userId = getUserId(token, process.env.JWT_SECRET);
 
@@ -192,7 +193,7 @@ const verifyRazorpayPayment = async (req, res) => {
 
         // Validate required fields
         if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !orderDetails) {
-            return res.status(400).json({
+            return res.status(statusCodes.BAD_REQUEST).json({
                 success: false,
                 message: 'Missing required payment details'
             });
@@ -205,7 +206,7 @@ const verifyRazorpayPayment = async (req, res) => {
             .digest("hex");
 
         if (razorpay_signature !== expectedSign) {
-            return res.status(400).json({
+            return res.status(statusCodes.BAD_REQUEST).json({
                 success: false,
                 message: 'Invalid payment signature'
             });
@@ -232,14 +233,14 @@ const verifyRazorpayPayment = async (req, res) => {
             await Cart.deleteOne({ _id: orderDetails.cartId });
         }
 
-        res.status(200).json({
+        res.status(statusCodes.OK).json({
             success: true,
             message: 'Payment verified successfully',
             order
         });
     } catch (error) {
         console.error('Error verifying payment:', error);
-        res.status(500).json({
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: 'Payment verification failed',
             error: error.message
@@ -251,7 +252,7 @@ const updateOrderStatus = async (req, res) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
-            return res.status(401).json({ message: 'Not authorized' })
+            return res.status(statusCodes.UNAUTHORIZED).json({ message: 'Not authorized' })
         }
         const { orderId, status } = req.body;
         const updatedOrder = await Order.findOneAndUpdate(
@@ -260,12 +261,12 @@ const updateOrderStatus = async (req, res) => {
             { new: true }
         );
         if (!updatedOrder) {
-            return res.status(404).json({ message: 'Order not found' });
+            return res.status(statusCodes.NOT_FOUND).json({ message: 'Order not found' });
         }
-        res.status(200).json({ message: 'Order status updated successfully', order: updatedOrder });
+        res.status(statusCodes.OK).json({ message: 'Order status updated successfully', order: updatedOrder });
     } catch (error) {
         console.error('Error updating order status:', error);
-        res.status(500).json({ message: 'Failed to update order status', error: error.message });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to update order status', error: error.message });
     }
 };
 

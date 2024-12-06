@@ -1,10 +1,11 @@
 const crypto = require('crypto');
 const cloudinary = require('../../config/cloudinaryConfig');
+const statusCodes = require('../../config/statusCodes');
 
 const generateDeleteSignature = (req, res) => {
     const { public_id, timestamp } = req.body;
     if (!public_id || !timestamp) {
-      return res.status(400).json({ error: 'Missing required parameters.' });
+      return res.status(statusCodes.BAD_REQUEST).json({ error: 'Missing required parameters.' });
     }
     const signature = crypto
       .createHash('sha1')

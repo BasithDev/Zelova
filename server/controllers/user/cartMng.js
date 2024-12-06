@@ -2,6 +2,8 @@ const Cart = require('../../models/cart');
 const {getUserId} = require('../../helpers/getUserId');
 const Restaurant = require('../../models/restaurant');
 const mongoose = require('mongoose');
+const statusCodes = require('../../config/statusCodes');
+
 const getCart = async (req, res) => {
     try {
         const token = req.cookies.user_token;
@@ -19,7 +21,7 @@ const getCart = async (req, res) => {
         res.json({ cart: cart || null });
     } catch (error) {
         console.error('Error getting cart:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Error retrieving cart', error });
     }
 }
 
@@ -31,7 +33,7 @@ const getTotalItemsFromCart = async (req, res) => {
         res.json({ totalItems: cart ? cart.totalItems : 0 });
     } catch (error) {
         console.error('Error getting cart total items:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
     }
 }
 
@@ -43,7 +45,7 @@ const getTotalPriceFromCart = async (req, res) => {
         res.json({ totalPrice: cart ? cart.totalPrice : 0 });
     } catch (error) {
         console.error('Error getting cart total price:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
     }
 }
 const updateCart = async (req, res) => {
@@ -51,12 +53,12 @@ const updateCart = async (req, res) => {
         const token = req.cookies.user_token;
         const userId = getUserId(token, process.env.JWT_SECRET);
         if (!userId) {
-            return res.status(401).json({ message: 'Unauthorized' });
+            return res.status(statusCodes.UNAUTHORIZED).json({ message: 'Unauthorized' });
         }
 
         const { itemId, action, selectedCustomizations } = req.body;
         if (!itemId || !action) {
-            return res.status(400).json({ message: 'Item ID and action are required.' });
+            return res.status(statusCodes.BAD_REQUEST).json({ message: 'Item ID and action are required.' });
         }
 
         let cart = await Cart.findOne({ userId });
@@ -101,22 +103,22 @@ const updateCart = async (req, res) => {
         res.json({ message: 'Cart updated successfully', cart: updatedCart });
     } catch (error) {
         console.error('Error updating cart:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
     }
 }
 const generateDeliveryFee = async (req, res) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
-            return res.status(401).json({ message: 'Unauthorized' });
+            return res.status(statusCodes.UNAUTHORIZED).json({ message: 'Unauthorized' });
         }
         const userId = getUserId(token, process.env.JWT_SECRET);
         if (!userId) {
-            return res.status(400).json({ message: 'User ID is required' });
+            return res.status(statusCodes.BAD_REQUEST).json({ message: 'User ID is required' });
         }
         let { lat, lon, restaurantId } = req.query;
         if (!lat || !lon || !restaurantId) {
-            return res.status(400).json({ message: 'Latitude, Longitude, and Restaurant ID are required' });
+            return res.status(statusCodes.BAD_REQUEST).json({ message: 'Latitude, Longitude, and Restaurant ID are required' });
         }
 
         lat = parseFloat(lat);
@@ -139,7 +141,7 @@ const generateDeliveryFee = async (req, res) => {
             ]);
 
             if (!distanceResult.length) {
-                return res.status(404).json({ message: 'Distance calculation failed' });
+                return res.status(statusCodes.NOT_FOUND).json({ message: 'Distance calculation failed' });
             }
 
             const deliveryFee = (distanceResult[0].distance / 1000) * 8;
@@ -147,11 +149,11 @@ const generateDeliveryFee = async (req, res) => {
             res.json({ deliveryFee });
         } catch (error) {
             console.error('Error during distance calculation:', error);
-            return res.status(500).json({ message: 'Internal server error' });
+            return res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
         }
     } catch (error) {
         console.error('Error getting delivery fee:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
     }
 }
 
