@@ -48,6 +48,8 @@ import Cart from './Pages/Users/Cart';
 import ConfirmPayment from './Pages/Users/ConfirmPayment';
 import OrderSuccess from './Pages/OrderSuccess';
 import SendMail from './Pages/Admins/SendMail';
+import Report from './Pages/Users/Report';
+import ForgotPassword from './Pages/Users/ForgotPassword';
 
 const queryClient = new QueryClient();
 
@@ -63,10 +65,11 @@ function App() {
             <Routes>
               {/* Public User Routes */}
               <Route element={<UserNoAuthRoute />}>
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/otp" element={<Otp />} />
-                <Route path="/google-response" element={<GoogleResponse />} />
+                <Route path="login" element={<Login />} />
+                <Route path="register" element={<Register />} />
+                <Route path="otp" element={<Otp />} />
+                <Route path="google-response" element={<GoogleResponse />} />
+                <Route path='forgot-password' element={<ForgotPassword/>}/>
               </Route>
 
               {/* Public Admin Routes */}
@@ -93,6 +96,7 @@ function App() {
                   <Route path='/restaurant/:id/menu' element={<Menu/>}/>
                   <Route path='cart' element={<Cart/>} />
                   <Route path='confirm-payment' element={<ConfirmPayment/>}/>
+                  <Route path='report' element={<Report/> }/>
                   <Route element={<OrderProtectedRoute />}>
                     <Route path='order-success' element={<OrderSuccess/>}/>
                   </Route>

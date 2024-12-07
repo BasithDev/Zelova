@@ -163,6 +163,67 @@ const resendOTP = async (req, res, next) => {
         next(error);
     }
 };
+
+const sendOTPForResetPassword = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+        
+        // Check if user exists with this email
+        const existingUser = await User.findOne({ email });
+        if (!existingUser) {
+            return res.status(statusCodes.NOT_FOUND).json({
+                status: 'Failed',
+                message: 'No account exists with this email',
+            });
+        }
+
+        const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+        await Otp.create({ email, otp: otpCode, lastRequested: Date.now() });
+        await sendOTPEmail(email, otpCode);
+        
+        return res.status(statusCodes.CREATED).json({
+            status: 'Success',
+            message: 'OTP sent successfully',
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const verifyOTPForResetPassword = async (req, res, next) => {
+    try {
+        const { email, otp } = req.body;
+        const otpRecord = await Otp.findOne({ email, otp });
+        if (!otpRecord) {
+            return res.status(statusCodes.BAD_REQUEST).json({
+                status: 'Failed',
+                message: 'Invalid or expired OTP',
+            });
+        }
+        await Otp.deleteMany({ email });
+        return res.status(statusCodes.OK).json({
+            status: 'Success',
+            message: 'OTP verified successfully',
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const resetPassword = async (req, res, next) => {
+    try {
+        const { email, password } = req.body;
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await User.findOneAndUpdate({ email }, { password: hashedPassword });
+        return res.status(statusCodes.OK).json({
+            status: 'Success',
+            message: 'Password reset successfully',
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 const initiateGoogleLogin = (passport) => passport.authenticate('google', { scope: ['profile', 'email'] });
 const handleGoogleCallback = (passport) => (req, res, next) => {
     passport.authenticate('google', { session: false }, (err, user,info) => {
@@ -208,5 +269,8 @@ module.exports = {
     resendOTP,
     initiateGoogleLogin,
     handleGoogleCallback,
-    generateTokenAndRedirect
+    generateTokenAndRedirect,
+    sendOTPForResetPassword,
+    verifyOTPForResetPassword,
+    resetPassword
 };

@@ -1,4 +1,4 @@
-import { FaEdit, FaKey, FaStore, FaPalette, FaAddressCard, FaUserEdit } from "react-icons/fa";
+import { FaEdit, FaKey, FaStore, FaPalette, FaAddressCard, FaUserEdit, FaExclamationTriangle } from "react-icons/fa";
 import PropTypes from "prop-types";
 import { useSelector } from 'react-redux';
 import { useNavigate } from "react-router-dom";
@@ -48,6 +48,9 @@ const userData = useSelector((state)=>state.userData.data)
           <ProfileOption 
           onClick={()=>navigate('/address-manage')} 
           icon={<FaAddressCard />} color="text-orange-500" label="Your Addresses" />
+          <ProfileOption 
+          onClick={()=>navigate('/report')}
+          icon={<FaExclamationTriangle />} color="text-red-500" label="Report a Problem" />
         </div>
       </div>
     </div>
