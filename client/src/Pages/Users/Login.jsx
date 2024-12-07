@@ -93,7 +93,9 @@ const Login = () => {
                     </div>
                     
                     <div className="text-center mb-4">
-                        <a href="#" className="text-gray-500">Forgot Password? <span className="underline text-blue-500">Click Here</span></a>
+                        <Link replace to="/forgot-password">
+                            <span className="text-gray-500">Forgot Password? <span className="underline text-blue-500">Click Here</span></span>
+                        </Link>
                     </div>
                     
                     <PrimaryBtn

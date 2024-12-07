@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import AdminSearchBar from "../../Components/SearchBar/AdminSearchBar";
+import { sendMail } from "../../Services/apiServices";
+import { BeatLoader } from 'react-spinners';
 
 const SendMail = () => {
     const [formData, setFormData] = useState({
@@ -9,6 +11,7 @@ const SendMail = () => {
         subject: '',
         message: ''
     });
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -20,6 +23,32 @@ const SendMail = () => {
 
     const handleClear = () => {
         setFormData({ to: '', subject: '', message: '' });
+    };
+
+    const handleSubmit = async () => {
+        // Validate form
+        if (!formData.to || !formData.subject || !formData.message) {
+            toast.error('Please fill in all fields');
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const response = await sendMail({
+                email: formData.to,
+                subject: formData.subject,
+                message: formData.message
+            });
+
+            if (response.data.status === 'Success') {
+                toast.success('Email sent successfully');
+                handleClear(); // Clear form after successful send
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to send email');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -42,7 +71,8 @@ const SendMail = () => {
                             value={formData.to}
                             onChange={handleChange}
                             placeholder="Enter Email Address"
-                            className="w-full p-3 border mt-2 border-gray-600 rounded-lg"
+                            disabled={loading}
+                            className={`w-full p-3 border mt-2 border-gray-300 rounded-lg bg-gray-50/50 focus:outline-none focus:border-blue-500 transition-all duration-300 ${loading ? 'opacity-60 cursor-not-allowed' : ''}`}
                         />
                     </div>
                     <div className="mb-4">
@@ -53,7 +83,8 @@ const SendMail = () => {
                             value={formData.subject}
                             onChange={handleChange}
                             placeholder="Enter Subject"
-                            className="w-full p-3 border mt-2 border-gray-600 rounded-lg"
+                            disabled={loading}
+                            className={`w-full p-3 border mt-2 border-gray-300 rounded-lg bg-gray-50/50 focus:outline-none focus:border-blue-500 transition-all duration-300 ${loading ? 'opacity-60 cursor-not-allowed' : ''}`}
                         />
                     </div>
                     <div className="mb-6">
@@ -63,22 +94,26 @@ const SendMail = () => {
                             value={formData.message}
                             onChange={handleChange}
                             placeholder="Enter Message"
-                            className="w-full p-3 border mt-2 border-gray-600 rounded-lg h-40"
+                            disabled={loading}
+                            className={`w-full p-3 border mt-2 border-gray-300 rounded-lg bg-gray-50/50 focus:outline-none focus:border-blue-500 transition-all duration-300 h-40 resize-none ${loading ? 'opacity-60 cursor-not-allowed' : ''}`}
                         />
                     </div>
                     <div className="flex justify-end">
                         <button
                             type="button"
                             onClick={handleClear}
-                            className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-lg mr-3"
+                            disabled={loading}
+                            className={`bg-gray-200 font-bold hover:bg-gray-300 text-gray-500 px-5 py-2 rounded-lg mr-3 ${loading ? 'opacity-60 cursor-not-allowed' : ''}`}
                         >
                             Clear
                         </button>
                         <button
                             type="submit"
-                            className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-lg"
+                            onClick={handleSubmit}
+                            disabled={loading}
+                            className={`bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-lg flex items-center justify-center min-w-[100px] ${loading ? 'opacity-60 cursor-not-allowed' : ''}`}
                         >
-                            Send Mail
+                            {loading ? <BeatLoader size={8} color="#ffffff" /> : 'Send Mail'}
                         </button>
                     </div>
                 </div>

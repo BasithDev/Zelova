@@ -6,6 +6,9 @@ export const loginUser = (data) => api.post('/auth/login',data)
 export const registerUser = (data) => api.post('/auth/register',data)
 export const verifyOTP = (data) => api.post('/auth/verify-otp',data)
 export const resendOTP = (data) => api.post('/auth/resend-otp',data)
+export const sendOTPForResetPassword = (data) => api.post('/auth/otp-reset-password',data)
+export const verifyOTPForResetPassword = (data) => api.post('/auth/verify-otp-reset-password',data)
+export const resetPassword = (data) => api.post('/auth/reset-password',data)
 export const logout = (role) => api.post('/auth/logout', { role });
 
 //for uploading image to cloudnairy
@@ -18,6 +21,7 @@ export const getCategoriesToMng = ()=>api.get('/admin/manage/categories')
 export const getSubCategoriesToMng = ()=>api.get('/admin/manage/subcategories')
 export const deleteCategory = (id)=>api.delete(`/admin/manage/category/delete/${id}`)
 export const deleteSubCategory = (id)=>api.delete(`/admin/manage/subcategory/delete/${id}`)
+export const sendMail = (data) => api.post('/admin/send-mail',data)
 
 //admin routes - users and vendor management
 export const fetchVendorRequests = () => api.get('/admin/manage/requests')
