@@ -3,7 +3,7 @@ const user = require('../../models/user');
 const statusCodes = require('../../config/statusCodes');
 const getUserId = require('../../helpers/getUserId')
 
-const getZcoinsData = async (req, res) => {
+const getZcoinsData = async (req, res, next) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
@@ -22,11 +22,11 @@ const getZcoinsData = async (req, res) => {
         res.status(statusCodes.OK).json({ zcoins:userCoinsData });    
     } catch (error) {
         console.error(error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+        next(error)
     }
 }
 
-const searchUsers = async (req, res) => {
+const searchUsers = async (req, res ,next) => {
     try {
         const token = req.cookies.user_token;
         if (!token) {
@@ -49,11 +49,11 @@ const searchUsers = async (req, res) => {
         res.status(statusCodes.OK).json({ users });
     } catch (error) {
         console.error(error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+            next(error)
     }
 }
 
-const sendZcoins = async (req, res) => {
+const sendZcoins = async (req, res ,next) => {
     const { amountNum , receiverId } = req.body;
     const amount = amountNum;
     try {
@@ -94,7 +94,7 @@ const sendZcoins = async (req, res) => {
         res.status(statusCodes.OK).json({ message: 'Zcoins sent successfully' });
     } catch (error) {
         console.error(error);
-        res.status(statusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+        next(error)
     }
 }
 
