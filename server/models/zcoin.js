@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
-const walletSchema = new Schema({
+const zcoinSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
@@ -17,4 +17,4 @@ const walletSchema = new Schema({
   timestamps: true,
 });
 
-module.exports = mongoose.model("Wallet", walletSchema);
+module.exports = mongoose.model("zcoin", zcoinSchema);
