@@ -15,6 +15,7 @@ import LoadingSpinner from "../../Components/LoadingSpinner/LoadingSpinner";
 import MenuSearch from "../../Components/MenuSearch/MenuSearch";
 import CategoryMenu from "../../Components/CategoryMenu/CategoryMenu";
 import { useCart } from "../../Hooks/useCart";
+import { addFavorite, removeFavorite, getFavourites } from "../../Services/apiServices";
 
 const Menu = () => {
 
@@ -133,16 +134,25 @@ const Menu = () => {
         }
     };
 
-    const toggleFavorite = (itemId) => {
-        setFavorites(prev => {
-            const newFavorites = new Set(prev);
-            if (newFavorites.has(itemId)) {
-                newFavorites.delete(itemId);
+    const toggleFavorite = async (itemId) => {
+        try {
+            if (favorites.has(itemId)) {
+                await removeFavorite({ foodItemId: itemId });
+                setFavorites((prev) => {
+                    const newFavorites = new Set(prev);
+                    newFavorites.delete(itemId);
+                    return newFavorites;
+                });
+                toast.success("Item removed from favorites!");
             } else {
-                newFavorites.add(itemId);
+                await addFavorite({ foodItemId: itemId });
+                setFavorites((prev) => new Set(prev).add(itemId));
+                toast.success("Item added to favorites!");
             }
-            return newFavorites;
-        });
+        } catch (error) {
+            console.error("Error toggling favorite:", error);
+            toast.error("Failed to toggle favorite. Please try again.");
+        }
     };
 
     useEffect(() => {
@@ -166,8 +176,21 @@ const Menu = () => {
             }
         };
 
+        const fetchFavourites = async () => {
+            try {
+                const response = await getFavourites();
+                if (response?.data) {
+                    const favoriteIds = response.data.favorites.map((favorite) => favorite.item);
+                    setFavorites(new Set(favoriteIds));
+                }
+            } catch (error) {
+                console.error("Error fetching favorites:", error);
+            }
+        };
+
         if (id && lat && lon) {
             fetchMenu();
+            fetchFavourites();
         } else {
             toast.error("Invalid restaurant or location details");
             setLoading(false);

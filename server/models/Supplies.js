@@ -1,10 +1,15 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
-const shareSuppliesSchema = new Schema({
+const SuppliesSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
     required: true,
+  },
+  heading:{
+    type: String,
+    required: true,
+    trim: true,
   },
   description: {
     type: String,
@@ -26,4 +31,4 @@ const shareSuppliesSchema = new Schema({
   timestamps: true,
 });
 
-module.exports = mongoose.model("ShareSupply", shareSuppliesSchema);
+module.exports = mongoose.model("Supply", SuppliesSchema);

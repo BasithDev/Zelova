@@ -74,6 +74,11 @@ export const getZcoinsData = () => api.get('/user/zcoins')
 export const searchUsers = (searchQuery) => api.get(`/user/zcoins/search?searchQuery=${searchQuery}`)
 export const sendZcoins = (data) => api.post('/user/zcoins/send',data)
 
+//user routes - favourites management
+export const getFavourites = () => api.get('/user/favourites')
+export const addFavorite = (data) => api.post('/user/favourites/add',data)
+export const removeFavorite = (data) => api.delete(`/user/favourites/remove?foodItemId=${data.foodItemId}`)
+
 //vendor routes - restaruant management
 export const getRestaurant = () => api.get(`vendor/restaurant`)
 export const updateRestaurantDetails = (data) => api.put(`vendor/restaurant/details`, data);
