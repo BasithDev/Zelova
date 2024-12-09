@@ -1,5 +1,6 @@
 const Order = require('../../models/orders')
 const Coupon = require('../../models/coupons')
+const zcoin = require('../../models/zcoin')
 const RedeemedCoupon = require('../../models/reedemedCoupon')
 const Cart = require('../../models/cart')
 const getUserId = require('../../helpers/getUserId')
@@ -11,6 +12,20 @@ const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
     key_secret: process.env.RAZORPAY_KEY_SECRET
 });
+
+function generateRandomCoins(amt) {
+    const baseMultiplier = 0.01; 
+    const minVariation = 0.8;
+    const maxVariation = 1.2;
+    let baseCoins = Math.floor(amt * baseMultiplier);
+    const randomFactor = minVariation + (Math.random() * (maxVariation - minVariation));
+    let finalCoins = Math.floor(baseCoins * randomFactor);
+    const minCoins = 1; 
+    finalCoins = Math.max(finalCoins, minCoins);
+    const maxCoins = 100; 
+    finalCoins = Math.min(finalCoins, maxCoins);
+    return finalCoins;
+}
 
 function generateOrderId() {
     const date = new Date();
@@ -67,10 +82,19 @@ const placeOrder = async (req, res, next) => {
             });
         }
 
+        const generatedCoins = generateRandomCoins(billDetails.finalAmount);
+
+        await zcoin.findOneAndUpdate(
+            { userId },
+            { $inc: { balance: generatedCoins } },
+            { upsert: true, new: true }
+        );
+
         res.status(statusCodes.CREATED).json({
             success: true,
             message: 'Order placed successfully',
-            order
+            order,
+            coinsEarned: generatedCoins
         });
 
     } catch (error) {
@@ -180,7 +204,6 @@ const verifyRazorpayPayment = async (req, res, next) => {
             orderDetails 
         } = req.body;
 
-        // Validate required fields
         if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !orderDetails) {
             return res.status(statusCodes.BAD_REQUEST).json({
                 success: false,
@@ -201,7 +224,6 @@ const verifyRazorpayPayment = async (req, res, next) => {
             });
         }
 
-        // Generate orderId
         const orderId = generateOrderId();
 
         const finalOrderDetails = {

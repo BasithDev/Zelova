@@ -5,10 +5,10 @@ import { motion } from 'framer-motion';
 
 const OrderSuccess = () => {
     const location = useLocation();
-    const { orderId } = location.state || {};
+    const { orderId, coinsWon } = location.state || {};
     const navigate = useNavigate();
     const [scratched, setScratched] = useState(false);
-    const [coinsWon, setCoinsWon] = useState(0);
+    const [displayedCoins, setDisplayedCoins] = useState(0);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -23,7 +23,7 @@ const OrderSuccess = () => {
 
     const handleScratch = () => {
         setScratched(true);
-        setCoinsWon(Math.floor(Math.random() * 100) + 1); // Random coins between 1 and 100
+        setDisplayedCoins(coinsWon || 0);
     };
 
     return (
@@ -56,7 +56,7 @@ const OrderSuccess = () => {
                         </div>
                     ) : (
                         <div className="w-64 h-32 p-2 bg-purple-100 rounded-lg flex items-center justify-center shadow-inner">
-                            <p className="text-lg text-purple-900">Congratulations! You&apos;ve won <span className="font-bold">{coinsWon}</span> coins!</p>
+                            <p className="text-lg text-purple-900">Congratulations! You&apos;ve won <span className="font-bold">{displayedCoins}</span> coins!</p>
                         </div>
                     )}
                 </div>

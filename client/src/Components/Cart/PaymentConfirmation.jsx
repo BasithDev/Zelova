@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { placeOrder } from '../../Services/apiServices';
 import { toast } from 'react-hot-toast';
 import { createRazorpayOrder , verifyRazorpayPayment } from '../../Services/apiServices';
+import { useQueryClient } from '@tanstack/react-query';
 
 const PaymentConfirmation = ({
     isOpen,
@@ -32,11 +33,12 @@ const PaymentConfirmation = ({
 }) => {
     const [selectedPayment, setSelectedPayment] = useState('COD');
     const [loading, setLoading] = useState(false);
-    const finalTotal = totalAmount + tax + platformFee - (appliedCoupon?.discountAmount || 0);
+    const finalTotal = totalAmount + deliveryFee + tax + platformFee - (appliedCoupon?.discountAmount || 0);
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const userData = useSelector((state) => state.userData.data);
+    const queryClient = useQueryClient();
 
     const paymentOptions = [
         {
@@ -140,10 +142,14 @@ const PaymentConfirmation = ({
                         if (verificationResponse.data?.success) {
                             toast.success('Payment successful!');
                             dispatch(completeOrder());
+                            // Invalidate cart queries to clear the UI state
+                            queryClient.invalidateQueries(['cart']);
+                            queryClient.invalidateQueries(['totalItems']);
+                            queryClient.invalidateQueries(['totalPrice']);
                             navigate('/order-success', {
                                 state: {
                                     orderId: verificationResponse.data.order.orderId,
-                                    coinsWon: 100
+                                    coinsWon: verificationResponse.data.order.coinsEarned
                                 }
                             });
                             onClose();
@@ -223,16 +229,25 @@ const PaymentConfirmation = ({
 
 
     const handleProceedToPay = async () => {
+        if (!selectedPhoneNumber?.trim()) {
+            toast.error('Please enter a phone number before proceeding');
+            return;
+        }
+
         if (selectedPayment === 'COD') {
             const orderDetails = prepareOrderDetails('COD');
             try {
                 setLoading(true);
-                await placeOrder(orderDetails);
+                const response = await placeOrder(orderDetails);
                 dispatch(completeOrder());
+                // Invalidate cart queries to clear the UI state
+                queryClient.invalidateQueries(['cart']);
+                queryClient.invalidateQueries(['totalItems']);
+                queryClient.invalidateQueries(['totalPrice']);
                 navigate('/order-success', { 
                     state: { 
-                        orderId: 'ZEL-' + Date.now(), 
-                        coinsWon: 100 
+                        orderId: response.data.order.orderId,
+                        coinsWon: response.data.coinsEarned
                     } 
                 });
                 onClose();
@@ -309,18 +324,6 @@ const PaymentConfirmation = ({
                                         <span className="text-gray-600">Tax</span>
                                         <span className="font-medium">₹{tax.toFixed(2)}</span>
                                     </div>
-                                    {offerSavings > 0 && (
-                                        <div className="flex justify-between text-sm text-green-600">
-                                            <span>Offer Discount</span>
-                                            <span>-₹{offerSavings.toFixed(2)}</span>
-                                        </div>
-                                    )}
-                                    {appliedCoupon && (
-                                        <div className="flex justify-between text-sm text-green-600">
-                                            <span>Coupon Discount ({appliedCoupon.code})</span>
-                                            <span>-₹{appliedCoupon.discountAmount.toFixed(2)}</span>
-                                        </div>
-                                    )}
                                     <div className="flex justify-between text-sm">
                                         <div className="flex items-center gap-2">
                                             <span className="text-gray-600">Delivery Fee</span>
@@ -333,14 +336,26 @@ const PaymentConfirmation = ({
                                         <span className="flex items-center gap-2">
                                             {isFreeDelivery ? (
                                                 <>
-                                                    <span className="text-gray-400 line-through">₹{deliveryFee}</span>
+                                                    <span className="text-gray-400 line-through">₹{deliveryFee.toFixed(2)}</span>
                                                     <span className="text-green-600">FREE</span>
                                                 </>
                                             ) : (
-                                                `₹${deliveryFee}`
+                                                `₹${deliveryFee.toFixed(2)}`
                                             )}
                                         </span>
                                     </div>
+                                    {offerSavings > 0 && (
+                                        <div className="flex justify-between text-sm text-green-600">
+                                            <span>Offer Discount</span>
+                                            <span>-₹{offerSavings.toFixed(2)}</span>
+                                        </div>
+                                    )}
+                                    {appliedCoupon && (
+                                        <div className="flex justify-between text-sm text-green-600">
+                                            <span>Coupon Discount ({appliedCoupon.code})</span>
+                                            <span>-₹{appliedCoupon.discountAmount.toFixed(2)}</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

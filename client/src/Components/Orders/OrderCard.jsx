@@ -161,7 +161,7 @@ const OrderCard = ({ order, setShowDeliveryPopup, setSelectedOrderId, isPrevious
 OrderCard.propTypes = {
   order: PropTypes.shape({
     _id: PropTypes.string.isRequired,
-    status: PropTypes.oneOf(['PREPARING', 'ON THE WAY', 'DELIVERED', 'NOT RECEIVED BY CUSTOMER', 'NOT DELIVERED', 'ORDER ACCEPTED']).isRequired,
+    status: PropTypes.oneOf(['PENDING','PAID','PREPARING', 'ON THE WAY', 'DELIVERED', 'NOT RECEIVED BY CUSTOMER', 'NOT DELIVERED', 'ORDER ACCEPTED']).isRequired,
     items: PropTypes.arrayOf(
       PropTypes.shape({
         name: PropTypes.string.isRequired,

@@ -1,7 +1,7 @@
 import { FaMapMarkerAlt } from 'react-icons/fa';
 import PropTypes from 'prop-types';
 
-const RestaurantHeader = ({ restaurant }) => {
+const RestaurantHeader = ({ restaurant = null }) => {
     if (!restaurant) return null;
 
     return (
@@ -59,10 +59,6 @@ RestaurantHeader.propTypes = {
         address: PropTypes.string,
         image: PropTypes.string,
     })
-};
-
-RestaurantHeader.defaultProps = {
-    restaurant: null
 };
 
 export default RestaurantHeader;
