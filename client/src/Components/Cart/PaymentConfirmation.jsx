@@ -4,14 +4,14 @@ import { FaTimes } from 'react-icons/fa';
 import { BsCashCoin } from 'react-icons/bs';
 import { RiSecurePaymentLine } from 'react-icons/ri';
 import { SiZcash } from 'react-icons/si';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
 import { completeOrder } from '../../Redux/slices/orderSlice';
 import { useNavigate } from 'react-router-dom';
 import { placeOrder } from '../../Services/apiServices';
 import { toast } from 'react-hot-toast';
-import { createRazorpayOrder , verifyRazorpayPayment } from '../../Services/apiServices';
+import { createRazorpayOrder , verifyRazorpayPayment, getZcoinsData } from '../../Services/apiServices';
 import { useQueryClient } from '@tanstack/react-query';
 
 const PaymentConfirmation = ({
@@ -33,12 +33,28 @@ const PaymentConfirmation = ({
 }) => {
     const [selectedPayment, setSelectedPayment] = useState('COD');
     const [loading, setLoading] = useState(false);
+    const [coinBalance, setCoinBalance] = useState(0);
     const finalTotal = totalAmount + deliveryFee + tax + platformFee - (appliedCoupon?.discountAmount || 0);
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const userData = useSelector((state) => state.userData.data);
     const queryClient = useQueryClient();
+
+    useEffect(() => {
+        const fetchCoinBalance = async () => {
+            try {
+                const response = await getZcoinsData();
+                setCoinBalance(response.data.balance);
+            } catch (error) {
+                console.error('Error fetching coin balance:', error);
+            }
+        };
+
+        if (isOpen) {
+            fetchCoinBalance();
+        }
+    }, [isOpen]);
 
     const paymentOptions = [
         {
@@ -57,7 +73,8 @@ const PaymentConfirmation = ({
             id: 'ZCOINS',
             name: 'Zcoins',
             icon: <SiZcash className="text-xl" />,
-            description: 'Pay with your Zcoins balance'
+            description: `Pay with your Zcoins`,
+            disabled: coinBalance < finalTotal
         }
     ];
 
@@ -234,13 +251,45 @@ const PaymentConfirmation = ({
             return;
         }
 
-        if (selectedPayment === 'COD') {
-            const orderDetails = prepareOrderDetails('COD');
+        const payableAmount = selectedPayment === 'ZCOINS' ? Math.ceil(finalTotal) : finalTotal;
+
+        const orderDetails = prepareOrderDetails(selectedPayment);
+        orderDetails.billDetails.finalAmount = payableAmount;
+
+        if (selectedPayment === 'ZCOINS') {
+            if (coinBalance < payableAmount) {
+                toast.error('Insufficient Zcoins balance');
+                return;
+            }
             try {
                 setLoading(true);
                 const response = await placeOrder(orderDetails);
                 dispatch(completeOrder());
-                // Invalidate cart queries to clear the UI state
+                queryClient.invalidateQueries(['cart']);
+                queryClient.invalidateQueries(['totalItems']);
+                queryClient.invalidateQueries(['totalPrice']);
+                queryClient.invalidateQueries(['zcoins']);
+                navigate('/order-success', { 
+                    state: { 
+                        orderId: response.data.order.orderId,
+                        coinsWon: response.data.coinsEarned
+                    } 
+                });
+                onClose();
+            } catch (error) {
+                console.error('Error placing order:', error);
+                toast.error('Failed to place order');
+            } finally {
+                setLoading(false);
+            }
+            return;
+        }
+
+        if (selectedPayment === 'COD') {
+            try {
+                setLoading(true);
+                const response = await placeOrder(orderDetails);
+                dispatch(completeOrder());
                 queryClient.invalidateQueries(['cart']);
                 queryClient.invalidateQueries(['totalItems']);
                 queryClient.invalidateQueries(['totalPrice']);
@@ -302,6 +351,9 @@ const PaymentConfirmation = ({
                                     You saved ₹{totalSavings.toFixed(2)} on this order!
                                 </p>
                             )}
+                            <p className="text-md text-gray-800 mt-2">
+                                Your Zcoin Balance: <span className="font-bold">{coinBalance}</span> coins
+                            </p>
                         </div>
 
                         <div className="bg-gray-50 rounded-lg p-4">
@@ -362,62 +414,62 @@ const PaymentConfirmation = ({
                     </div>
 
                     <div className="space-y-6">
-                        <div className="bg-gray-50 rounded-lg p-4">
-                            <h3 className="font-semibold text-gray-700 mb-3">Select Payment Method</h3>
-                            <div className="space-y-2">
-                                {paymentOptions.map((option) => (
-                                    <div
-                                        key={option.id}
-                                        onClick={() => setSelectedPayment(option.id)}
-                                        className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                        <div className="space-y-4">
+                            <h3 className="font-semibold text-gray-700">Select Payment Method</h3>
+                            {paymentOptions.map((option) => (
+                                <div
+                                    key={option.id}
+                                    onClick={() => !option.disabled && setSelectedPayment(option.id)}
+                                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                                        selectedPayment === option.id
+                                            ? 'border-orange-400 bg-orange-50'
+                                            : option.disabled
+                                            ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
+                                            : 'border-gray-200 hover:border-orange-400'
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className={`p-2 rounded-full ${
                                             selectedPayment === option.id
-                                                ? 'border-orange-500 bg-orange-50'
-                                                : 'border-gray-200 hover:border-orange-200'
-                                        }`}
-                                    >
-                                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100">
+                                                ? 'bg-orange-100 text-orange-600'
+                                                : option.disabled
+                                                ? 'bg-gray-100 text-gray-400'
+                                                : 'bg-gray-100 text-gray-600'
+                                        }`}>
                                             {option.icon}
                                         </div>
                                         <div>
-                                            <div className="font-medium">{option.name}</div>
-                                            <div className="text-sm text-gray-500">{option.description}</div>
-                                        </div>
-                                        <div className="ml-auto">
-                                            <div className={`w-4 h-4 rounded-full border-2 ${
-                                                selectedPayment === option.id
-                                                    ? 'border-orange-500 bg-orange-500'
-                                                    : 'border-gray-300'
-                                            }`}>
-                                                {selectedPayment === option.id && (
-                                                    <div className="w-full h-full rounded-full bg-white scale-[0.4]" />
-                                                )}
-                                            </div>
+                                            <h4 className="font-medium text-gray-800">{option.name}</h4>
+                                            <p className="text-sm text-gray-500">{option.description}</p>
+                                            {option.disabled && (
+                                                <p className="text-sm text-red-500 mt-1">
+                                                    Insufficient coin balance for this order
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
-                                ))}
-                            </div>
+                                </div>
+                            ))}
                         </div>
 
-
-                    <button
-                        onClick={handleProceedToPay}
-                        disabled={loading}
-                        className={`w-full py-4 rounded-lg text-white font-medium transition-all ${
-                            loading
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-orange-500 hover:bg-primary/90'
-                        }`}
-                    >
-                        {loading ? (
-                            <div className="flex items-center justify-center gap-2">
-                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                Processing...
-                            </div>
-                        ) : (
-                            `Confirm Order - ₹${finalTotal.toFixed(2)}`
-                        )}
-                    </button>
-                
+                        <button
+                            onClick={handleProceedToPay}
+                            disabled={loading}
+                            className={`w-full py-4 rounded-lg text-white font-medium transition-all ${
+                                loading
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-orange-500 hover:bg-primary/90'
+                            }`}
+                        >
+                            {loading ? (
+                                <div className="flex items-center justify-center gap-2">
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    Processing...
+                                </div>
+                            ) : (
+                                `Confirm Order - ₹${finalTotal.toFixed(2)}`
+                            )}
+                        </button>
                     </div>
                 </div>
             </motion.div>

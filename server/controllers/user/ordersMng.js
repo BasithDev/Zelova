@@ -46,6 +46,8 @@ const placeOrder = async (req, res, next) => {
         
         const { user, items, billDetails, restaurantId, couponCode, cartId } = req.body;
 
+        const paymentMethod = billDetails.paymentMethod;
+
         const orderData = {
             userId,
             restaurantId,
@@ -70,6 +72,21 @@ const placeOrder = async (req, res, next) => {
             };
         }
 
+        if (paymentMethod === 'ZCOINS') {
+            const userCoins = await zcoin.findOne({ userId });
+            if (!userCoins || userCoins.balance < billDetails.finalAmount) {
+                return res.status(statusCodes.BAD_REQUEST).json({
+                    success: false,
+                    message: 'Insufficient Zcoins balance'
+                });
+            }
+            const deductedCoins = Math.floor(-billDetails.finalAmount);
+            await zcoin.updateOne(
+                { userId },
+                { $inc: { balance: deductedCoins } }
+            );
+        }
+
         const order = await Order.create(orderData);
 
         await Cart.deleteOne({ _id: cartId });
@@ -81,20 +98,21 @@ const placeOrder = async (req, res, next) => {
                 couponId: coupon._id
             });
         }
-
         const generatedCoins = generateRandomCoins(billDetails.finalAmount);
+        if (paymentMethod !== 'ZCOINS') {
 
-        await zcoin.findOneAndUpdate(
-            { userId },
-            { $inc: { balance: generatedCoins } },
-            { upsert: true, new: true }
-        );
+            await zcoin.findOneAndUpdate(
+                { userId },
+                { $inc: { balance: generatedCoins } },
+                { upsert: true, new: true }
+            );
+        }
 
         res.status(statusCodes.CREATED).json({
             success: true,
             message: 'Order placed successfully',
             order,
-            coinsEarned: generatedCoins
+            coinsEarned: paymentMethod === 'ZCOINS' ? 0 : generatedCoins
         });
 
     } catch (error) {

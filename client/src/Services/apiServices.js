@@ -69,6 +69,11 @@ export const getPreviousOrdersOnDate = (date) => api.get(`/user/orders/previous/
 export const createRazorpayOrder = (data) => api.post('/user/orders/create-razorpay-order', data)
 export const verifyRazorpayPayment = (data) => api.post('/user/orders/verify-razorpay-payment', data)
 
+//user routes - zcoins management
+export const getZcoinsData = () => api.get('/user/zcoins')
+export const searchUsers = (searchQuery) => api.get(`/user/zcoins/search?searchQuery=${searchQuery}`)
+export const sendZcoins = (data) => api.post('/user/zcoins/send',data)
+
 //vendor routes - restaruant management
 export const getRestaurant = () => api.get(`vendor/restaurant`)
 export const updateRestaurantDetails = (data) => api.put(`vendor/restaurant/details`, data);

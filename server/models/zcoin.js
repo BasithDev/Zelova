@@ -13,6 +13,11 @@ const zcoinSchema = new Schema({
     min: 0,
     default: 0,
   },
+  lastSentUserIds: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    default: []
+  }]
 }, {
   timestamps: true,
 });
