@@ -125,11 +125,10 @@ const OrderCard = ({ order, setShowDeliveryPopup, setSelectedOrderId, isPrevious
             <span>₹{order.billDetails.finalAmount.toFixed(2)}</span>
           </div>
           <div className="text-gray-600 text-md">
-          Payment Method: <span className='font-bold text-xl'>{order.billDetails.paymentMethod === 'COD' ? 'Cash on Delivery' : 'Online Payment'}</span>
+          Payment Method: <span className='font-bold text-xl'>{order.billDetails.paymentMethod}</span>
           </div>
         </div>
 
-        {/* Delivery Address */}
         <div className="mt-6 p-4 rounded-lg bg-gray-50 border border-gray-100">
           <div className="flex items-center gap-2 mb-2">
             <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
