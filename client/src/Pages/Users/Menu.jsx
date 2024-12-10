@@ -180,7 +180,7 @@ const Menu = () => {
             try {
                 const response = await getFavourites();
                 if (response?.data) {
-                    const favoriteIds = response.data.favorites.map((favorite) => favorite.item);
+                    const favoriteIds = response.data.favorites.map((favorite) => favorite.item._id);
                     setFavorites(new Set(favoriteIds));
                 }
             } catch (error) {

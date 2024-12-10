@@ -50,7 +50,19 @@ const getFavorites = async (req, res, next) => {
             return res.status(statusCodes.UNAUTHORIZED).json({ message: 'Not authorized' });
         }
         const userId = getUserId(token, process.env.JWT_SECRET);
-        const favoritesRes = await favorites.find({ userId });
+        const favoritesRes = await favorites.find({ userId }).populate({
+            path: 'item',
+            populate: [{
+                path: 'offers',
+                model: 'Offer',
+                select: 'offerName'
+            }, {
+                path: 'restaurantId',
+                model: 'Restaurant',
+                select: '_id name address'
+            }],
+            select: 'name price description image offers restaurantId'
+        })
         res.status(statusCodes.OK).json({ favorites: favoritesRes });
     } catch (error) {
         console.error('Error retrieving favorites:', error);
