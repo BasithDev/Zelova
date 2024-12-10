@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { FaStar } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 
 const OrderStatus = ({ status }) => {
   const getStatusColor = () => {
@@ -35,7 +36,19 @@ const OrderCard = ({ order, setShowDeliveryPopup, setSelectedOrderId, isPrevious
   }, [order.status, setShowDeliveryPopup, setSelectedOrderId, order.orderId]);
 
   return (
-    <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+    <motion.div 
+      className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+      onAnimationComplete={(definition) => {
+        if (definition === 'exit') {
+          console.log('OrderCard exit animation completed');
+          // Add any additional logic here
+        }
+      }}
+    >
       <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-6">
         <div className="flex justify-between items-start">
           <div>
@@ -153,7 +166,7 @@ const OrderCard = ({ order, setShowDeliveryPopup, setSelectedOrderId, isPrevious
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

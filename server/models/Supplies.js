@@ -16,6 +16,11 @@ const SuppliesSchema = new Schema({
     required: true,
     trim: true,
   },
+  contactNumber: {
+    type: String,
+    required: true,
+    trim: true,
+  },
   location: {
     type: {
       type: String,
@@ -30,5 +35,8 @@ const SuppliesSchema = new Schema({
 }, {
   timestamps: true,
 });
+
+// Ensure 2dsphere index on location field for geospatial queries
+SuppliesSchema.index({ location: '2dsphere' });
 
 module.exports = mongoose.model("Supply", SuppliesSchema);

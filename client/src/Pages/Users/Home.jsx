@@ -38,17 +38,13 @@ const Home = () => {
     };
 
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
+        <div
             className="p-1"
         >
             <Header 
                 searchQuery={searchQuery}
                 onSearchChange={(e) => setSearchQuery(e.target.value)}
-                placeholderText="Search for restaurants or dishes..."
+                placeholderText="Search foods, restaurants, etc..."
             />
             <div className="p-6">
                 {!locationAvailable ? (
@@ -72,7 +68,12 @@ const Home = () => {
                                 </button>
                             ))}
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {restaurantData.length === 0 ? (
                                 <div className="flex flex-col justify-center items-center">
                                     <RingLoader size={50} color="#FF5733" className="mb-5" />
@@ -123,11 +124,11 @@ const Home = () => {
                                     );
                                 })
                             )}
-                        </div>
+                        </motion.div>
                     </>
                 )}
             </div>
-        </motion.div>
+        </div>
     );
 };
 

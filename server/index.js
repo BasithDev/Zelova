@@ -6,7 +6,6 @@ const connetDB = require('./config/db')
 const compression = require('compression');
 
 const authRouter = require('./routes/auth/authRoutes')
-
 const userReqVendorRouter = require('./routes/user/reqVendorRoute')
 const userRouter = require('./routes/user/userRoute')
 const restaurantListing = require('./routes/user/restaurantListing')
@@ -26,6 +25,8 @@ const offerRouter = require('./routes/vendor/offerMng')
 const categoriesRouter = require('./routes/vendor/categoriesMng')
 const productMngRouter = require('./routes/vendor/productMng')
 const vendorOrderRouter = require('./routes/vendor/orderMngRoute')
+
+const suppliesRoutes = require('./routes/user/supplies');
 
 const passport = require('passport');
 const errorMiddleware = require('./middlewares/errorMiddleware')
@@ -59,6 +60,7 @@ app.use('/api/user/coupons',userCouponRouter)
 app.use('/api/user/orders',orderRouter)
 app.use('/api/user/zcoins',zcoinRouter)
 app.use('/api/user/favourites',favoriteRouter)
+app.use('/api/user/supplies', suppliesRoutes);
 
 app.use('/api/admin/manage',adminManageRouter)
 app.use('/api/admin',adminRouter)
