@@ -89,8 +89,9 @@ const Orders = () => {
 
     return (
       <div className="space-y-6">
-        {activeTab === 'current'
-          ? currentOrders.orders.map((order) => (
+        <AnimatePresence>
+          {activeTab === 'current'
+            ? currentOrders.orders.map((order) => (
               <OrderCard 
                 key={order.orderId} 
                 order={order} 
@@ -100,26 +101,41 @@ const Orders = () => {
                 fromSeller={false}
               />
             ))
-          : (Array.isArray(previousOrders) && previousOrders.length > 0 ? previousOrders.map((order) => {
-              return (
-                <OrderCard 
-                  key={order._id} 
-                  order={order} 
-                  setShowDeliveryPopup={setShowDeliveryPopup}
-                  setSelectedOrderId={setSelectedOrderId}
-                  isPreviousOrder={true}
-                  fromSeller={false}
-                />
-              );
-             }) : 
-             <div className="flex flex-col items-center justify-center py-12">
-               <div className="bg-gray-100 p-8 rounded-lg flex flex-col items-center">
-                 <h3 className="text-xl font-semibold text-gray-800 mb-2">No Previous Orders</h3>
-                 <p className="text-gray-600">{`You haven't placed any orders on this date.`}</p>
-                 <FaBoxOpen className="text-6xl text-gray-300 mt-4" />
-               </div>
-             </div>
+            : (Array.isArray(previousOrders) && previousOrders.length > 0 ? previousOrders.map((order) => (
+              <OrderCard 
+                key={order._id} 
+                order={order} 
+                setShowDeliveryPopup={setShowDeliveryPopup}
+                setSelectedOrderId={setSelectedOrderId}
+                isPreviousOrder={true}
+                fromSeller={false}
+              />
+            )) : 
+             <AnimatePresence>
+               {activeTab === 'previous' && previousOrders.length === 0 && (
+                 <motion.div 
+                   initial={{ opacity: 0, y: -20 }} 
+                   animate={{ opacity: 1, y: 0 }} 
+                   exit={{ opacity: 0, y: -20 }} 
+                   transition={{ duration: 0.3 }}
+                   className="flex flex-col items-center justify-center py-12"
+                 >
+                   <motion.div
+                     initial={{ opacity: 0 , y: -20 }}
+                     animate={{ opacity: 1 , y: 0}}
+                     exit={{ opacity: 0 , y: -20}}
+                     transition={{ duration: 0.3 }}
+                     className="bg-gray-100 p-8 rounded-lg flex flex-col items-center"
+                   >
+                     <h3 className="text-xl font-semibold text-gray-800 mb-2">No Previous Orders</h3>
+                     <p className="text-gray-600">{`You haven't placed any orders on this date.`}</p>
+                     <FaBoxOpen className="text-6xl text-gray-300 mt-4" />
+                   </motion.div>
+                 </motion.div>
+               )}
+             </AnimatePresence>
              )}
+        </AnimatePresence>
       </div>
     );
   };
@@ -165,12 +181,20 @@ const Orders = () => {
             </button>
           </div>
         </div>
-        {activeTab === 'previous' && (
-          <div className="mb-8">
-            <label className="block text-gray-700 mb-2">Select Date:</label>
-            <DatePicker {...datePickerProps} />
-          </div>
-        )}
+        <AnimatePresence>
+          {activeTab === 'previous' && (
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              exit={{ opacity: 0, y: -20 }} 
+              transition={{ duration: 0.3 }}
+              className="mb-8"
+            >
+              <label className="block text-gray-700 mb-2">Select Date:</label>
+              <DatePicker {...datePickerProps} />
+            </motion.div>
+          )}
+        </AnimatePresence>
         {renderContent()}
         <AnimatePresence>
           {showDeliveryPopup && (

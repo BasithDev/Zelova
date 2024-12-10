@@ -79,6 +79,13 @@ export const getFavourites = () => api.get('/user/favourites')
 export const addFavorite = (data) => api.post('/user/favourites/add',data)
 export const removeFavorite = (data) => api.delete(`/user/favourites/remove?foodItemId=${data.foodItemId}`)
 
+//user routes - supplies management
+export const getSupplies = (lat,lon) => api.get(`/user/supplies?lat=${lat}&lon=${lon}`)
+export const shareSupplies = (data) => api.post('/user/supplies/share',data)
+export const viewSharedSupplies = () => api.get('/user/supplies/view')
+export const updateSupplies = (data) => api.put('/user/supplies/update',data)
+export const deleteSupplies = (id) => api.delete(`/user/supplies/delete?id=${id}`)
+
 //vendor routes - restaruant management
 export const getRestaurant = () => api.get(`vendor/restaurant`)
 export const updateRestaurantDetails = (data) => api.put(`vendor/restaurant/details`, data);

@@ -54,7 +54,10 @@ const UserSearchResult = ({ user, onSelect, selected }) => {
     >
       <div className={`w-12 h-12 rounded-full flex items-center justify-center ${selected ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-600'}`}>
         {user.profilePicture ? (
-          <img src={user.profilePicture} alt={user.fullname} className="w-full h-full object-cover rounded-full" />
+          <img 
+          referrerPolicy='no-referrer'
+          src={user?.profilePicture} alt={user.fullname} 
+          className="w-full h-full object-cover rounded-full" />
         ) : (
           <FaUserCircle className="text-2xl" />
         )}
