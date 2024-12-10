@@ -1,46 +1,33 @@
-import { useState, useMemo } from "react";
-import { FaSearch, FaHeart } from 'react-icons/fa';
+import { useState, useMemo, useEffect } from "react";
+import { FaSearch } from 'react-icons/fa';
+import { AiFillHeart } from 'react-icons/ai'
+import { motion, AnimatePresence } from "framer-motion";
 import Header from "../../Components/Common/Header";
 import debounce from 'lodash/debounce';
+import { getFavourites, removeFavorite } from "../../Services/apiServices";
 
 const Favourites = () => {
+    const [favourites, setFavourites] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [menuSearchQuery, setMenuSearchQuery] = useState("");
     const [debouncedMenuSearch, setDebouncedMenuSearch] = useState("");
     const [sortOrder, setSortOrder] = useState('none');
+    const [showEmptyState, setShowEmptyState] = useState(false);
 
-    // Dummy data for favorites
-    const dummyFavorites = useMemo(() => [
-        {
-            _id: '1',
-            name: 'Margherita Pizza',
-            description: 'Classic Italian pizza with fresh mozzarella, tomatoes, and basil',
-            price: 299,
-            image: '',
-            restaurant: 'Pizza Paradise',
-            category: 'Pizza'
-        },
-        {
-            _id: '2',
-            name: 'Chicken Biryani',
-            description: 'Aromatic basmati rice cooked with tender chicken and spices',
-            price: 249,
-            image: '',
-            restaurant: 'Biryani House',
-            category: 'Main Course'
-        },
-        {
-            _id: '3',
-            name: 'Chocolate Brownie',
-            description: 'Rich and fudgy chocolate brownie with vanilla ice cream',
-            price: 149,
-            image: '',
-            restaurant: 'Sweet Treats',
-            category: 'Desserts'
-        },
-    ], []);
+    useEffect(() => {
+        const fetchFavourites = async () => {
+            try {
+                const response = await getFavourites();
+                setFavourites(response.data.favorites);
+                setShowEmptyState(response.data.favorites.length === 0);
+            } catch (error) {
+                console.error("Error fetching favourites:", error);
+                setShowEmptyState(true);
+            }
+        };
+        fetchFavourites();
+    }, []);
 
-    // Create debounced function for menu search
     const debouncedSetMenuSearch = useMemo(
         () => debounce((value) => {
             setDebouncedMenuSearch(value);
@@ -56,35 +43,48 @@ const Favourites = () => {
 
     const filteredFavorites = useMemo(() => {
         const query = debouncedMenuSearch.toLowerCase().trim();
-        if (!query) return dummyFavorites;
+        if (!query) return favourites
 
-        return dummyFavorites.filter(item =>
-            item.name.toLowerCase().includes(query) ||
-            item.description.toLowerCase().includes(query) ||
-            item.category.toLowerCase().includes(query) ||
-            item.restaurant.toLowerCase().includes(query)
+        return favourites.filter(fav =>
+            fav.item.name.toLowerCase().includes(query) ||
+            fav.item.description.toLowerCase().includes(query) ||
+            fav.item.restaurantId.name.toLowerCase().includes(query)
         );
-    }, [debouncedMenuSearch, dummyFavorites]);
+    }, [debouncedMenuSearch, favourites]);
 
     const sortedFavorites = useMemo(() => {
         if (sortOrder === 'none') return filteredFavorites;
-        
+
         return [...filteredFavorites].sort((a, b) => {
-            if (sortOrder === 'lowToHigh') return a.price - b.price;
-            if (sortOrder === 'highToLow') return b.price - a.price;
+            if (sortOrder === 'lowToHigh') return a.item.price - b.item.price;
+            if (sortOrder === 'highToLow') return b.item.price - a.item.price;
             return 0;
         });
     }, [filteredFavorites, sortOrder]);
 
+    const handleRemoveFavorite = async (foodItemId) => {
+        try {
+            await removeFavorite({ foodItemId:foodItemId });
+            setFavourites(prevFavorites => prevFavorites.filter(fav => fav.item._id !== foodItemId));
+        } catch (error) {
+            console.error("Error removing favorite:", error);
+        }
+    };
+
+    const handleExitComplete = () => {
+        if (sortedFavorites.length === 0) {
+            setShowEmptyState(true);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gray-50">
-            <Header 
+            <Header
                 searchQuery={searchQuery}
                 onSearchChange={(e) => setSearchQuery(e.target.value)}
                 placeholderText="Search foods, restaurants, etc..."
             />
 
-            {/* Search and Sort Section */}
             <div className="px-8 py-3">
                 <div className="flex justify-between items-center gap-4">
                     <div className="relative w-72">
@@ -99,7 +99,7 @@ const Favourites = () => {
                             <FaSearch size={16} />
                         </div>
                     </div>
-                    
+
                     <select
                         value={sortOrder}
                         onChange={(e) => setSortOrder(e.target.value)}
@@ -113,6 +113,18 @@ const Favourites = () => {
             </div>
 
             <div className="pb-20 px-8">
+                {showEmptyState && !debouncedMenuSearch && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                        className="flex flex-col items-center justify-center py-12"
+                    >
+                        <p className="text-xl text-gray-600">No favourites added yet</p>
+                        <p className="text-gray-500 mt-2">Start adding items to your favourites!</p>
+                    </motion.div>
+                )}
+
                 {!sortedFavorites.length && debouncedMenuSearch && (
                     <div className="flex flex-col items-center justify-center py-12">
                         <p className="text-xl text-gray-600">{`No favourites found matching - "${debouncedMenuSearch}"`}</p>
@@ -120,45 +132,64 @@ const Favourites = () => {
                     </div>
                 )}
 
-                {!sortedFavorites.length && !debouncedMenuSearch && (
-                    <div className="flex flex-col items-center justify-center py-12">
-                        <p className="text-xl text-gray-600">No favourites added yet</p>
-                        <p className="text-gray-500 mt-2">Start adding items to your favourites!</p>
-                    </div>
-                )}
-                
-                <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <AnimatePresence onExitComplete={handleExitComplete}>
                     {sortedFavorites.map((item) => (
-                        <div key={item._id} className="bg-white rounded-2xl shadow-lg p-6 flex flex-col md:flex-row justify-between items-start hover:shadow-xl transition-shadow duration-300">
-                            <div className="flex-1 mb-4 md:mb-0">
-                                <h4 className="text-2xl font-semibold mb-3 text-gray-900">{item.name}</h4>
-                                <p className="text-gray-500 mb-3">{item.description}</p>
-                                <p className="text-xl font-bold text-green-600 mb-3">₹{item.price}</p>
-                                <p className="text-lg font-semibold text-indigo-600 mb-3">{item.restaurant}</p>
-                                <button 
-                                    className="w-fit p-2 bg-gray-100 rounded-full transition-colors duration-300"
-                                >
-                                    <FaHeart className="text-red-500 text-2xl" />
-                                </button>
-                            </div>
-                            <div className="flex flex-col items-center gap-3">
-                                {item.image && (
-                                    <div className="w-40 h-40">
-                                        <img
-                                            src={item.image}
-                                            alt={item.name}
-                                            className="w-full h-full object-cover rounded-lg shadow-md"
-                                        />
+                        <motion.div
+                            key={item._id}
+                            className="bg-white rounded-lg shadow-md overflow-hidden hover:bg-orange-50 cursor-pointer transition-all duration-200 hover:shadow-lg relative"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.3 }}
+                            exit={{ opacity: 0 }}
+                        >
+                            <div className="relative">
+                                {item.item.image && (
+                                    <motion.img
+                                        src={item.item.image}
+                                        alt={item.item.name}
+                                        className="w-full h-64 object-cover"
+                                        whileHover={{ scale: 1.05 }}
+                                        transition={{ duration: 0.3 }}
+                                    />
+                                )}
+                                {item.item.offers && (
+                                    <div className="absolute bottom-3 left-3 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium shadow-md">
+                                        {item.item.offers.offerName}
                                     </div>
                                 )}
+                            </div>
+                            <div className="absolute top-3 right-3">
                                 <button 
-                                    className="w-full px-4 py-2 text-xl bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-300 flex items-center justify-center gap-2 font-medium"
+                                    onClick={() => handleRemoveFavorite(item.item._id)}
+                                    className="focus:outline-none"
                                 >
-                                    Add to Cart
+                                    <AiFillHeart 
+                                        className="text-red-500 text-2xl hover:scale-110 transition-all duration-300" 
+                                    />
                                 </button>
                             </div>
-                        </div>
+                            <div className="p-4">
+                                <h4 className="text-xl font-bold text-gray-900 truncate mb-2">
+                                    {item.item.name}
+                                </h4>
+                                <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+                                    {item.item.description}
+                                </p>
+                                <p className="text-lg font-semibold text-green-500 mb-2">
+                                    ₹{item.item.price}
+                                </p>
+                                {item.item.restaurantId && (
+                                    <div className="text-gray-700">
+                                        <p className="font-bold text-gray-800 text-xl"><span className="font-semibold text-sm text-indigo-700">From: </span> {item.item.restaurantId.name}</p>
+                                        <p className="text-gray-500">{item.item.restaurantId.address}</p>
+                                    </div>
+                                )}
+                                
+                            </div>
+                        </motion.div>
                     ))}
+                    </AnimatePresence>
                 </div>
             </div>
         </div>
