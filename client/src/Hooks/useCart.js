@@ -1,34 +1,37 @@
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { getCart, getTotalItemsFromCart, getTotalPriceFromCart, updateCart } from '../Services/apiServices';
+import {toast} from 'react-toastify';
+import { useState } from 'react';
 
 export const useCart = () => {
     const queryClient = useQueryClient();
+    const [isError, setIsError] = useState(false);
 
     // Fetch the entire cart
-    const { data: cart, isLoading, isError } = useQuery({
+    const { data: cart, isLoading } = useQuery({
         queryKey: ['cart'],
         queryFn: getCart,
         cacheTime: 1000 * 60 * 10,
-        staleTime: 1000 * 60 * 5
+        staleTime: 1000 * 60 * 5,
     });
 
-    // Fetch total items in cart
-    const { data: totalItems, isLoading: totalItemsLoading, isError: totalItemsError } = useQuery({
+    // Get total items in cart
+    const { data: totalItems } = useQuery({
         queryKey: ['totalItems'],
         queryFn: getTotalItemsFromCart,
         cacheTime: 1000 * 60 * 10,
-        staleTime: 1000 * 60 * 5
+        staleTime: 1000 * 60 * 5,
     });
 
-    // Fetch total price of cart
-    const { data: totalPrice, isLoading: totalPriceLoading, isError: totalPriceError } = useQuery({
+    // Get total price in cart
+    const { data: totalPrice } = useQuery({
         queryKey: ['totalPrice'],
         queryFn: getTotalPriceFromCart,
         cacheTime: 1000 * 60 * 10,
-        staleTime: 1000 * 60 * 5
+        staleTime: 1000 * 60 * 5,
     });
 
-    // Mutation to update cart
+    // Update cart mutation
     const updateCartMutation = useMutation({
         mutationFn: updateCart,
         onSuccess: () => {
@@ -36,25 +39,29 @@ export const useCart = () => {
             queryClient.invalidateQueries(['totalItems']);
             queryClient.invalidateQueries(['totalPrice']);
         },
+        onError: (error) => {
+            setIsError(true);
+            if (error.response && error.response.status === 400) {
+                console.log(error.response.data.message);
+                toast.error(error.response.data.message || 'Cannot add items from multiple restaurants');
+            } else {
+                toast.error('An unexpected error occurred');
+            }
+        },
     });
+
+    // Reset error state
+    const resetError = () => {
+        setIsError(false);
+    };
 
     return {
         cart,
+        totalItems,
+        totalPrice,
         isLoading,
         isError,
-        totalItems,
-        totalItemsLoading,
-        totalItemsError,
-        totalPrice,
-        totalPriceLoading,
-        totalPriceError,
         updateCartMutation,
-        updatingCart: updateCartMutation.isLoading,
-        updateError: updateCartMutation.isError,
-        refetch: () => {
-            queryClient.invalidateQueries(['cart']);
-            queryClient.invalidateQueries(['totalItems']);
-            queryClient.invalidateQueries(['totalPrice']);
-        },
+        resetError
     };
 };

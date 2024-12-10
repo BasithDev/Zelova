@@ -58,9 +58,18 @@ const RestaurantEdit = ({
             setIsImageUpdating(true)
             const cloudResponse = await uploadImageToCloud(selectedImage);
             if (cloudResponse) {
-                const public_id = extractPublicId(restaurantDetails.image)
+                let public_id = null;
+                if (restaurantDetails.image) {
+                    public_id = extractPublicId(restaurantDetails.image);
+                }
                 const imageURL = cloudResponse.secure_url
-                await updateRestaurantPic({imageURL,public_id});
+                await updateRestaurantPic({
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ imageURL, public_id })
+                });
                 toast.success("Image updated successfully!")
                 setShowPopup(false);
                 dispatch(fetchRestaurantData())

@@ -38,6 +38,11 @@ const acceptReq = async (req, res, next) => {
             vendorId: user._id,
             name: request.restaurantName,
             description: request.description,
+            image:"https://png.pngtree.com/png-vector/20221125/ourmid/pngtree-no-image-available-icon-flatvector-illustration-picture-coming-creative-vector-png-image_40968940.jpg",
+            location: {
+                type: "Point",
+                coordinates: [0, 0]
+            }
         })
         await newRestaurant.save();
         const subject = 'Vendor Request Approved';

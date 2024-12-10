@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { calculateDistanceAndTime } from '../../utils/distanceUtils';
 import RestaurantCard from "../../Components/RestaurantCard/RestaurantCard";
 import { AnimatePresence, motion } from "framer-motion";
-import { toast } from 'react-toastify';
+import { toast,ToastContainer } from 'react-toastify';
 import Header from "../../Components/Common/Header";
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import debounce from 'lodash/debounce';
@@ -33,6 +33,7 @@ const Menu = () => {
             action,
             selectedCustomizations: customizations
         };
+        
     
         updateCartMutation.mutate(payload);
     };
@@ -243,6 +244,7 @@ const Menu = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
+            <ToastContainer position="top-right" />
             <Header
                 searchQuery={searchQuery}
                 onSearchChange={(e) => setSearchQuery(e.target.value)}
@@ -470,7 +472,7 @@ const Menu = () => {
                                                     </form>
                                                 </motion.div>
                                             </motion.div>
-                                    )}
+                                    )} 
                                     </AnimatePresence>
                                 </div>
                             </div>

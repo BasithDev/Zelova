@@ -98,10 +98,18 @@ const updateCart = async (req, res, next) => {
             }
         }
 
-        await cart.save();
-
-        const updatedCart = await Cart.findById(cart._id).populate('items.item');
-        res.json({ message: 'Cart updated successfully', cart: updatedCart });
+        try {
+            await cart.save();
+            res.json({ message: 'Cart updated successfully', cart });
+        } catch (saveError) {
+            if (saveError.name === 'ValidatorError' && saveError.message.includes('Multiple restaurants')) {
+                return res.status(400).json({ message: 'Cannot add items from multiple restaurants to the cart' });
+            } else if (saveError.status === 400) {
+                return res.status(400).json({ message: saveError.message });
+            }
+            console.error('Error saving cart:', saveError);
+            next(saveError);
+        }
     } catch (error) {
         console.error('Error updating cart:', error);
         next(error);

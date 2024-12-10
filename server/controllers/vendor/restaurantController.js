@@ -85,7 +85,9 @@ const updateRestaurantPic = async (req,res,next)=>{
             { new: true }
         );
 
-        await cloudinary.uploader.destroy(public_id);
+        if (public_id) {
+            await cloudinary.uploader.destroy(public_id);
+        }
 
         if (!updatedRestaurant) return res.status(statusCodes.NOT_FOUND).json({ error: "Restaurant not found" });
 

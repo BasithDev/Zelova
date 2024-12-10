@@ -70,7 +70,9 @@ cartSchema.pre('validate', async function (next) {
                       throw new Error('Food item not found.');
                   }
                   if (foodItem.restaurantId.toString() !== this.restaurantId.toString()) {
-                      throw new Error('Cannot add items from multiple restaurants. Clear cart first.');
+                      const error = new Error('Cannot add items from multiple restaurants. Clear cart first.');
+                      error.status = 400;
+                      return next(error);
                   }
               }
           }
@@ -80,7 +82,6 @@ cartSchema.pre('validate', async function (next) {
       next(error);
   }
 });
-
 
 // Pre-save middleware to calculate prices and totals
 cartSchema.pre('save', async function(next) {

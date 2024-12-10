@@ -1,6 +1,5 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { toast } from 'react-toastify';
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -10,7 +9,7 @@ const api = axios.create({
 api.interceptors.response.use(
     (response)=>response,
     (error)=> {
-      toast.error(error.response?.data?.message || 'Server error');
+
       return Promise.reject(error)
     }
 )
