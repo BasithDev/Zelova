@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { addCoupon, getCoupons, updateCoupon, deleteCoupon } from "../../Services/apiServices";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import AdminSearchBar from "../../Components/SearchBar/AdminSearchBar";
 
 const CouponMng = () => {
   const [coupons, setCoupons] = useState([]);
@@ -190,20 +191,21 @@ const CouponMng = () => {
   };
 
   return (
-    <div className="p-6">
+    <div>
+      <AdminSearchBar/>
       <ToastContainer />
-      <h1 className="text-3xl font-bold text-gray-800">Manage Coupons</h1>
+      <h1 className="text-3xl ms-4 font-bold text-gray-800">Manage Coupons</h1>
       {coupons.length > 0 && (
         <button
         onClick={openAddModal}
-        className="bg-gradient-to-r mt-4 from-blue-500 to-indigo-600 text-white px-6 py-2 rounded-lg shadow hover:opacity-90 transition"
+        className="bg-gradient-to-r mt-4 from-blue-500 to-indigo-600 text-white ms-4 px-6 py-2 rounded-lg shadow hover:opacity-90 transition"
       >
         + Add New Coupon
       </button>
       )}
       
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6 ms-4">
         {coupons.length > 0 ? (
           coupons.map((coupon) => (
             <motion.div

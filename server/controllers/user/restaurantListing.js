@@ -1,5 +1,5 @@
 const Restaurant = require('../../models/restaurant')
-const FoodItem = require('../../models/fooditem');
+const FoodItem = require('../../models/foodItem');
 const mongoose = require('mongoose');
 const statusCodes = require('../../config/statusCodes');
 
@@ -90,7 +90,7 @@ const getMenu = async (req, res, next) => {
         if (!restaurant || restaurant.length === 0) {
             return res.status(statusCodes.NOT_FOUND).json({ message: 'Restaurant not found' });
         }
-        const menu = await FoodItem.find({ restaurantId: id })
+        const menu = await FoodItem.find({ restaurantId: id , isActive: true })
             .populate('foodCategory')
             .populate('offers')
             .lean();

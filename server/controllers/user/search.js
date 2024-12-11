@@ -12,7 +12,8 @@ const getProducts = async (req, res, next) => {
         const searchWords = query.trim().split(/\s+/);
         const searchCondition = {
             $or: searchWords.map(word => ({
-                name: { $regex: word, $options: 'i' }
+                name: { $regex: word, $options: 'i' },
+                isActive: true
             }))
         };
 
@@ -36,7 +37,8 @@ const getProducts = async (req, res, next) => {
                 path: 'foodCategory',
                 match: { 
                     $or: searchWords.map(word => ({
-                        name: { $regex: word, $options: 'i' }
+                        name: { $regex: word, $options: 'i' },
+                        isActive: true
                     }))
                 },
                 select: 'name',
@@ -52,7 +54,7 @@ const getProducts = async (req, res, next) => {
         const allItems = [...foodItemsRes, ...categoryMatchItems];
         const uniqueItems = Array.from(new Set(allItems.map(item => item._id.toString())))
             .map(id => allItems.find(item => item._id.toString() === id))
-            .filter(item => item.foodCategory); // Ensure foodCategory exists
+            .filter(item => item.foodCategory);
 
         res.status(statusCodes.OK).json({ foodItems: uniqueItems });
     } catch (error) {
