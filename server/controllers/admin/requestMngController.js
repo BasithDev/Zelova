@@ -21,6 +21,15 @@ const getVendorApplications = async (req, res, next) => {
     }
 };
 
+const getVendorPendingRequestsCount = async (req, res, next) => {
+    try {
+        const count = await vendorRequest.countDocuments({ status: 'pending' });
+        res.status(statusCodes.OK).json({ count });
+    } catch (error) {
+        next(error);
+    }
+};
+
 const acceptReq = async (req, res, next) => {
     try {
         const { id } = req.params;
@@ -97,5 +106,6 @@ module.exports = {
   getVendorApplications,
   acceptReq,
   denyReq,
-  deleteImage
+  deleteImage,
+  getVendorPendingRequestsCount
 };

@@ -54,10 +54,8 @@ const Menu = () => {
 
     const handleModalOpen = (item) => {
         setSelectedItem(item);
-        // Set default selections for each customization
         const defaultSelections = {};
         item.customizations.forEach(customization => {
-            // Select the first option as default for each customization
             defaultSelections[customization.fieldName] = customization.options[0];
         });
         setSelectedCustomizations(defaultSelections);
