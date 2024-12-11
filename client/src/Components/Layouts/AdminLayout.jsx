@@ -9,6 +9,7 @@ import { useDispatch} from "react-redux";
 import { logout } from "../../Services/apiServices";
 import { logoutAdmin } from "../../Redux/slices/admin/authAdminSlice";
 import { fetchAdminData } from "../../Redux/slices/admin/adminDataSlice";
+
 const navItems = [
   { name: "Dashboard", icon: <MdDashboard className="text-3xl" />, path: "/admin" },
   { name: "Users", icon: <LuUsers className="text-3xl" />, path: "/admin/user-manage" },
@@ -24,8 +25,7 @@ const AdminLayout = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  
-  
+
   useEffect(() => {
     dispatch(fetchAdminData());
   }, [dispatch]);

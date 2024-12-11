@@ -5,17 +5,30 @@ const getUserId = require('../../helpers/getUserId');
 const getNearBySupplies = async (req, res, next) => {
     try {
         const { lon, lat } = req.query;
-        const nearbySupplies = await Supplies.find({
-            location: {
-                $near: {
-                    $geometry: {
+        const nearbySupplies = await Supplies.aggregate([
+            {
+                $geoNear: {
+                    near: {
                         type: 'Point',
-                        coordinates: [lon, lat],
+                        coordinates: [parseFloat(lon), parseFloat(lat)],
                     },
-                    $maxDistance: 50000,
+                    distanceField: 'distance',
+                    spherical: true,
+                    maxDistance: 50000,
                 },
             },
-        }).select('-location');
+            {
+                $project: {
+                    userId: 1,
+                    contactNumber: 1,
+                    heading: 1,
+                    description: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    distance: { $divide: ['$distance', 1000] },
+                },
+            },
+        ]);
         res.status(statusCodes.OK).json({ supplies: nearbySupplies });
     } catch (error) {
         console.error('Error retrieving supplies:', error);

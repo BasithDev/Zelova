@@ -25,6 +25,7 @@ export const sendMail = (data) => api.post('/admin/send-mail',data)
 
 //admin routes - users and vendor management
 export const fetchVendorRequests = () => api.get('/admin/manage/requests')
+export const getVendorPendingRequestsCount = () => api.get('/admin/manage/requests-count')
 export const acceptVenodrRequests = (requestId) => api.post(`/admin/manage/accept-vendor/${requestId}`)
 export const denyVenodrRequests = (applicationId) => api.post(`/admin/manage/deny-vendor/${applicationId}`)
 export const fetchUsers = () => api.get('/admin/manage/users')

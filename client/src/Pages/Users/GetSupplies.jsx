@@ -31,7 +31,7 @@ const GetSupplies = () => {
       <Header
         searchQuery={searchQuery}
         onSearchChange={(e) => setSearchQuery(e.target.value)}
-        placeholderText="Search for supplies..."
+        placeholderText="Search foods, restaurants, etc..."
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-16">
@@ -54,8 +54,11 @@ const GetSupplies = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 20 }}
-                  className="bg-white rounded-lg shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl"
+                  className="bg-white rounded-lg shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl relative"
                 >
+                  <span className="absolute top-2 right-2 bg-orange-100 text-orange-600 font-bold text-sm rounded-full px-3 py-1">
+                    {supply.distance.toFixed(1)} km
+                  </span>
                   <h2 className="text-xl font-semibold text-gray-800 mb-2">{supply.heading}</h2>
                   <p className="text-gray-600 mb-4">{supply.description}</p>
                   <div className="flex items-center text-gray-600">

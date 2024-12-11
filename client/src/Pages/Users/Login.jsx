@@ -5,7 +5,7 @@ import { FaUser } from "react-icons/fa";
 import { RiLockPasswordFill } from "react-icons/ri";
 import { FcGoogle } from "react-icons/fc";
 import PrimaryBtn from '../../Components/Buttons/PrimaryBtn';
-import { ToastContainer } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useDispatch } from 'react-redux';
 import { setUserAuth } from '../../Redux/slices/user/authUserSlice';
@@ -36,6 +36,7 @@ const Login = () => {
                 navigate('/');
             }
         } catch (error) {
+            toast.error(error.response.data.message);
             console.error("Login error:", error);
         }
     };
