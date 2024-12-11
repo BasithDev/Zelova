@@ -60,4 +60,4 @@ const foodItemsSchema = new Schema({
   timestamps: true,
 });
 
-module.exports = mongoose.model("FoodItem", foodItemsSchema);
+module.exports = mongoose.models.FoodItem || mongoose.model("FoodItem", foodItemsSchema);
