@@ -2,8 +2,9 @@ import { FaShoppingCart, FaSearch } from "react-icons/fa";
 import PropTypes from 'prop-types';
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useCart } from "../../Hooks/useCart";
+import { searchFoodItems } from "../../Services/apiServices";
 
 const CartDropdown = ({ onClose }) => {
     const navigate = useNavigate();
@@ -99,28 +100,133 @@ CartDropdown.propTypes = {
     onClose: PropTypes.func.isRequired
 };
 
-const Header = ({ searchQuery, onSearchChange, placeholderText = "Search..." }) => {
+const Header = ({ placeholderText = "Search..." }) => {
     const navigate = useNavigate();
     const { totalItems } = useCart();
     const [showCartDropdown, setShowCartDropdown] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+    const debounceRef = useRef(null);
     const totalItemsCount = totalItems?.data?.totalItems || 0;
+
+    useEffect(() => {
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
+        }
+
+        debounceRef.current = setTimeout(async () => {
+            if (searchQuery) {
+                try {
+                    const response = await searchFoodItems(searchQuery);
+                    setSearchResults(response.data.foodItems);
+                    setShowSearchDropdown(true);
+                } catch (error) {
+                    console.error('Error fetching search results:', error);
+                    setSearchResults([]);
+                }
+            } else {
+                setSearchResults([]);
+                setShowSearchDropdown(false);
+            }
+        }, 500);
+
+        return () => clearTimeout(debounceRef.current);
+    }, [searchQuery]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (!event.target.closest('.search-container')) {
+                setShowSearchDropdown(false);
+            }
+        };
+
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, []);
+
+    const handleSearchItemClick = (item) => {
+        setShowSearchDropdown(false);
+        setSearchQuery('');
+        navigate(`/restaurant/${item.restaurantId._id}/menu`, { state: { foodCategory: item.foodCategory.name } });
+    };
 
     return (
         <div className="sticky top-0 z-50 bg-white transition-all duration-300 border-b-2 pt-1">
             <div className="container mx-auto px-4 py-3">
                 <div className="flex items-center justify-between">
                     <div className="flex-1 max-w-3xl">
-                        <div className="relative">
+                        <div className="relative search-container">
                             <input
                                 type="text"
                                 value={searchQuery}
-                                onChange={onSearchChange}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder={placeholderText}
                                 className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 placeholder-gray-400"
                             />
                             <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
                                 <FaSearch size={16} />
                             </div>
+
+                            <AnimatePresence>
+                                {showSearchDropdown && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -10 }}
+                                        transition={{ duration: 0.1 }}
+                                        className="absolute w-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-y-auto z-50 scrollbar-hide"
+                                    >
+                                        <AnimatePresence>
+                                        {searchResults.length > 0 ? (
+                                            searchResults.map((item) => (
+                                                <motion.div
+                                                    key={item._id}
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    exit={{ opacity: 0, y: -100 }}
+                                                    transition={{ duration: 0.2 }}
+                                                    onClick={() => handleSearchItemClick(item)}
+                                                    className="flex items-center p-3 transition-all duration-200 cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-orange-50 hover:shadow-lg"
+                                                >
+                                                    <div className="w-12 h-12 rounded-lg overflow-hidden mr-3">
+                                                        <AnimatePresence>
+                                                        <motion.img
+                                                            initial={{ scale: 0.8 }}
+                                                            animate={{ scale: 1 }}
+                                                            src={item.image}
+                                                            alt={item.name}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                        </AnimatePresence>
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <h3 className="font-semibold text-lg text-gray-800">{item.name}</h3>
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-sm text-orange-500">
+                                                               From: <span className="text-md font-semibold text-gray-500 ">{item.restaurantId?.name} <span className="text-gray-400 ms-1 font-normal">{item.restaurantId?.address}</span></span> 
+                                                            </span>
+                                                            <motion.span 
+                                                                className="text-sm font-medium text-orange-500"
+                                                                initial={{ opacity: 0 }}
+                                                                animate={{ opacity: 1 }}
+                                                                exit={{ opacity: 0 }}
+                                                                >
+                                                                ₹{item.price}
+                                                            </motion.span>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            ))
+                                        ) : (
+                                            <div className="p-3 text-center text-gray-500">
+                                                {`No results found for "${searchQuery}"`}
+                                            </div>
+                                        )}
+                                        </AnimatePresence>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </div>
 
@@ -153,8 +259,6 @@ const Header = ({ searchQuery, onSearchChange, placeholderText = "Search..." }) 
 };
 
 Header.propTypes = {
-    searchQuery: PropTypes.string.isRequired,
-    onSearchChange: PropTypes.func.isRequired,
     placeholderText: PropTypes.string
 };
 

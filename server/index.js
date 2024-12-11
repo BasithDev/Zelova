@@ -14,6 +14,7 @@ const userCouponRouter = require('./routes/user/reedemCouponRoute')
 const orderRouter = require('./routes/user/ordersMngRoute')
 const zcoinRouter = require('./routes/user/zcoinRoute')
 const favoriteRouter = require('./routes/user/favoriteMngRoute')
+const searchRoutes = require('./routes/user/searchRoute')
 
 const adminManageRouter = require('./routes/admin/manageRoutes')
 const adminRouter = require('./routes/admin/adminRoute')
@@ -61,6 +62,7 @@ app.use('/api/user/orders',orderRouter)
 app.use('/api/user/zcoins',zcoinRouter)
 app.use('/api/user/favourites',favoriteRouter)
 app.use('/api/user/supplies', suppliesRoutes);
+app.use('/api/user/search', searchRoutes);
 
 app.use('/api/admin/manage',adminManageRouter)
 app.use('/api/admin',adminRouter)

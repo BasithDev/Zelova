@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { FiMenu } from 'react-icons/fi';
 import { FaPlus, FaMinus } from "react-icons/fa";
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { getMenuForUser } from '../../Services/apiServices';
 import { useSelector, useDispatch } from "react-redux";
 import { calculateDistanceAndTime } from '../../utils/distanceUtils';
@@ -19,6 +19,21 @@ import { addFavorite, removeFavorite, getFavourites } from "../../Services/apiSe
 
 const Menu = () => {
 
+    const { id } = useParams();
+    const [searchQuery, setSearchQuery] = useState("");
+    const [menuSearchQuery, setMenuSearchQuery] = useState("");
+    const [debouncedMenuSearch, setDebouncedMenuSearch] = useState("");
+    const [restaurant, setRestaurant] = useState(null);
+    const [menuItems, setMenuItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [isFabOpen, setIsFabOpen] = useState(false);
+    const [sortOrder, setSortOrder] = useState('none');
+    const [favorites, setFavorites] = useState(new Set());
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedCustomizations, setSelectedCustomizations] = useState({});
+    const [selectedItem, setSelectedItem] = useState(null);
+    const location = useLocation()
+
     const {
         cart,
         updateCartMutation,
@@ -33,24 +48,16 @@ const Menu = () => {
             action,
             selectedCustomizations: customizations
         };
-        
-    
         updateCartMutation.mutate(payload);
     };
 
-    const { id } = useParams();
-    const [searchQuery, setSearchQuery] = useState("");
-    const [menuSearchQuery, setMenuSearchQuery] = useState("");
-    const [debouncedMenuSearch, setDebouncedMenuSearch] = useState("");
-    const [restaurant, setRestaurant] = useState(null);
-    const [menuItems, setMenuItems] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [isFabOpen, setIsFabOpen] = useState(false);
-    const [sortOrder, setSortOrder] = useState('none');
-    const [favorites, setFavorites] = useState(new Set());
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedCustomizations, setSelectedCustomizations] = useState({});
-    const [selectedItem, setSelectedItem] = useState(null);
+    useEffect(()=>{
+        if(location.state){
+            const {foodCategory} = location.state
+            console.log("foodCategory",foodCategory)
+            handleCategoryClick(foodCategory)
+        }
+    },[location.state])
 
     const handleModalOpen = (item) => {
         setSelectedItem(item);

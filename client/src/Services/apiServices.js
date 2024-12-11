@@ -47,6 +47,7 @@ export const submitVendorReq = (data) => api.post('/user/req-vendor',data)
 export const getRestaurantsForUser = (lat,lon)=> api.get(`/user/nearby-restaurants?lat=${lat}&lon=${lon}`)
 export const getMenuForUser = (id,lat,lon)=> api.get(`/user/${id}/menu?lat=${lat}&lon=${lon}`)
 export const getFoodCategories = () => api.get('/user/food-categories')
+export const searchFoodItems = (searchQuery) => api.get(`/user/search?query=${searchQuery}`)
 
 //user routes - address management
 export const addAddress = (data) => api.post('/user/address/new',data)
