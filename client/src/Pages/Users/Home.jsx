@@ -81,21 +81,8 @@ const Home = () => {
                     </div>
                 ) : (
                     <> 
-                        <p className="text-xl w-fit mb-4 font-bold bg-orange-100 text-orange-600 px-3 py-2 rounded-md shadow-sm">
-                            Most Sellings Items
-                        </p>
-                        <div className="mb-6 flex items-center justify-between gap-4">
-                            <div className="flex-1 flex items-center gap-4 overflow-x-auto hide-scrollbar">
-                                {["Burger", "Cakes", "Pizza", "Mandi", "Biryani", "Shawarma", "Juices"].map((category, index) => (
-                                    <button
-                                        key={index}
-                                        className="bg-gray-100 border-2 border-gray-200 font-medium rounded-md px-5 py-2 text-base text-gray-700 hover:bg-orange-500 hover:border-transparent hover:text-white transition-all duration-300 shadow-sm whitespace-nowrap"
-                                    >
-                                        {category}
-                                    </button>
-                                ))}
-                            </div>
-                            
+                        <div className="mb-6 flex justify-between">
+                        <h2 className="text-3xl font-bold mb-5 text-gray-900">Restaurants Near You</h2>
                             <div className="relative flex-shrink-0">
                                 <button 
                                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -156,7 +143,6 @@ const Home = () => {
                                 </motion.div>
                             </div>
                         </div>
-                        <h2 className="text-3xl font-bold mb-5 text-gray-900">Restaurants Near You</h2>
                         <motion.div 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -196,10 +182,10 @@ const Home = () => {
                                                 </h3>
 
                                                 <div className="flex items-center mb-3">
-                                                    <div className={`flex items-center px-2 py-1 rounded-md ${restaurant?.rating ? (restaurant.rating >= 3.5 ? 'bg-green-600' : 'bg-orange-500') : 'bg-orange-500'}`}>
+                                                    <div className={`flex items-center px-2 py-1 rounded-md ${restaurant?.avgRating ? (restaurant.avgRating >= 3.5 ? 'bg-green-600' : 'bg-orange-500') : 'bg-red-500'}`}>
                                                         <FaStar className="text-yellow-400 text-sm mr-1" />
                                                         <span className="text-sm font-bold text-white">
-                                                            {restaurant?.rating || "No Rating Yet"}
+                                                            {restaurant?.avgRating ? Number(restaurant.avgRating).toFixed(1) : "No Rating Yet"}
                                                         </span>
                                                     </div>
                                                     <span className="ml-3 text-sm font-medium text-gray-600">

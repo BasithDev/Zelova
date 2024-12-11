@@ -1,4 +1,5 @@
 const Order = require('../../models/orders')
+const Restaurant = require('../../models/restaurant')
 const Coupon = require('../../models/coupons')
 const zcoin = require('../../models/zcoin')
 const RedeemedCoupon = require('../../models/reedemedCoupon')
@@ -190,7 +191,7 @@ const getPreviousOrdersOnDate = async (req, res, next) => {
         const orders = await Order.find({ 
             userId,
             status: 'ORDER ACCEPTED',
-            updatedAt: {
+            createdAt: {
                 $gte: startOfDay,
                 $lte: endOfDay
             }
@@ -295,11 +296,43 @@ const updateOrderStatus = async (req, res, next) => {
     }
 };
 
+const rateRestaurant = async (req,res,next) => {
+    try {
+        const token = req.cookies.user_token;
+        if (!token) {
+            return res.status(statusCodes.UNAUTHORIZED).json({ message: 'Not authorized' })
+        }
+        const { orderId,restaurantId, rating } = req.body;
+        const restaurant = await Restaurant.findById(restaurantId);
+        if (!restaurant) {
+            return res.status(statusCodes.NOT_FOUND).json({ message: 'Restaurant not found' });
+        }
+        restaurant.totalRatings += rating;
+        restaurant.totalRatingCount += 1; 
+        restaurant.avgRating = restaurant.totalRatings / restaurant.totalRatingCount; 
+        await restaurant.save();
+        const order = await Order.findById(orderId);
+        if (order) {
+            order.restaurantRate.value = rating;
+            order.restaurantRate.status = true;
+            await order.save();
+        }else{
+            return res.status(statusCodes.NOT_FOUND).json({ message: 'Order not found' });
+        }
+        res.status(statusCodes.OK).json({ message: 'Resturant rating updated successfully' });
+    } catch (error) {
+        console.error('Error rating order:', error);
+        next(error);
+    }
+}
+
+
 module.exports = {
     placeOrder,
     getCurrentOrders,
     createRazorpayOrder,
     getPreviousOrdersOnDate,
     verifyRazorpayPayment,
-    updateOrderStatus
+    updateOrderStatus,
+    rateRestaurant
 };

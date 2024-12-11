@@ -70,6 +70,7 @@ export const userUpdateOrderStatus = (data) => api.patch('/user/orders/update-st
 export const getPreviousOrdersOnDate = (date) => api.get(`/user/orders/previous/${date}`)
 export const createRazorpayOrder = (data) => api.post('/user/orders/create-razorpay-order', data)
 export const verifyRazorpayPayment = (data) => api.post('/user/orders/verify-razorpay-payment', data)
+export const rateRestaurant = (data) => api.post('/user/orders/rate-restaurant', data)
 
 //user routes - zcoins management
 export const getZcoinsData = () => api.get('/user/zcoins')

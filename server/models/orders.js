@@ -125,10 +125,16 @@ const orderSchema = new Schema({
         required: true,
         default: 'PENDING'
     },
-    rating: {
-        type: Number,
-        min: 0,
-        max: 5
+    restaurantRate: {
+        value: {
+            type: Number,
+            min: 0,
+            max: 5
+        },
+        status: {
+            type: Boolean,
+            default: false,
+        }
     },
     usedCoupon: {
         code: {
