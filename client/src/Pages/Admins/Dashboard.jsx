@@ -1,10 +1,10 @@
 import { LuUsers } from "react-icons/lu";
 import { TfiPackage } from "react-icons/tfi";
-import { AiOutlineStock } from "react-icons/ai";
 import { GiProfit } from "react-icons/gi";
-import { FaFilePdf, FaFileExcel } from "react-icons/fa";
+import {AiOutlineStock} from 'react-icons/ai'
+import { FaFilePdf, FaFileExcel, FaStoreAlt } from "react-icons/fa";
 import AdminSearchBar from "../../Components/SearchBar/AdminSearchBar";
-import { getReports, getRestaurants, exportReportToPDF, exportReportToExcel , blockUnblockRestaurant} from "../../Services/apiServices";
+import { getReports, getRestaurants, exportReportToPDF, exportReportToExcel , blockUnblockRestaurant, getDashboardData} from "../../Services/apiServices";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -12,6 +12,7 @@ import {toast} from 'react-toastify';
 import html2canvas from 'html2canvas';
 
 const Dashboard = () => {
+    const [dashboardData, setDashboardData] = useState([]);
     const [restaurants, setRestaurants] = useState([]);
     const [reports, setReports] = useState([]);
     const [reportType, setReportType] = useState('profit');
@@ -30,8 +31,16 @@ const Dashboard = () => {
     const fetchResturants = useCallback(async () => {
         try {
             const response = await getRestaurants();
-            console.log(response.data);
             setRestaurants(response.data);
+        } catch (error) {
+            console.error(error);
+        }
+    }, []);
+
+    const fetchDashboardData = useCallback(async () => {
+        try {
+            const response = await getDashboardData();
+            setDashboardData(response.data);
         } catch (error) {
             console.error(error);
         }
@@ -39,7 +48,8 @@ const Dashboard = () => {
 
     useEffect(()=>{
         fetchResturants();
-    },[fetchResturants])
+        fetchDashboardData();
+    },[fetchResturants,fetchDashboardData])
 
     const fetchReports = useCallback(async () => {
         try {
@@ -146,7 +156,6 @@ const Dashboard = () => {
         try {
             setIsExporting(true);
             
-            // Capture chart as image
             const chartElement = chartRef.current;
             const canvas = await html2canvas(chartElement);
             const chartImage = canvas.toDataURL('image/png');
@@ -158,13 +167,10 @@ const Dashboard = () => {
                 timeRange,
                 dateRange
             };
-            
-            // Export based on type
             const response = type === 'pdf' 
                 ? await exportReportToPDF(exportData)
                 : await exportReportToExcel(exportData);
             
-            // Handle the blob response
             const blob = new Blob([response.data], { 
                 type: type === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             });
@@ -235,7 +241,7 @@ const Dashboard = () => {
 
             <motion.div 
                 variants={childVariants}
-                className="grid px-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+                className="grid px-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8"
             >
                 <motion.div 
                     variants={childVariants}
@@ -248,8 +254,25 @@ const Dashboard = () => {
                         </div>
                         <div>
                             <p className="text-gray-600 text-sm">Total Users</p>
-                            <p className="text-2xl font-bold">40,689</p>
+                            <p className="text-2xl font-bold">{dashboardData?.totalUsers}</p>
                             <p className="text-gray-500 text-sm">Active Accounts</p>
+                        </div>
+                    </div>
+                </motion.div>
+
+                <motion.div 
+                    variants={childVariants}
+                    whileHover={{ scale: 1.05 }}
+                    className="bg-white p-6 rounded-xl shadow-lg"
+                >
+                    <div className="flex items-center space-x-4">
+                        <div className="p-3 bg-orange-100 rounded-lg">
+                            <FaStoreAlt className="text-3xl text-orange-600" />
+                        </div>
+                        <div>
+                            <p className="text-gray-600 text-sm">Total Restaurants</p>
+                            <p className="text-2xl font-bold">{dashboardData?.totalRestaurants}</p>
+                            <p className="text-gray-500 text-sm">Active Restaurants</p>
                         </div>
                     </div>
                 </motion.div>
@@ -265,7 +288,7 @@ const Dashboard = () => {
                         </div>
                         <div>
                             <p className="text-gray-600 text-sm">Total Orders</p>
-                            <p className="text-2xl font-bold">10,293</p>
+                            <p className="text-2xl font-bold">{dashboardData?.totalOrders}</p>
                             <p className="text-gray-500 text-sm">Completed Orders</p>
                         </div>
                     </div>
@@ -282,7 +305,7 @@ const Dashboard = () => {
                         </div>
                         <div>
                             <p className="text-gray-600 text-sm">Total Sales</p>
-                            <p className="text-2xl font-bold">₹89,000</p>
+                            <p className="text-2xl font-bold">₹{dashboardData?.totalSales}</p>
                             <p className="text-gray-500 text-sm">Revenue Generated</p>
                         </div>
                     </div>
@@ -299,7 +322,7 @@ const Dashboard = () => {
                         </div>
                         <div>
                             <p className="text-gray-600 text-sm">Total Profit</p>
-                            <p className="text-2xl font-bold">₹2,040</p>
+                            <p className="text-2xl font-bold">₹{dashboardData?.totalProfit}</p>
                             <p className="text-gray-500 text-sm">Net Earnings</p>
                         </div>
                     </div>

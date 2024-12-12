@@ -1,4 +1,4 @@
-import { FaBell, FaSearch, FaClipboardList, FaStoreAlt } from "react-icons/fa";
+import { FaBell, FaSearch, FaClipboardList, FaStoreAlt,FaExclamationCircle } from "react-icons/fa";
 import { MdDashboard, MdShoppingBasket, MdLocalOffer, MdEmail } from 'react-icons/md';
 import { LuUsers } from 'react-icons/lu';
 import { useNavigate, useLocation } from "react-router-dom";
@@ -17,8 +17,8 @@ const AdminSearchBar = () => {
     'requests',
     'user-manage',
     'vendor-manage',
+    'user-issues',
     'category-manage',
-    'details',
     'coupon-manage',
     'send-mail'
   ], []);
@@ -83,11 +83,12 @@ const AdminSearchBar = () => {
                   className="cursor-pointer hover:bg-gray-100 p-2 flex items-center">
                   {page === 'dashboard' && <MdDashboard className="mr-2 text-blue-500" />}
                   {page.includes('user') && <LuUsers className="mr-2 text-green-500" />}
+                  {page.includes('issue') && <FaExclamationCircle className="mr-2 text-red-500" />}
                   {page.includes('vendor') && <FaStoreAlt className="mr-2 text-orange-500" />}
                   {page.includes('category') && <MdShoppingBasket className="mr-2 text-red-500" />}
-                  {page.includes('details') && <FaClipboardList className="mr-2 text-purple-500" />}
                   {page.includes('coupon') && <MdLocalOffer className="mr-2 text-yellow-500" />}
                   {page.includes('mail') && <MdEmail className="mr-2 text-teal-500" />}
+                  {page.includes('requests') && <FaClipboardList className="mr-2 text-pink-500" />}
                   <span>{page.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
                 </motion.li>
               ))}

@@ -370,11 +370,40 @@ const blockUnblockRestaurant = async (req, res) => {
     }
 };
 
+const getDashboardData = async (req, res) => {
+    try {
+        const totalUsers = await User.countDocuments();
+        const totalOrders = await Order.countDocuments();
+        const totalSales = await Order.aggregate([
+            { $match: { status: 'ORDER ACCEPTED' } },  
+            { $group: { _id: null, totalAmount: { $sum: "$billDetails.finalAmount" } } },
+            { $project: { _id: 0, totalEarnings: { $round: ["$totalAmount", 2] } } }
+        ]);
+        const totalProfit = await Order.aggregate([
+            { $match: { status: 'ORDER ACCEPTED' } },  
+            { $group: { _id: null, totalAmount: { $sum: { $add: [{ $ifNull: ["$billDetails.platformFee", 0] }, { $multiply: [0.2, { $ifNull: ["$billDetails.deliveryFee", 0] }] }] } } } },
+            { $project: { _id: 0, totalEarnings: { $round: ["$totalAmount", 2] } } }
+        ]);
+        const totalRestaurants = await Restaurants.countDocuments();
+        res.status(200).json({
+            totalRestaurants,
+            totalUsers,
+            totalOrders,
+            totalSales: totalSales[0]?.totalEarnings || 0,
+            totalProfit: totalProfit[0]?.totalEarnings || 0,
+        });
+    } catch (error) {
+        console.error('Error retrieving dashboard data:', error);
+        res.status(500).json({ message: 'Error retrieving dashboard data' });
+    }
+};
+
 module.exports = { 
     getAdminById, 
     getReports, 
     exportReportPDF, 
     exportReportExcel,
     getRestaurants,
-    blockUnblockRestaurant
+    blockUnblockRestaurant,
+    getDashboardData
 };
