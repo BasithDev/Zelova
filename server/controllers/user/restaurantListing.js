@@ -58,51 +58,22 @@ const getRestaurants = async (req, res, next) => {
 
 const getMenu = async (req, res, next) => {
     const { id } = req.params;
-    const { lat, lon } = req.query;
-
-    if (!lat || !lon) {
-        return res.status(statusCodes.BAD_REQUEST).json({ error: "Latitude and Longitude are required." });
+    
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(statusCodes.BAD_REQUEST).json({ error: "Invalid restaurant ID" });
     }
 
     try {
-        const restaurant = await Restaurant.aggregate([
-            {
-                $geoNear: {
-                    near: { type: "Point", coordinates: [parseFloat(lat), parseFloat(lon)] },
-                    distanceField: "distance",
-                    maxDistance: 50000,
-                    spherical: true,
-                    query: { _id: new mongoose.Types.ObjectId(id) }
-                }
-            },
-            {
-                $project: {
-                    name: 1,
-                    rating: 1,
-                    address: 1,
-                    distance: 1,
-                    phone: 1,
-                    image: 1
-                }
-            }
-        ]);
-
-        if (!restaurant || restaurant.length === 0) {
-            return res.status(statusCodes.NOT_FOUND).json({ message: 'Restaurant not found' });
+        const menu = await FoodItem.find({ restaurantId: id });
+        if (!menu) {
+            return res.status(statusCodes.NOT_FOUND).json({ error: "Menu not found" });
         }
-        const menu = await FoodItem.find({ restaurantId: id , isActive: true })
-            .populate('foodCategory')
-            .populate('offers')
-            .lean();
-        res.status(statusCodes.OK).json({
-            restaurant: restaurant[0],
-            menu
-        });
+        res.status(statusCodes.OK).json(menu);
     } catch (error) {
-        console.error('Error fetching menu:', error);
+        console.error("Error fetching menu:", error);
         next(error);
     }
-}
+};
 
 module.exports = {
     getRestaurants,

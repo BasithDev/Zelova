@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
+const {verifyToken} = require('../../middlewares/authValidator')
+router.use(verifyToken('vendor'))
+
 const {
     getRestaurant,
     openOrCloseShop,
