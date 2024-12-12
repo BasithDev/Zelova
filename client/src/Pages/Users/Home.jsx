@@ -5,7 +5,6 @@ import { useCallback, useEffect, useState } from "react";
 import { RingLoader } from 'react-spinners';
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import Header from "../../Components/Common/Header";
 import { calculateDistanceAndTime } from '../../utils/distanceUtils';
 
@@ -32,7 +31,7 @@ const Home = () => {
         if (lat !== undefined && lon !== undefined) {
             fetchRestaurants()
         } else {
-            toast.error("Please enable location services to view nearby restaurants")
+            console.error("Please enable location services to view nearby restaurants")
         }
     }, [lat, lon, fetchRestaurants])
 

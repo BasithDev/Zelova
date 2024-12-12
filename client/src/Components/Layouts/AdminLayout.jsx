@@ -1,7 +1,7 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { LuUsers } from "react-icons/lu";
-import { MdDashboard, MdShoppingBasket, MdLocalOffer, MdEmail } from "react-icons/md";
-import { FaStoreAlt, FaClipboardList } from 'react-icons/fa';
+import { MdDashboard, MdShoppingBasket, MdLocalOffer, MdEmail, MdShoppingCart, MdAssessment, MdReportProblem } from "react-icons/md";
+import { FaStoreAlt } from 'react-icons/fa';
 import { HiOutlineLogout } from 'react-icons/hi';
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,8 +14,10 @@ const navItems = [
   { name: "Dashboard", icon: <MdDashboard className="text-3xl" />, path: "/admin" },
   { name: "Users", icon: <LuUsers className="text-3xl" />, path: "/admin/user-manage" },
   { name: "Vendors", icon: <FaStoreAlt className="text-3xl" />, path: "/admin/vendor-manage" },
+  {name : "Orders", icon: <MdShoppingCart className="text-3xl" />, path: "/admin/orders"},
+  {name: "Reports", icon: <MdAssessment className="text-3xl" />, path: "/admin/reports"},
   { name: "Categories", icon: <MdShoppingBasket className="text-3xl" />, path: "/admin/category-manage" },
-  { name: "Details", icon: <FaClipboardList className="text-3xl" />, path: "/admin/details" },
+  { name: "User Issues", icon: <MdReportProblem className="text-3xl" />, path: "/admin/user-issues" },
   { name: "Coupons", icon: <MdLocalOffer className="text-3xl" />, path: "/admin/coupon-manage" },
   { name: "Send Mail", icon: <MdEmail className="text-3xl" />, path: "/admin/send-mail" },
 ];

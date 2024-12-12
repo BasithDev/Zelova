@@ -39,6 +39,13 @@ export const getCoupons = () => api.get('/admin/coupon')
 export const updateCoupon = (id,data) => api.put(`/admin/coupon/update/${id}`,data)
 export const deleteCoupon = (id) => api.delete(`/admin/coupon/delete/${id}`)
 
+//admin routes - user issues management
+export const getUserIssues = () => api.get('/admin/user-issues')
+export const resolveUserIssues = (issueId) => api.delete(`/admin/user-issues/resolve?issueId=${issueId}`)
+export const ignoreUserIssues = (issueId) => api.delete(`/admin/user-issues/ignore?issueId=${issueId}`)
+export const refundUserIssues = (data) => api.put('/admin/user-issues/refund',data)
+
+
 //user routes
 export const getUser = () => api.get(`/user`)
 export const updateUser = (data) => api.put('/user/update-profile',data)
@@ -48,6 +55,7 @@ export const getRestaurantsForUser = (lat,lon)=> api.get(`/user/nearby-restauran
 export const getMenuForUser = (id,lat,lon)=> api.get(`/user/${id}/menu?lat=${lat}&lon=${lon}`)
 export const getFoodCategories = () => api.get('/user/food-categories')
 export const searchFoodItems = (searchQuery) => api.get(`/user/search?query=${searchQuery}`)
+export const raiseIssue = (data) => api.post('/user/raise-issue',data)
 
 //user routes - address management
 export const addAddress = (data) => api.post('/user/address/new',data)

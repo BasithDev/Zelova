@@ -52,6 +52,7 @@ import OrderSuccess from './Pages/OrderSuccess';
 import SendMail from './Pages/Admins/SendMail';
 import Report from './Pages/Users/Report';
 import ForgotPassword from './Pages/Users/ForgotPassword';
+import UserIssues from './Pages/Admins/UserIssues';
 
 const queryClient = new QueryClient();
 
@@ -127,6 +128,7 @@ function App() {
                     <Route path='category-manage' element={<CategoryMng/>}/>
                     <Route path='coupon-manage' element={<CouponMng/>}/> 
                     <Route path="send-mail" element={<SendMail/>} />
+                    <Route path='user-issues' element={<UserIssues/>}/>
                   </Route>
                 </Route>
                 
