@@ -1,11 +1,13 @@
 const User = require('../../models/user');
 const Address = require('../../models/Address')
+const Issues = require('../../models/issues');
 const cloudinary = require('cloudinary').v2;
 const Otp = require('../../models/otp')
 const { sendOTPEmail } = require('../../config/mailer');
 const bcrypt = require('bcryptjs');
 const getUserId = require('../../helpers/getUserId')
 const statusCodes = require('../../config/statusCodes');
+const {sendEmail} = require('../../utils/emailService');
 
 const getUserById = async (req, res, next) => {
   const token = req.cookies.user_token
@@ -248,6 +250,31 @@ const updateAddress = async (req,res,next)=>{
   }
 }
 
+const raiseIssue = async (req, res) => {
+  try {
+      const { userId, username, userEmail, problemOn, description ,refund } = req.body;
+      const issue = new Issues({
+          userId,
+          username,
+          userEmail,
+          problemOn,
+          description,
+          refund,
+      });
+      await issue.save();
+      return res.status(statusCodes.OK).json({
+          success: true,
+          message: 'Issue raised successfully',
+      });
+  } catch (error) {
+      console.error(error);
+      return res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
+          success: false,
+          message: 'Something went wrong',
+      });
+  }
+};
+
 module.exports = {
   getUserById,
   updateProfile,
@@ -259,5 +286,6 @@ module.exports = {
   addAddress,
   getAddresses,
   deleteAddress,
-  updateAddress
+  updateAddress,
+  raiseIssue
 };

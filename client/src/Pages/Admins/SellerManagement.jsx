@@ -56,7 +56,7 @@ const VendorManagement = () => {
       initial={{ opacity: 0.5 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1 }}
-      className="text-3xl px-3 font-bold mb-6">Vendor Management</motion.h1>
+      className="text-4xl text-center px-3 font-bold mb-8">Vendor Management</motion.h1>
 
       <motion.div 
       initial={{ opacity: 0, y: 30 }}

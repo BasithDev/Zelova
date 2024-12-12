@@ -56,7 +56,7 @@ const UserManagement = () => {
         initial={{ opacity: 0.5 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
-        className="text-3xl px-3 font-bold mb-6">User Management</motion.h1>
+        className="text-4xl px-3 text-center font-bold mb-8">User Management</motion.h1>
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
