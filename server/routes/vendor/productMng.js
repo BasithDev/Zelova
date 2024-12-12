@@ -1,12 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const {verifyToken} = require('../../middlewares/authValidator')
-const {addProduct, getProducts, listOrUnlist, deleteProduct, updateProduct, updateOffer} = require('../../controllers/vendor/productMng')
-router.use(verifyToken('vendor'))
-router.post('/product',addProduct)
-router.get('/products',getProducts)
-router.patch('/product/:id/list-or-unlist',listOrUnlist)
-router.delete('/product/:id/delete',deleteProduct)
-router.put('/product/update',updateProduct)
-router.patch('/product/offer/update',updateOffer)
+
+const {
+    addProduct,
+    getProducts,
+    listOrUnlist,
+    deleteProduct,
+    updateProduct,
+    updateOffer
+} = require('../../controllers/vendor/productMng')
+
+router.post('/product', addProduct);
+router.get('/products', getProducts);
+router.patch('/product/:id/list-or-unlist', listOrUnlist);
+router.delete('/product/:id', deleteProduct);
+router.put('/product/:id', updateProduct);
+router.patch('/product/:id/offer', updateOffer);
+
 module.exports = router;
