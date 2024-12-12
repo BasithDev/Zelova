@@ -4,7 +4,7 @@ import { AiOutlineStock } from "react-icons/ai";
 import { GiProfit } from "react-icons/gi";
 import { FaFilePdf, FaFileExcel } from "react-icons/fa";
 import AdminSearchBar from "../../Components/SearchBar/AdminSearchBar";
-import { getReports, exportReportToPDF, exportReportToExcel } from "../../Services/apiServices";
+import { getReports, getRestaurants, exportReportToPDF, exportReportToExcel , blockUnblockRestaurant} from "../../Services/apiServices";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -12,6 +12,7 @@ import {toast} from 'react-toastify';
 import html2canvas from 'html2canvas';
 
 const Dashboard = () => {
+    const [restaurants, setRestaurants] = useState([]);
     const [reports, setReports] = useState([]);
     const [reportType, setReportType] = useState('profit');
     const [timeRange, setTimeRange] = useState('month');
@@ -22,6 +23,23 @@ const Dashboard = () => {
     });
     const [isExporting, setIsExporting] = useState(false);
     const chartRef = useRef(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [searchQuery, setSearchQuery] = useState("");
+    const itemsPerPage = 5;
+
+    const fetchResturants = useCallback(async () => {
+        try {
+            const response = await getRestaurants();
+            console.log(response.data);
+            setRestaurants(response.data);
+        } catch (error) {
+            console.error(error);
+        }
+    }, []);
+
+    useEffect(()=>{
+        fetchResturants();
+    },[fetchResturants])
 
     const fetchReports = useCallback(async () => {
         try {
@@ -168,11 +186,43 @@ const Dashboard = () => {
         }
     };
 
+    const handleBlockUnblock = async (id) => {
+        try {
+            await blockUnblockRestaurant(id);
+            setRestaurants(prevRestaurants =>
+                prevRestaurants.map(restaurant =>
+                    restaurant._id === id
+                        ? { ...restaurant, isActive: !restaurant.isActive }
+                        : restaurant
+                )
+            );
+        } catch (error) {
+            console.error('Error toggling restaurant status:', error);
+        }
+    };
+
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+
+    const filteredRestaurants = restaurants.filter(restaurant =>
+        restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        restaurant.vendorId.fullname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        restaurant.address.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const currentRestaurants = filteredRestaurants.slice(indexOfFirstItem, indexOfLastItem);
+
+    const totalPages = Math.ceil(filteredRestaurants.length / itemsPerPage);
+
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
+
     return (
         <motion.div
             initial="hidden"
             animate="visible"
-            variants={containerVariants}
+            variants={containerVariants} 
             className="min-h-screen bg-gray-50 pb-8"
         >
             <AdminSearchBar/>
@@ -416,64 +466,112 @@ const Dashboard = () => {
                 className="bg-white p-6 mx-6 rounded-xl shadow-lg"
             >
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold">Recent Orders</h2>
-                    <motion.button 
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-                    >
-                        View All
-                    </motion.button>
+                    <h2 className="text-2xl font-bold">Available Restaurants</h2>
+                    <input
+                        type="text"
+                        placeholder="Search..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead className="bg-gray-50">
                             <tr>
                                 <th className="py-3 px-4 text-left">Restaurant</th>
-                                <th className="py-3 px-4 text-left">Owner Name</th>
-                                <th className="py-3 px-4 text-left">Categories</th>
-                                <th className="py-3 px-4 text-left">Amount</th>
+                                <th className="py-3 px-4 text-left">Owner Details</th>
+                                <th className="py-3 px-4 text-left">Contact</th>
+                                <th className="py-3 px-4 text-left">Timings</th>
+                                <th className="py-3 px-4 text-left">Rating</th>
                                 <th className="py-3 px-4 text-left">Status</th>
-                                <th className="py-3 px-4 text-left">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <motion.tr 
-                                variants={childVariants}
-                                className="border-t hover:bg-gray-50 transition-colors"
-                            >
-                                <td className="py-4 px-4">
-                                    <div className="flex items-center space-x-3">
-                                        <img src="https://placehold.co/50x50" alt="Restaurant" className="w-10 h-10 rounded-full object-cover" />
-                                        <span className="font-medium">Hotel New Empire</span>
-                                    </div>
-                                </td>
-                                <td className="py-4 px-4">Kenneth</td>
-                                <td className="py-4 px-4">
-                                    <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Biryani</span>
-                                </td>
-                                <td className="py-4 px-4 font-medium">₹295</td>
-                                <td className="py-4 px-4">
-                                    <motion.button 
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        className="bg-red-500 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-red-600 transition-colors"
+                            {currentRestaurants.length > 0 ? (
+                                currentRestaurants.map((restaurant) => (
+                                    <motion.tr 
+                                        key={restaurant._id}
+                                        variants={childVariants}
+                                        className="border-t hover:bg-gray-50 transition-colors"
                                     >
-                                        Block
-                                    </motion.button>
-                                </td>
-                                <td className="py-4 px-4">
-                                    <motion.button 
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        className="bg-blue-500 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-blue-600 transition-colors"
-                                    >
-                                        View Details
-                                    </motion.button>
-                                </td>
-                            </motion.tr>
+                                        <td className="py-4 px-4">
+                                            <div className="flex items-center space-x-3">
+                                                <img 
+                                                    src={restaurant.image} 
+                                                    alt={restaurant.name} 
+                                                    className="w-12 h-12 rounded-lg object-cover"
+                                                />
+                                                <div>
+                                                    <span className="font-medium block">{restaurant.name}</span>
+                                                    <span className="text-sm text-gray-500">{restaurant.address}</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="py-4 px-4">
+                                            <div>
+                                                <span className="font-medium block">{restaurant.vendorId.fullname}</span>
+                                                <span className="text-sm text-gray-500">{restaurant.vendorId.email}</span>
+                                            </div>
+                                        </td>
+                                        <td className="py-4 px-4">
+                                            <div>
+                                                <span className="block">Restaurant: {restaurant.phone}</span>
+                                                <span className="text-sm text-gray-500">Owner : {restaurant.vendorId.phoneNumber}</span>
+                                            </div>
+                                        </td>
+                                        <td className="py-4 px-4">
+                                            <span className="text-sm">
+                                                {restaurant.openingTime} - {restaurant.closingTime}
+                                            </span>
+                                        </td>
+                                        <td className="py-4 px-4">
+                                            <div className="flex items-center">
+                                                <span className="text-yellow-500 mr-1">★</span>
+                                                <span>{restaurant.avgRating.toFixed(1)}</span>
+                                                <span className="text-sm text-gray-500 ml-1">
+                                                    ({restaurant.totalRatingCount})
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="py-4 px-4">
+                                            <motion.button 
+                                                whileHover={{ scale: 1.05 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                className={`${
+                                                    restaurant.isActive 
+                                                        ? 'bg-green-500 hover:bg-green-600' 
+                                                        : 'bg-red-500 hover:bg-red-600'
+                                                } text-white px-4 py-1.5 rounded-lg text-sm transition-colors`}
+                                                onClick={() => handleBlockUnblock(restaurant._id)}
+                                            >
+                                                {restaurant.isActive ? 'Active' : 'Inactive'}
+                                            </motion.button>
+                                        </td>
+                                    </motion.tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="6" className="text-center py-4">
+                                        No restaurants found matching your search.
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
+                </div>
+                <div className="flex justify-center mt-4">
+                    {Array.from({ length: totalPages }, (_, index) => (
+                        <button
+                            key={index}
+                            onClick={() => handlePageChange(index + 1)}
+                            className={`px-3 py-1 mx-1 rounded ${
+                                currentPage === index + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'
+                            }`}
+                        >
+                            {index + 1}
+                        </button>
+                    ))}
                 </div>
             </motion.div>
         </motion.div>

@@ -12,6 +12,7 @@ const getNearbyRestaurantsFromDB = async (userLat, userLong, maxDistance = 50000
                     distanceField: "distance",
                     maxDistance: maxDistance,
                     spherical: true,
+                    query: { isActive: true }
                 }
             },
             {
@@ -72,7 +73,7 @@ const getMenu = async (req, res, next) => {
                     distanceField: "distance",
                     maxDistance: 50000,
                     spherical: true,
-                    query: { _id: new mongoose.Types.ObjectId(id) }
+                    query: { _id: new mongoose.Types.ObjectId(id), isActive: true }
                 }
             },
             {
