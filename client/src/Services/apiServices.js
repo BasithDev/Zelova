@@ -13,6 +13,7 @@ const api = axios.create({
     }
 });
 
+
 export const loginUser = (data) => api.post('/auth/login',data)
 export const registerUser = (data) => api.post('/auth/register',data)
 export const verifyOTP = (data) => api.post('/auth/verify-otp',data)
@@ -33,6 +34,19 @@ export const getSubCategoriesToMng = ()=>api.get('/admin/manage/subcategories')
 export const deleteCategory = (id)=>api.delete(`/admin/manage/category/delete/${id}`)
 export const deleteSubCategory = (id)=>api.delete(`/admin/manage/subcategory/delete/${id}`)
 export const sendMail = (data) => api.post('/admin/send-mail',data)
+export const getReports = (type, getBy, startDate, endDate) => {
+    let url = `admin/reports?type=${type}&getBy=${getBy}`;
+    if (getBy === 'custom' && startDate && endDate) {
+        url += `&startDate=${startDate}&endDate=${endDate}`;
+    }
+    return api.get(url);
+}
+export const exportReportToPDF = (reportData) => api.post('/admin/reports/export/pdf', reportData, {
+    responseType: 'blob'
+});
+export const exportReportToExcel = (reportData) => api.post('/admin/reports/export/excel', reportData, {
+    responseType: 'blob'
+});
 
 //admin routes - users and vendor management
 export const fetchVendorRequests = () => api.get('/admin/manage/requests')
