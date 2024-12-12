@@ -32,6 +32,7 @@ const suppliesRoutes = require('./routes/user/supplies');
 
 const passport = require('passport');
 const errorMiddleware = require('./middlewares/errorMiddleware')
+const { protectApi } = require('./middlewares/authValidator')
 
 require('dotenv').config()
 
@@ -47,13 +48,16 @@ app.use(cors({
     methods: ["GET", "POST", "DELETE", "PUT", "PATCH"],
     credentials: true
 }))
+
 connetDB()
 const port = process.env.PORT
 
 app.use(passport.initialize())
 
-app.use('/api/auth',authRouter)
+// Apply API protection to all /api routes
+app.use('/api', protectApi);
 
+app.use('/api/auth',authRouter)
 app.use('/api/user/req-vendor',userReqVendorRouter)
 app.use('/api/user',userRouter)
 app.use('/api/user',restaurantListing)
