@@ -26,7 +26,7 @@ const venodrRouter = require('./routes/vendor/restaurantRoute')
 const offerRouter = require('./routes/vendor/offerMng')
 const categoriesRouter = require('./routes/vendor/categoriesMng')
 const productMngRouter = require('./routes/vendor/productMng')
-const vendorOrderRouter = require('./routes/vendor/orderMngRoute')
+const vendorOrderRouter = require('./routes/vendor/orderMngRoute') 
 
 const suppliesRoutes = require('./routes/user/supplies');
 
