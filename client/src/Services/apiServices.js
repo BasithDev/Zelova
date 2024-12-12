@@ -48,11 +48,11 @@ export const refundUserIssues = (data) => api.put('/admin/user-issues/refund',da
 
 //user routes
 export const getUser = () => api.get(`/user`)
-export const updateUser = (data) => api.put('/user/update',data)
+export const updateUser = (data) => api.put('/user/update-profile',data)
 export const deleteUserImage = (data) => api.post('/user/delete-image',data)
 export const submitVendorReq = (data) => api.post('/user/req-vendor',data)
-export const getRestaurantsForUser = (lat,lon) => api.get(`/user/nearby-restaurants?lat=${lat}&lon=${lon}`)
-export const getMenuForUser = (id,lat,lon) => api.get(`/user/restaurants/${id}/menu?lat=${lat}&lon=${lon}`)
+export const getRestaurantsForUser = (lat,lon)=> api.get(`/user/nearby-restaurants?lat=${lat}&lon=${lon}`)
+export const getMenuForUser = (id,lat,lon)=> api.get(`/user/${id}/menu?lat=${lat}&lon=${lon}`)
 export const getFoodCategories = () => api.get('/user/food-categories')
 export const searchFoodItems = (searchQuery) => api.get(`/user/search?query=${searchQuery}`)
 export const raiseIssue = (data) => api.post('/user/raise-issue',data)

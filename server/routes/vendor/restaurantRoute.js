@@ -1,21 +1,18 @@
 const express = require('express');
 const router = express.Router();
 
-const {verifyToken} = require('../../middlewares/authValidator')
-router.use(verifyToken('vendor'))
-
 const {
     getRestaurant,
     openOrCloseShop,
-    setLocation,
     updateRestaurantDetails,
-    updateRestaurantPic
-} = require('../../controllers/vendor/restaurantController');
+    updateRestaurantPic,
+    setLocation
+} = require('../../controllers/vendor/restaurantMng')
 
-router.get('/restaurant', getRestaurant);
-router.put('/restaurant/details', updateRestaurantDetails);
-router.patch('/restaurant/status', openOrCloseShop);
-router.patch('/restaurant/image', updateRestaurantPic);
-router.patch('/restaurant/location', setLocation);
+router.get('/', getRestaurant);
+router.patch('/shop-status', openOrCloseShop);
+router.put('/update', updateRestaurantDetails);
+router.post('/update-pic', updateRestaurantPic);
+router.post('/set-location', setLocation);
 
 module.exports = router;
