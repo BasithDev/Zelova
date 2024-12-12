@@ -1,5 +1,6 @@
 const User = require('../../models/user');
 const Order = require('../../models/orders');
+const Restaurants = require('../../models/restaurant');
 const statusCodes = require('../../config/statusCodes');
 const getUserId  = require('../../helpers/getUserId');
 const PDFDocument = require('pdfkit');
@@ -192,7 +193,6 @@ const exportReportPDF = async (req, res) => {
         
         doc.pipe(res);
         
-        // Title based on time range
         const titlePrefix = timeRange === 'week' 
             ? 'Weekly'
             : timeRange === 'month'
@@ -203,46 +203,39 @@ const exportReportPDF = async (req, res) => {
             ? 'Daily'
             : 'Custom Period';
             
-        // Center align all content
         const pageWidth = doc.page.width;
-        const centerX = pageWidth / 2;
         
         doc
             .fontSize(24)
             .text(`Zelova ${titlePrefix} Analytics Report`, { align: 'center' })
             .moveDown();
             
-        // Report details
         doc.fontSize(16)
             .text(`${reportType.charAt(0).toUpperCase() + reportType.slice(1)}s Report`, { align: 'center' })
             .moveDown();
             
-        // Only show date range for custom timeRange
         if (timeRange === 'custom') {
             doc.fontSize(12)
                .text(`Date Range: ${dateRange.startDate} to ${dateRange.endDate}`, { align: 'center' })
                .moveDown();
         }
 
-        // Section title for data table
         doc.fontSize(14)
             .text('Detailed Data and chart', { align: 'left', indent: 50 })
             .moveDown();
 
-        // Create table header
         const tableTop = doc.y + 10;
-        const tableWidth = 350; // Fixed table width
-        const tableLeft = (pageWidth - tableWidth) / 2; // Center the table
+        const tableWidth = 350; 
+        const tableLeft = (pageWidth - tableWidth) / 2; 
         const colWidth = tableWidth / 2;
         const rowHeight = 30;
         const textPadding = 10;
         
-        // Draw table header with background
         doc
             .fillColor('#2f71f5')
             .rect(tableLeft, tableTop, tableWidth, rowHeight)
             .fill()
-            .fillColor('#ffffff')  // Changed to white color for header text
+            .fillColor('#ffffff')  
             .fontSize(12)
             .text('Date', tableLeft + textPadding, tableTop + textPadding)
             .text(reportType.charAt(0).toUpperCase() + reportType.slice(1), 
@@ -251,15 +244,12 @@ const exportReportPDF = async (req, res) => {
         
         let currentTop = tableTop + rowHeight;
         
-        // Draw table rows with alternating background
         reportData.forEach((data, index) => {
-            // Check if we need to start a new page
             if (currentTop > doc.page.height - 100) {
                 doc.addPage();
                 currentTop = 50;
             }
 
-            // Alternate row background
             if (index % 2 === 0) {
                 doc
                     .fillColor('#ffffff')
@@ -277,7 +267,6 @@ const exportReportPDF = async (req, res) => {
                 .rect(tableLeft, currentTop, tableWidth, rowHeight)
                 .stroke();
             
-            // Add cell text
             doc
                 .fillColor('#000000')
                 .fontSize(10)
@@ -295,13 +284,10 @@ const exportReportPDF = async (req, res) => {
             currentTop += rowHeight;
         });
 
-        // Add some space after table
         doc.moveDown(2);
 
-        // Add chart image if provided
         if (chartImage) {
             const imageBuffer = Buffer.from(chartImage.split(',')[1], 'base64');
-            // Calculate dimensions to center the chart
             const chartWidth = 550;
             const chartLeft = (pageWidth - chartWidth) / 2;
             
@@ -311,7 +297,6 @@ const exportReportPDF = async (req, res) => {
             });
         }
         
-        // Finalize PDF file
         doc.end();
     } catch (error) {
         console.error('Error generating PDF:', error);
@@ -323,17 +308,14 @@ const exportReportExcel = async (req, res) => {
     try {
         const { reportData, reportType, timeRange, dateRange } = req.body;
         
-        // Create a new workbook and worksheet
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Report');
         
-        // Add headers
         worksheet.columns = [
             { header: 'Date', key: 'date', width: 15 },
             { header: reportType.charAt(0).toUpperCase() + reportType.slice(1), key: 'value', width: 15 }
         ];
         
-        // Add data
         reportData.forEach(data => {
             worksheet.addRow({
                 date: data.date,
@@ -343,24 +325,17 @@ const exportReportExcel = async (req, res) => {
             });
         });
         
-        // Add title and metadata
         worksheet.insertRow(1, [`Zelova ${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report`]);
         worksheet.insertRow(2, [`Time Range: ${timeRange}`]);
         worksheet.insertRow(3, [`Date Range: ${dateRange.startDate} to ${dateRange.endDate}`]);
-        worksheet.insertRow(4, []); // Empty row for spacing
-        
-        // Set filename
+        worksheet.insertRow(4, []);
         const timestamp = Date.now();
         const fileName = `zelova_${reportType}_report_${new Date().toISOString().split('T')[0]}_${timestamp}.xlsx`;
-        
-        // Set headers
         res.setHeader(
             'Content-Type',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         );
         res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
-        
-        // Write to response
         await workbook.xlsx.write(res);
         res.end();
     } catch (error) {
@@ -369,9 +344,37 @@ const exportReportExcel = async (req, res) => {
     }
 };
 
+const getRestaurants = async (req, res) => {
+    try {
+        const restaurants = await Restaurants.find().populate('vendorId', 'fullname email phoneNumber')
+        res.status(200).json(restaurants);
+    } catch (error) {
+        console.error('Error retrieving restaurants:', error);
+        res.status(500).json({ message: 'Error retrieving restaurants' });
+    }
+};
+
+const blockUnblockRestaurant = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const restaurant = await Restaurants.findById(id);
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+        restaurant.isActive = !restaurant.isActive;
+        await restaurant.save();
+        res.status(200).json({ message: 'Restaurant updated successfully' });
+    } catch (error) {
+        console.error('Error updating restaurant:', error);
+        res.status(500).json({ message: 'Error updating restaurant' });
+    }
+};
+
 module.exports = { 
     getAdminById, 
     getReports, 
     exportReportPDF, 
-    exportReportExcel 
+    exportReportExcel,
+    getRestaurants,
+    blockUnblockRestaurant
 };

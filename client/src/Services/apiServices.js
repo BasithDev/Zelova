@@ -34,6 +34,8 @@ export const getSubCategoriesToMng = ()=>api.get('/admin/manage/subcategories')
 export const deleteCategory = (id)=>api.delete(`/admin/manage/category/delete/${id}`)
 export const deleteSubCategory = (id)=>api.delete(`/admin/manage/subcategory/delete/${id}`)
 export const sendMail = (data) => api.post('/admin/send-mail',data)
+export const getRestaurants = () => api.get('/admin/restaurants')
+export const blockUnblockRestaurant = (id) => api.patch(`/admin/restaurant/block-unblock/${id}`)
 export const getReports = (type, getBy, startDate, endDate) => {
     let url = `admin/reports?type=${type}&getBy=${getBy}`;
     if (getBy === 'custom' && startDate && endDate) {
