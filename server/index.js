@@ -1,7 +1,6 @@
 const express = require('express')
 const cookieParser = require('cookie-parser');
 const cors = require('cors')
-const path = require('path')
 const connetDB = require('./config/db')
 const compression = require('compression');
 
@@ -54,6 +53,7 @@ app.use(passport.initialize())
 
 app.use('/api/auth',authRouter)
 
+// User Routes
 app.use('/api/user/req-vendor',userReqVendorRouter)
 app.use('/api/user',userRouter)
 app.use('/api/user',restaurantListing)
@@ -65,12 +65,14 @@ app.use('/api/user/favourites',favoriteRouter)
 app.use('/api/user/supplies', suppliesRoutes);
 app.use('/api/user/search', searchRoutes);
 
+// Admin Routes
 app.use('/api/admin/manage',adminManageRouter)
 app.use('/api/admin',adminRouter)
 app.use('/api/admin/coupon',adminCouponRouter)
 app.use('/api/admin/send-mail',sendMailRouter)
 app.use('/api/admin/user-issues',userIssuesRouter)
 
+// Vendor Routes
 app.use('/api/vendor',venodrRouter)
 app.use('/api/vendor',categoriesRouter)
 app.use('/api/vendor',productMngRouter)

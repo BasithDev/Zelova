@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const {verifyToken} = require('../../middlewares/authValidator')
 const {getUserById,updateProfile, deleteImage, sendOTP, updateEmail, resetPassword, getUserStatus, addAddress, getAddresses, deleteAddress, updateAddress, raiseIssue} = require('../../controllers/user/userController')
+router.use(verifyToken('user'))
 router.get('/',getUserById)
 router.put('/update-profile',updateProfile)
 router.post('/delete-image',deleteImage)
