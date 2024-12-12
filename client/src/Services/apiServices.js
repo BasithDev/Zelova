@@ -1,7 +1,18 @@
-import api from './api'
+import axios from 'axios';
 import cloudinaryInstance from './cloudnaryApi'
 
 //authentication
+const api = axios.create({
+    baseURL: import.meta.env.VITE_API_BASE_URL,
+    withCredentials: true,
+    headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-App-Token': 'dfkjdskkdvkdkfdfdcnmklxckdkdnkdnfkdfakslkldfkdfkldfkj4534tf8fuy83riehf8y49hrt',
+        'APP_SECRET': 'dfkjdskkdvkdkfdfdcnmklxckdkdnkdnfkdfakslkldfkdfkldfkj4534tf8fuy83riehf8y49hrt'
+    }
+});
+
 export const loginUser = (data) => api.post('/auth/login',data)
 export const registerUser = (data) => api.post('/auth/register',data)
 export const verifyOTP = (data) => api.post('/auth/verify-otp',data)
