@@ -10,7 +10,6 @@ import { fetchRestaurantData } from '../../Redux/slices/seller/restaurantDataSli
 import RestaurantEdit from './RestaurantMng/RestaurantEdit';
 
 
-
 const ManageRestaurant = () => {
     const restaurantData = useSelector((state) => state.restaurantData.data?.restaurant);
     const [isEditing, setIsEditing] = useState(false);
@@ -75,7 +74,7 @@ const ManageRestaurant = () => {
     const handleFieldChange = (field, value) => {
         setRestaurantDetails((prev) => ({ ...prev, [field]: value }));
     };
-
+    
 
     const detailFields = {
         "Restaurant Name": "name",
@@ -86,9 +85,9 @@ const ManageRestaurant = () => {
     };
     
     return (
-        <div className="container mx-auto py-10">
+        <div className="container mx-auto px-4 py-6 sm:py-10">
             <ToastContainer position="top-right" />
-            <h1 className="text-4xl font-bold text-center mb-8">Manage Restaurant</h1>
+            <h1 className="text-2xl sm:text-4xl font-bold text-center mb-6 sm:mb-8">Manage Restaurant</h1>
 
             <RestaurantEdit
                 restaurantDetails={restaurantDetails}
