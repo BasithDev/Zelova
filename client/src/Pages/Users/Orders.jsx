@@ -122,8 +122,8 @@ const Orders = () => {
                  >
                    <motion.div
                      initial={{ opacity: 0 , y: -20 }}
-                     animate={{ opacity: 1 , y: 0}}
-                     exit={{ opacity: 0 , y: -20}}
+                     animate={{ opacity: 1 , y: 0} }
+                     exit={{ opacity: 0 , y: -20} }
                      transition={{ duration: 0.3 }}
                      className="bg-gray-100 p-8 rounded-lg flex flex-col items-center"
                    >
@@ -132,7 +132,7 @@ const Orders = () => {
                      <FaBoxOpen className="text-6xl text-gray-300 mt-4" />
                    </motion.div>
                  </motion.div>
-               )}
+               ) }
              </AnimatePresence>
              )}
         </AnimatePresence>
@@ -158,10 +158,10 @@ const Orders = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <h1 className="text-2xl font-bold text-gray-800">Your Orders</h1>
-          <div className="inline-flex rounded-lg p-1 bg-gray-100">
+          <div className="inline-flex rounded-lg p-1 bg-gray-100 w-full sm:w-auto">
             <button
               onClick={() => setActiveTab('current')}
-              className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-lg text-sm font-medium transition-all ${
                 activeTab === 'current'
                   ? 'bg-white text-gray-800 shadow-sm'
                   : 'text-gray-600 hover:text-gray-800'
@@ -171,7 +171,7 @@ const Orders = () => {
             </button>
             <button
               onClick={() => setActiveTab('previous')}
-              className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-lg text-sm font-medium transition-all ${
                 activeTab === 'previous'
                   ? 'bg-white text-gray-800 shadow-sm'
                   : 'text-gray-600 hover:text-gray-800'
@@ -190,8 +190,10 @@ const Orders = () => {
               transition={{ duration: 0.3 }}
               className="mb-8"
             >
-              <label className="block text-gray-700 mb-2">Select Date:</label>
-              <DatePicker {...datePickerProps} />
+              <label className="block text-gray-700 text-sm sm:text-base mb-2">Select Date:</label>
+              <div className="max-w-xs">
+                <DatePicker {...datePickerProps} />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -209,7 +211,7 @@ const Orders = () => {
                 animate={{ scale: 1, opacity: 1 }} 
                 exit={{ scale: 0.5, opacity: 0 }}
                 transition={{ type: "spring", duration: 0.5 }}
-                className="bg-white rounded-2xl p-8 max-w-md w-full shadow-xl"
+                className="bg-white rounded-2xl p-6 sm:p-8 w-[90%] sm:w-[400px] shadow-xl"
               >
                 <motion.div 
                   initial={{ y: 20, opacity: 0 }}
@@ -223,7 +225,7 @@ const Orders = () => {
                     transition={{ type: "spring", delay: 0.3 }}
                     className="mb-4 p-3 rounded-full bg-blue-100"
                   >
-                    <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-6 sm:w-8 h-6 sm:h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </motion.div>
@@ -231,7 +233,7 @@ const Orders = () => {
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.4 }}
-                    className="text-xl font-semibold text-gray-900 mb-2"
+                    className="text-lg sm:text-xl font-semibold text-gray-900 mb-2"
                   >
                     Delivery Confirmation
                   </motion.h3>
@@ -239,7 +241,7 @@ const Orders = () => {
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.5 }}
-                    className="text-gray-600 mb-6"
+                    className="text-sm sm:text-base text-gray-600 mb-6"
                   >
                     Has your order been delivered to you?
                   </motion.p>
@@ -247,13 +249,13 @@ const Orders = () => {
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.6 }}
-                    className="flex gap-3 w-full"
+                    className="flex flex-col sm:flex-row gap-3 w-full"
                   >
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleOrderResponse(false)}
-                      className="flex-1 px-6 py-3 text-white bg-red-600 rounded-xl font-medium hover:bg-red-700 transition-colors"
+                      className="px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base text-white bg-red-600 rounded-xl font-medium hover:bg-red-700 transition-colors"
                     >
                       No, Not Received
                     </motion.button>
@@ -261,7 +263,7 @@ const Orders = () => {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleOrderResponse(true)}
-                      className="flex-1 px-6 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors"
+                      className="px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors"
                     >
                       Yes, Received
                     </motion.button>

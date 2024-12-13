@@ -7,8 +7,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import UserLayout from './Components/Layouts/UserLayout';
 import AdminLayout from './Components/Layouts/AdminLayout';
 import VendorLayout from './Components/Layouts/VendorLayout';
-import AuthChecker from './Components/AuthChecker';
-import AdminAuthChecker from './Components/AdminAuthChecker'
+import AuthChecker from './Components/Common/AuthChecker';
+import AdminAuthChecker from './Components/Common/AdminAuthChecker'
 import { UserProtectedRoute} from './Routers/ProtectedRoute';
 import { AdminNoAuthRoute , UserNoAuthRoute} from './Routers/NoAuthRouter';
 import {AdminRoleProtectedRoute , UserRoleProtectedRoute} from './Routers/ProtectedRoute'
@@ -48,7 +48,7 @@ import GoogleResponse from './Routers/GoogleResponse';
 import CouponMng from './Pages/Admins/CouponMng';
 import Cart from './Pages/Users/Cart';
 import ConfirmPayment from './Pages/Users/ConfirmPayment';
-import OrderSuccess from './Pages/OrderSuccess';
+import OrderSuccess from './Pages/Users/OrderSuccess';
 import SendMail from './Pages/Admins/SendMail';
 import Report from './Pages/Users/Report';
 import ForgotPassword from './Pages/Users/ForgotPassword';
@@ -131,7 +131,6 @@ function App() {
                     <Route path='user-issues' element={<UserIssues/>}/>
                   </Route>
                 </Route>
-                
               </Routes>
             
           </Router>

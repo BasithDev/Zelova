@@ -87,7 +87,7 @@ const Favourites = () => {
 
             <div className="px-8 py-3">
                 <div className="flex justify-between items-center gap-4">
-                    <div className="relative w-72">
+                    <div className="relative flex-1 max-w-2xl">
                         <input
                             type="text"
                             value={menuSearchQuery}
@@ -103,7 +103,7 @@ const Favourites = () => {
                     <select
                         value={sortOrder}
                         onChange={(e) => setSortOrder(e.target.value)}
-                        className="px-4 py-3 bg-white border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 shadow-sm cursor-pointer"
+                        className="w-32 px-4 py-3 bg-white border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 shadow-sm cursor-pointer"
                     >
                         <option value="none">Sort by</option>
                         <option value="lowToHigh">Price: Low to High</option>

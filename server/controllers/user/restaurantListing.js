@@ -79,7 +79,7 @@ const getMenu = async (req, res, next) => {
             {
                 $project: {
                     name: 1,
-                    rating: 1,
+                    avgRating: 1,
                     address: 1,
                     distance: 1,
                     phone: 1,
