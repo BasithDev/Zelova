@@ -6,6 +6,7 @@ import Header from '../../Components/Common/Header';
 import { getZcoinsData, sendZcoins ,searchUsers } from '../../Services/apiServices';
 import {toast, ToastContainer} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { motion } from 'framer-motion';
 
 const CoinBalance = ({ balance }) => {
   return (
@@ -170,7 +171,12 @@ const Coins = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <motion.div 
+      initial={{ y: 20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.4 }}
+      className="min-h-screen bg-gray-50"
+    >
       <ToastContainer position='top-right'/>
       <Header 
         searchQuery={headerSearchQuery}
@@ -182,17 +188,14 @@ const Coins = () => {
         
         {/* Coin Balance */}
         {loading ? (
-          <div className="bg-gradient-to-br from-orange-400 to-orange-500 rounded-xl shadow-lg p-8 relative overflow-hidden text-white 
-            hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer group">
-            <div className="flex items-center justify-center h-full">
-              <div className="spinner-border animate-spin inline-block w-8 h-8 border-4 rounded-full text-orange-500" />
+          <div className="bg-gradient-to-br from-orange-400 to-orange-500 rounded-xl shadow-lg p-8 relative overflow-hidden text-white">
+            <div className="flex items-center justify-center h-32">
+              <div className="animate-spin w-8 h-8 border-4 border-white border-t-transparent rounded-full" />
             </div>
           </div>
         ) : (
           <CoinBalance balance={balance} />
         )}
-
-
 
         {/* Share Coins Section */}
         <div className="mt-8">
@@ -275,7 +278,7 @@ const Coins = () => {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

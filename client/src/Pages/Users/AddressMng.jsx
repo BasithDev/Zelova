@@ -19,9 +19,10 @@ const AddressMng = () => {
     const fetchAddresses = async () => {
         try {
             const response = await getAddresses();
-            setAddresses(response.data.addresses);
+            setAddresses(response.data.addresses || []);
         } catch (error) {
             console.error("Error fetching addresses:", error);
+            setAddresses([]);
         }
     };
 
@@ -33,10 +34,12 @@ const AddressMng = () => {
         if (newAddress.label && newAddress.address && newAddress.phone) {
             try {
                 const response = await addAddress(newAddress);
-                setAddresses([...addresses, response.data.address]);
-                setNewAddress({ label: "", address: "", phone: "" });
-                setIsAdding(false);
-                toast.success('New Address Added!')
+                if (response.data.address) {
+                    setAddresses(prevAddresses => [...(prevAddresses || []), response.data.address]);
+                    setNewAddress({ label: "", address: "", phone: "" });
+                    setIsAdding(false);
+                    toast.success('New Address Added!');
+                }
             } catch (error) {
                 console.error("Error adding address:", error);
                 toast.error('Failed to add address. Please try again.');
@@ -72,8 +75,8 @@ const AddressMng = () => {
         if (newAddress.label && newAddress.address && newAddress.phone) {
             try {
                 await updateAddress(editingId, newAddress);
-                const updatedAddresses = addresses.map(addr => 
-                    addr._id === editingId 
+                const updatedAddresses = addresses.map(addr =>
+                    addr._id === editingId
                         ? { ...addr, ...newAddress }
                         : addr
                 );
@@ -98,16 +101,16 @@ const AddressMng = () => {
         setIsEditing(false);
         setEditingId(null);
     };
-    
+
     return (
-        <div className="relative flex flex-col md:flex-row p-6 gap-6 min-h-screen bg-gray-50">
+        <div className="relative flex flex-col lg:flex-row p-4 md:p-6 gap-4 md:gap-6 min-h-screen bg-gray-50">
             <ToastContainer position="top-right" />
-            <div className="w-[57%]">
+            <div className="w-full lg:w-[60%]">
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.5 }}
-                    className="bg-white p-6 rounded-lg shadow-md"
+                    className="bg-white p-4 md:p-6 rounded-lg shadow-md"
                 >
                     <h2 className="text-2xl font-bold mb-6 text-gray-800">
                         Saved Addresses
@@ -117,23 +120,23 @@ const AddressMng = () => {
                             {addresses.map((address) => (
                                 <li
                                     key={address._id}
-                                    className="relative cursor-pointer p-4 border rounded-md bg-gradient-to-r from-gray-50 to-gray-100 hover:shadow-xl hover:scale-[1.02] transition-all"
+                                    className="relative cursor-pointer p-3 md:p-4 border rounded-md bg-gradient-to-r from-gray-50 to-gray-100 hover:shadow-xl hover:scale-[1.02] transition-all"
                                 >
-                                    <div className="absolute top-2 right-2 flex gap-2">
+                                    <div className="absolute top-2 right-2 flex gap-1 md:gap-2">
                                         <button
                                             onClick={() => handleEditClick(address)}
-                                            className="text-blue-600 bg-gray-100 p-3 rounded-full shadow hover:bg-blue-100 hover:text-blue-700 transition-all focus:outline-none focus:ring focus:ring-blue-300"
+                                            className="text-blue-600 bg-gray-100 p-2 md:p-3 rounded-full shadow hover:bg-blue-100 hover:text-blue-700 transition-all focus:outline-none focus:ring focus:ring-blue-300"
                                         >
-                                            <FiEdit2 className="text-xl" />
+                                            <FiEdit2 className="text-lg md:text-xl" />
                                         </button>
                                         <button
                                             onClick={() => handleDeleteAddress(address._id)}
-                                            className="text-red-600 bg-gray-100 p-3 rounded-full shadow hover:bg-red-100 hover:text-red-700 transition-all focus:outline-none focus:ring focus:ring-red-300"
+                                            className="text-red-600 bg-gray-100 p-2 md:p-3 rounded-full shadow hover:bg-red-100 hover:text-red-700 transition-all focus:outline-none focus:ring focus:ring-red-300"
                                         >
-                                            <FiTrash2 className="text-xl" />
+                                            <FiTrash2 className="text-lg md:text-xl" />
                                         </button>
                                     </div>
-                                    <div className="flex flex-col gap-2 pr-24">
+                                    <div className="flex flex-col gap-1 md:gap-2 pr-16 md:pr-24">
                                         <span className="font-medium text-gray-900">{address.label}</span>
                                         <p className="text-sm text-gray-700">Address : {address.address}</p>
                                         <p className="text-sm text-gray-600">Phone: {address.phone}</p>
@@ -151,12 +154,12 @@ const AddressMng = () => {
                 initial={{ x: "100%" }}
                 animate={{ x: isAdding ? 0 : "100%" }}
                 transition={{ type: "tween", duration: 0.3 }}
-                className="fixed top-0 right-0 w-full md:w-1/3 h-full bg-white shadow-xl p-6 overflow-auto z-10"
+                className="fixed top-0 right-0 w-full md:w-[400px] lg:w-[450px] h-full bg-white shadow-xl p-4 md:p-6 overflow-auto z-10"
             >
-                <h2 className="text-2xl font-bold mb-4 text-blue-500">
+                <h2 className="text-xl md:text-2xl font-bold mb-4 text-blue-500">
                     {isEditing ? 'Edit Address' : 'Add New Address'}
                 </h2>
-                <div className="mb-6">
+                <div className="mb-4 md:mb-6">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                         Label
                     </label>
@@ -166,11 +169,11 @@ const AddressMng = () => {
                         onChange={(e) =>
                             setNewAddress({ ...newAddress, label: e.target.value })
                         }
-                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+                        className="w-full p-2 md:p-3 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
                         placeholder="e.g., Home, Office"
                     />
                 </div>
-                <div className="mb-6">
+                <div className="mb-4 md:mb-6">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                         Address
                     </label>
@@ -179,12 +182,12 @@ const AddressMng = () => {
                         onChange={(e) =>
                             setNewAddress({ ...newAddress, address: e.target.value })
                         }
-                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+                        className="w-full p-2 md:p-3 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
                         placeholder="Enter your address"
                         rows="4"
                     ></textarea>
                 </div>
-                <div className="mb-6">
+                <div className="mb-4 md:mb-6">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                         Phone Number
                     </label>
@@ -194,23 +197,24 @@ const AddressMng = () => {
                         onChange={(e) =>
                             setNewAddress({ ...newAddress, phone: e.target.value })
                         }
-                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+                        className="w-full p-2 md:p-3 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
                         placeholder="Enter your phone number"
                     />
                 </div>
-                <button
-                    onClick={isEditing ? handleUpdateAddress : handleAddAddress}
-                    className="w-full flex items-center justify-center gap-2 p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                >
-                    <FiPlus className="text-lg" />
-                    {isEditing ? 'Update Address' : 'Add Address'}
-                </button>
-                <button
-                    onClick={handleCancel}
-                    className="w-full mt-4 flex items-center justify-center gap-2 p-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-                >
-                    Cancel
-                </button>
+                <div className="flex gap-3 mt-6">
+                    <button
+                        onClick={isEditing ? handleUpdateAddress : handleAddAddress}
+                        className="flex-1 bg-blue-500 text-white py-2 md:py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors focus:outline-none focus:ring focus:ring-blue-300"
+                    >
+                        {isEditing ? 'Update Address' : 'Add Address'}
+                    </button>
+                    <button
+                        onClick={handleCancel}
+                        className="flex-1 bg-gray-200 text-gray-800 py-2 md:py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors focus:outline-none focus:ring focus:ring-gray-400"
+                    >
+                        Cancel
+                    </button>
+                </div>
             </motion.div>
 
             {!isAdding && (
@@ -222,9 +226,10 @@ const AddressMng = () => {
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => setIsAdding(true)}
-                    className="fixed bottom-8 right-8 bg-blue-500 text-white py-2 px-3 text-xl font-semibold rounded-md shadow-lg hover:bg-blue-600 transition-colors z-10"
+                    className="fixed bottom-20 lg:bottom-8 right-8 bg-blue-500 text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors z-[11] flex items-center gap-2"
                 >
-                    New Address
+                    <FiPlus className="text-2xl" />
+                    <span className="hidden md:inline">New Address</span>
                 </motion.button>
             )}
         </div>

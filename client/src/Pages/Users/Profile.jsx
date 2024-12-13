@@ -9,7 +9,7 @@ const Profile = () => {
 
   return (
     <div className="flex bg-slate-50 items-center justify-center min-h-screen">
-      <div className="bg-white rounded-xl p-8 w-full max-w-4xl text-center shadow-2xl transition-transform transform">
+      <div className="bg-white rounded-xl p-8 w-full sm:max-w-4xl text-center shadow-none sm:shadow-2xl transition-transform transform">
         <h1 className="text-4xl font-extrabold mb-8 text-gray-800">Your Profile</h1>
         
         <div className="flex flex-col items-center mb-8">

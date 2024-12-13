@@ -79,10 +79,17 @@ const Orders = () => {
     if (activeTab === 'current' && !currentOrders?.orders?.length) {
       return (
         <div className="flex flex-col items-center justify-center py-12">
-          <div className="bg-gray-100 p-8 rounded-lg text-center">
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            exit={{ opacity: 0, y: -20 }} 
+            transition={{ duration: 0.3 }}
+            className="bg-gray-100 p-8 rounded-lg flex flex-col items-center"
+          >
             <h3 className="text-xl font-semibold text-gray-800 mb-2">No Orders Found Currently.</h3>
             <p className="text-gray-600">{`You haven't placed any orders.`}</p>
-          </div>
+            <FaBoxOpen className="text-6xl text-gray-300 mt-4" />
+          </motion.div>
         </div>
       );
     }

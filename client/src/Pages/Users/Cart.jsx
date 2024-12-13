@@ -181,7 +181,7 @@ const Cart = () => {
             <h1 className='text-4xl font-bold text-gray-800 mb-6 text-center'>Checkout</h1>
             <RestaurantHeader restaurant={restaurant} />
 
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6">
                 <h2 className="text-xl font-bold mb-4">Your Cart</h2>
                 <ul className="divide-y divide-gray-200">
                     {cartData.items.map((cartItem) => (
@@ -192,10 +192,10 @@ const Cart = () => {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
                         >
-                            <div className="flex flex-col">
-                                <div className="flex justify-between items-start">
+                            <div className="flex flex-col space-y-3">
+                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                                     <div className="flex-1">
-                                        <h3 className="font-semibold text-gray-800 text-2xl">{cartItem.item.name}</h3>
+                                        <h3 className="font-semibold text-gray-800 text-lg sm:text-2xl">{cartItem.item.name}</h3>
                                         {cartItem.selectedCustomizations && cartItem.selectedCustomizations.length > 0 && (
                                             <div className="mt-1 space-y-1">
                                                 <div className="text-sm text-gray-600">
@@ -209,16 +209,15 @@ const Cart = () => {
                                         )}
 
                                         {cartItem.item.offers && (
-                                            <div className='bg-green-200 text-green-500 font-semibold text-md py-1 px-2 rounded-md mt-2 w-fit'>
+                                            <div className='bg-green-200 text-green-500 font-semibold text-sm sm:text-md py-1 px-2 rounded-md mt-2 w-fit'>
                                                 <p>{cartItem.item.offers.offerName}</p>
                                             </div>
-                                            
-
                                         )}
                                     </div>
-                                    <div className="flex items-center gap-4">
+                                    
+                                    <div className="flex justify-between sm:flex-col sm:items-end gap-4">
                                         <motion.div 
-                                            className="flex items-center bg-orange-50 rounded-lg overflow-hidden"
+                                            className="flex items-center bg-orange-50 rounded-lg overflow-hidden h-fit"
                                             whileTap={{ scale: 0.98 }}
                                         >
                                             <motion.button 
@@ -271,7 +270,7 @@ const Cart = () => {
                                                     );
                                                 })()}
                                             </div>
-                                            <div className="text-sm text-gray-500">
+                                            <div className="text-xs sm:text-sm text-gray-500">
                                                 ₹{cartItem.item.price} each
                                             </div>
                                         </motion.div>
@@ -382,14 +381,14 @@ const Cart = () => {
             </div>
 
             <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 mb-4">
                     <div className="flex items-center">
-                        <FaMapMarkerAlt className="text-orange-500 mr-2" />
-                        <h2 className="text-lg font-semibold">Confirm Delivery Details</h2>
+                        <FaMapMarkerAlt className="text-orange-500 mr-2 text-lg sm:text-xl" />
+                        <h2 className="text-base sm:text-lg font-semibold">Confirm Delivery Details</h2>
                     </div>
                     <motion.button
                         onClick={() => updateCartState({ showAddresses: !showAddresses })}
-                        className="flex items-center text-orange-500"
+                        className="flex items-center text-orange-500 text-sm sm:text-base"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                     >
@@ -410,7 +409,7 @@ const Cart = () => {
                             animate={{ opacity: 1, height: "auto" }}
                             exit={{ opacity: 0, height: 0 }}
                             transition={{ duration: 0.3 }}
-                            className="space-y-4 overflow-hidden"
+                            className="space-y-3 sm:space-y-4 overflow-hidden"
                         >
                             <motion.div
                                 className="grid grid-cols-1 gap-3"
@@ -426,10 +425,10 @@ const Cart = () => {
                                     }`}
                                     whileTap={{ scale: 0.98 }}
                                 >
-                                    <FaMapMarkerAlt className="text-orange-500 mr-2" />
-                                    <div className="text-left">
-                                        <p className="font-medium">Use Current Location</p>
-                                        <p className="text-gray-600 text-sm">{userAddress || 'No location available'}</p>
+                                    <FaMapMarkerAlt className="text-orange-500 mr-2 text-lg" />
+                                    <div className="text-left flex-1">
+                                        <p className="font-medium text-sm sm:text-base">Use Current Location</p>
+                                        <p className="text-gray-600 text-xs sm:text-sm line-clamp-2 sm:line-clamp-1">{userAddress || 'No location available'}</p>
                                     </div>
                                 </motion.button>
 
@@ -444,9 +443,9 @@ const Cart = () => {
                                         whileTap={{ scale: 0.98 }}
                                     >
                                         <div className="flex items-center justify-between">
-                                            <div>
-                                                <p className="text-gray-600">{address.address}</p>
-                                                <p className="text-gray-600 text-sm mt-1">{address.phone}</p>
+                                            <div className="flex-1">
+                                                <p className="text-gray-600 text-sm sm:text-base line-clamp-2 sm:line-clamp-1">{address.address}</p>
+                                                <p className="text-gray-600 text-xs sm:text-sm mt-1">{address.phone}</p>
                                             </div>
                                         </div>
                                     </motion.div>
@@ -455,7 +454,7 @@ const Cart = () => {
                                 {/* Add New Address Button */}
                                 <motion.button
                                     onClick={() => navigate('/address-manage')}
-                                    className="w-full py-2 text-orange-500 border border-orange-500 rounded-lg transition-all duration-300 hover:bg-orange-50 hover:border-orange-300 hover:shadow-sm"
+                                    className="w-full py-2 sm:py-3 text-sm sm:text-base text-orange-500 border border-orange-500 rounded-lg transition-all duration-300 hover:bg-orange-50 hover:border-orange-300 hover:shadow-sm"
                                     whileTap={{ scale: 0.98 }}
                                 >
                                     Add New Address
@@ -473,19 +472,19 @@ const Cart = () => {
                         transition={{ duration: 0.3 }}
                     >
                         <div>
-                            <p className="text-gray-600">{deliveryAddress || 'Please select a delivery address'}</p>
-                            <div className="flex items-center mt-2">
+                            <p className="text-gray-600 text-sm sm:text-base line-clamp-2 sm:line-clamp-1">{deliveryAddress || 'Please select a delivery address'}</p>
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-0 mt-2">
                                 <input
                                     type="text"
                                     value={phoneNumber}
                                     onChange={(e) => setPhoneNumber(e.target.value)}
                                     placeholder="Enter phone number"
-                                    className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-orange-500"
+                                    className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm sm:text-base focus:outline-none focus:border-orange-500"
                                 />
                                 {userPhoneNumber && (
                                     <motion.button
                                         onClick={handleUseRegisteredPhone}
-                                        className="ml-2 bg-orange-500 text-md text-white py-1 px-2 rounded-md hover:bg-orange-600 transition-all duration-300"
+                                        className="sm:ml-2 bg-orange-500 text-sm sm:text-base text-white py-2 px-3 rounded-lg hover:bg-orange-600 transition-all duration-300"
                                         whileTap={{ scale: 0.95 }}
                                     >
                                         Use registered
@@ -567,7 +566,7 @@ const Cart = () => {
                             )}
                             {totalPrice >= 500 && (
                                 <div className="text-green-600 text-sm">
-                                    You saved ₹{deliveryFee} on delivery charges
+                                    You saved ₹{deliveryFee.toFixed(2)} on delivery charges
                                 </div>
                             )}
                             {(totalSavings > 0 || appliedCoupon || totalPrice >= 500) && (

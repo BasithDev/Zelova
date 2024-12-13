@@ -221,13 +221,13 @@ const UserLayout = () => {
       </aside>
 
       {/* Mobile Header */}
-      <div className="lg:hidden w-full bg-gray-100 shadow-md p-4 flex justify-between items-center fixed top-0 z-10">
-        <p className="text-2xl font-semibold text-transparent bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text">Zelova</p>
+      <div className="lg:hidden w-full bg-white shadow-lg flex justify-between items-center fixed top-0 z-10 h-[60px] px-4">
+        <p className="text-2xl font-bold text-transparent bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text">Zelova</p>
         <div className="flex items-center gap-3">
           <p
             data-tooltip-id="address-tooltip"
             data-tooltip-content={`${userAddress}`}
-            className="text-sm text-gray-500 truncate max-w-[150px]"
+            className="text-sm font-medium text-gray-600 truncate max-w-[150px]"
           >
             {userAddress || "Loading..."}
           </p>
@@ -237,11 +237,11 @@ const UserLayout = () => {
               src={profilePicture}
               alt="Profile"
               onClick={() => setShowDropdown(!showDropdown)}
-              className="rounded-full w-10 h-10 border border-gray-300 cursor-pointer"
+              className="rounded-full w-9 h-9 border-2 border-orange-200 cursor-pointer hover:border-orange-300 transition-all"
             />
           ) : (
             <FaUser 
-              className="text-2xl text-gray-600 bg-gray-300 p-2 rounded-full cursor-pointer"
+              className="text-2xl text-gray-600 bg-gray-200 p-2 rounded-full cursor-pointer hover:bg-gray-300 transition-all"
               onClick={() => setShowDropdown(!showDropdown)}
             />
           )}
@@ -319,39 +319,39 @@ const UserLayout = () => {
 
       {/* Bottom Navigation for Mobile */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white shadow-lg z-10">
-        <div className="flex justify-between items-center px-4 py-2">
+        <div className="flex justify-between items-center px-4 py-3">
           <button
             onClick={() => navigate('/')}
             className={`flex flex-col items-center p-2 ${
               location.pathname === '/'
                 ? "text-orange-500"
-                : "text-gray-500"
+                : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            <span className="text-xl mb-1"><MdHome /></span>
-            <span className="text-xs">Home</span>
+            <span className="text-2xl mb-1 font-bold"><MdHome /></span>
+            <span className="text-sm font-medium">Home</span>
           </button>
           <button
             onClick={() => navigate('/favourites')}
             className={`flex flex-col items-center p-2 ${
               location.pathname === '/favourites'
                 ? "text-orange-500"
-                : "text-gray-500"
+                : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            <span className="text-xl mb-1"><FaHeart /></span>
-            <span className="text-xs">Favourites</span>
+            <span className="text-2xl mb-1 font-bold"><FaHeart /></span>
+            <span className="text-sm font-medium">Favourites</span>
           </button>
           <button
             onClick={() => navigate('/orders')}
             className={`flex flex-col items-center p-2 ${
               location.pathname === '/orders'
                 ? "text-orange-500"
-                : "text-gray-500"
+                : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            <span className="text-xl mb-1"><BiSolidPurchaseTag /></span>
-            <span className="text-xs">Orders</span>
+            <span className="text-2xl mb-1 font-bold"><BiSolidPurchaseTag /></span>
+            <span className="text-sm font-medium">Orders</span>
           </button>
           <button
             onClick={() => setShowMoreMenu(!showMoreMenu)}
@@ -360,11 +360,11 @@ const UserLayout = () => {
               location.pathname === '/get-supplies' || 
               location.pathname === '/share-supplies'
                 ? "text-orange-500"
-                : "text-gray-500"
+                : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            <span className="text-xl mb-1"><BsThreeDots /></span>
-            <span className="text-xs">More</span>
+            <span className="text-2xl mb-1 font-bold"><BsThreeDots /></span>
+            <span className="text-sm font-medium">More</span>
           </button>
         </div>
       </nav>
