@@ -102,9 +102,9 @@ const RestaurantLocation = ({
     }, [coordinates, handleFieldChange]);
 
     return (
-        <div className="flex flex-col max-w-6xl mx-auto bg-white rounded-3xl shadow-2xl p-6 mt-6">
-            <h2 className="text-3xl font-semibold mb-4">Restaurant Location</h2>
-            <div className="flex items-center gap-4">
+        <div className="flex flex-col max-w-6xl mx-auto bg-white rounded-3xl shadow-2xl p-4 sm:p-6 mt-4 sm:mt-6">
+            <h2 className="text-xl sm:text-3xl font-semibold mb-3 sm:mb-4">Restaurant Location</h2>
+            <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-4">
                 <div className="flex-grow">
                     <InputField
                         label="Address"
@@ -117,27 +117,29 @@ const RestaurantLocation = ({
                     data-tooltip-id="location-tooltip"
                     data-tooltip-content="Click here to get your current address and pin location on the map"
                     onClick={getCurrentLocation}
-                    className="h-full self-end py-2 px-6 bg-blue-500 text-xl font-semibold text-white rounded-md hover:bg-blue-600"
+                    className="w-full sm:w-auto py-2 px-4 sm:px-6 bg-blue-500 text-base sm:text-xl font-semibold text-white rounded-md hover:bg-blue-600 transition-colors whitespace-nowrap h-[42px]"
                 >
                     Detect Location
                 </button>
                 <Tooltip id="location-tooltip" />
             </div>
-            <Map
-                lat={coordinates?.lat}
-                lng={coordinates?.lng}
-                onLocationSelect={(address, lat, lng) => {
-                    handleFieldChange("address", address);
-                    setCoordinates({ lat, lng });
-                }}
-            />
+            <div className="mt-4 h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] w-full">
+                <Map
+                    lat={coordinates?.lat}
+                    lng={coordinates?.lng}
+                    onLocationSelect={(address, lat, lng) => {
+                        handleFieldChange("address", address);
+                        setCoordinates({ lat, lng });
+                    }}
+                />
+            </div>
             <button
-                className="mt-6 px-6 py-2 text-xl font-semibold text-white bg-blue-500 rounded-md hover:bg-blue-600"
+                className="mt-4 sm:mt-6 px-4 sm:px-6 py-2 text-base sm:text-xl font-semibold text-white bg-blue-500 rounded-md hover:bg-blue-600 transition-colors"
                 onClick={handleSaveLocation}
                 disabled={isLocationUpdating}
                 aria-disabled={isLocationUpdating}
             >
-                {isLocationUpdating ? <BeatLoader color="white" size={10} /> : "Save"}
+                {isLocationUpdating ? <BeatLoader color="white" size={8} /> : "Save"}
             </button>
         </div>
     );
