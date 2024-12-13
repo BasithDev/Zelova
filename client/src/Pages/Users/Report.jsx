@@ -60,21 +60,21 @@ const Report = () => {
   const showRefundField = ['food', 'delivery', 'restaurant'].includes(issueType);
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="w-full max-w-2xl p-8">
+    <div className="min-h-screen flex items-center justify-center p-4 md:p-8">
+      <div className="w-full max-w-2xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white p-8 rounded-xl shadow-2xl space-y-6"
+          className="bg-white p-4 md:p-8 rounded-xl shadow-2xl space-y-4 md:space-y-6"
         >
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Report an Issue</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 md:mb-8">Report an Issue</h1>
           
           <div>
-            <label className="block text-lg font-semibold text-gray-800">Problem Type</label>
+            <label className="block text-base md:text-lg font-semibold text-gray-800">Problem Type</label>
             <select
               value={issueType}
               onChange={(e) => setIssueType(e.target.value)}
-              className="mt-2 border-2 w-full p-3 text-lg border-gray-300 rounded-lg shadow-md focus:ring-2 focus:ring-indigo-500"
+              className="mt-2 border-2 w-full p-2.5 md:p-3 text-base md:text-lg border-gray-300 rounded-lg shadow-md focus:ring-2 focus:ring-indigo-500"
               disabled={isSubmitting}
             >
               <option value="">Select an option</option>
@@ -87,12 +87,12 @@ const Report = () => {
           </div>
 
           <div>
-            <label className="block text-lg font-semibold text-gray-800">Issue Description</label>
+            <label className="block text-base md:text-lg font-semibold text-gray-800">Issue Description</label>
             <textarea
               value={issueDescription}
               onChange={(e) => setIssueDescription(e.target.value)}
-              rows="5"
-              className="mt-2 block w-full p-3 border border-gray-300 rounded-lg shadow-md focus:ring-2 focus:ring-indigo-500"
+              rows="4"
+              className="mt-2 block w-full p-2.5 md:p-3 text-base md:text-lg border border-gray-300 rounded-lg shadow-md focus:ring-2 focus:ring-indigo-500"
               placeholder="Describe your issue here..."
               disabled={isSubmitting}
             />
@@ -100,12 +100,12 @@ const Report = () => {
 
           {showRefundField && (
             <div>
-              <label className="block text-lg font-semibold text-gray-800">Request Refund Amount</label>
+              <label className="block text-base md:text-lg font-semibold text-gray-800">Request Refund Amount</label>
               <input
                 type="number"
                 value={refundAmount}
                 onChange={(e) => setRefundAmount(e.target.value)}
-                className="mt-2 block w-full p-3 border border-gray-300 rounded-lg shadow-md focus:ring-2 focus:ring-indigo-500"
+                className="mt-2 block w-full p-2.5 md:p-3 text-base md:text-lg border border-gray-300 rounded-lg shadow-md focus:ring-2 focus:ring-indigo-500"
                 placeholder="Enter amount (optional)"
                 min="0"
                 disabled={isSubmitting}
@@ -114,11 +114,11 @@ const Report = () => {
           )}
 
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className={`w-full flex justify-center py-3 px-6 border border-transparent rounded-lg shadow-lg text-lg font-medium text-white ${
+            className={`w-full flex justify-center py-2.5 md:py-3 px-4 md:px-6 border border-transparent rounded-lg shadow-lg text-base md:text-lg font-medium text-white ${
               isSubmitting 
                 ? 'bg-indigo-400 cursor-not-allowed' 
                 : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
@@ -135,7 +135,7 @@ const Report = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
         >
           <motion.div
             initial={{ scale: 0.5, y: 100, opacity: 0 }}
@@ -150,13 +150,13 @@ const Report = () => {
               }
             }}
             exit={{ scale: 0.5, y: 100, opacity: 0 }}
-            className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4"
+            className="bg-white p-4 md:p-6 rounded-lg shadow-xl max-w-md w-full mx-4"
           >
             <motion.h2 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.1 }}
-              className="text-2xl font-bold text-gray-900 mb-4"
+              className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4"
             >
               Issue Reported Successfully!
             </motion.h2>
@@ -164,7 +164,7 @@ const Report = () => {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="text-gray-600 mb-6"
+              className="text-sm md:text-base text-gray-600 mb-4 md:mb-6"
             >
               {`A response will be sent to your email address. We'll get back to you as soon as possible.`}
             </motion.p>
@@ -172,10 +172,10 @@ const Report = () => {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={handleModalClose}
-              className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
+              className="w-full bg-indigo-600 text-white py-2 md:py-2.5 px-4 rounded-lg hover:bg-indigo-700 transition-colors text-base md:text-lg"
             >
               Okay
             </motion.button>

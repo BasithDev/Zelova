@@ -189,7 +189,7 @@ const Home = () => {
                                                     <div className={`flex items-center px-2 py-1 rounded-md ${restaurant?.avgRating ? (restaurant.avgRating >= 3.5 ? 'bg-green-600' : 'bg-orange-500') : 'bg-red-500'}`}>
                                                         <FaStar className="text-yellow-400 text-sm mr-1" />
                                                         <span className="text-sm font-bold text-white">
-                                                            {restaurant?.avgRating ? Number(restaurant.avgRating).toFixed(1) : "No Rating Yet"}
+                                                            {restaurant?.avgRating ? Number(restaurant.avgRating).toFixed(1) : "Not Rated Yet"}
                                                         </span>
                                                     </div>
 

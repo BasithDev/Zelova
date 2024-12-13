@@ -152,9 +152,9 @@ const Header = ({ placeholderText = "Search..." }) => {
     };
 
     return (
-        <div className="sticky top-0 z-40 bg-white transition-all duration-300 border-b-2 pt-1">
-            <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-3">
-                <div className="flex items-center justify-between gap-2 sm:gap-4">
+        <div className="sticky top-0 z-40 bg-white transition-all duration-300 border-b">
+            <div className="container mx-auto px-4">
+                <div className="flex items-center justify-between h-[60px]">
                     <div className="flex-1 max-w-3xl">
                         <div className="relative search-container">
                             <input
@@ -162,9 +162,9 @@ const Header = ({ placeholderText = "Search..." }) => {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder={placeholderText}
-                                className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 text-sm sm:text-base bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 placeholder-gray-400"
+                                className="w-full pl-10 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 placeholder-gray-400"
                             />
-                            <div className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
                                 <FaSearch size={16} />
                             </div>
 

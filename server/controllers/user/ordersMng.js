@@ -263,10 +263,20 @@ const verifyRazorpayPayment = async (req, res, next) => {
             await Cart.deleteOne({ _id: orderDetails.cartId });
         }
 
+        // Generate and award coins for Razorpay payment
+        const generatedCoins = generateRandomCoins(orderDetails.billDetails.finalAmount);
+        console.log('Generated coins:', generatedCoins);
+        await zcoin.findOneAndUpdate(
+            { userId },
+            { $inc: { balance: generatedCoins } },
+            { upsert: true, new: true }
+        );
+
         res.status(statusCodes.OK).json({
             success: true,
             message: 'Payment verified successfully',
-            order
+            order,
+            coinsEarned: generatedCoins
         });
     } catch (error) {
         console.error('Error verifying payment:', error);

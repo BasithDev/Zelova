@@ -38,7 +38,7 @@ const RestaurantCard = ({ restaurant, timeInMinutes, distanceInKm }) => {
                             </div>
                             <div className={`${restaurant.avgRating >= 3.5 ? "bg-green-600" : "bg-orange-500"} text-white rounded-lg px-3 py-1`}>
                                 <span className="text-base sm:text-lg flex items-center font-semibold">
-                                    {restaurant.avgRating || "No Rating Yet"}
+                                    {restaurant.avgRating === 0 || !restaurant.avgRating ? "Not rated yet" : (restaurant.avgRating || 0).toFixed(1)}
                                     <FaStar className="inline ml-1 text-yellow-400" />
                                 </span>
                             </div>

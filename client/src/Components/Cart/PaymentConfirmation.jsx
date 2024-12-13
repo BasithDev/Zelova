@@ -45,7 +45,7 @@ const PaymentConfirmation = ({
         const fetchCoinBalance = async () => {
             try {
                 const response = await getZcoinsData();
-                setCoinBalance(response.data.balance);
+                setCoinBalance(response.data.zcoins.balance);
             } catch (error) {
                 console.error('Error fetching coin balance:', error);
             }
@@ -166,7 +166,7 @@ const PaymentConfirmation = ({
                             navigate('/order-success', {
                                 state: {
                                     orderId: verificationResponse.data.order.orderId,
-                                    coinsWon: verificationResponse.data.order.coinsEarned
+                                    coinsWon: verificationResponse.data.coinsEarned
                                 }
                             });
                             onClose();
