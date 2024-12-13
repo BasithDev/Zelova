@@ -187,11 +187,11 @@ const Menu = () => {
   return (
     <div className="container mx-auto p-4">
       <ToastContainer position="top-right" />
-      <h1 className="text-4xl font-bold mb-6 text-center">Menu</h1>
+      <h1 className="text-3xl sm:text-4xl font-bold mb-4 sm:mb-6 text-center">Menu</h1>
 
       {/* Search and Sort */}
-      <div className="flex flex-col md:flex-row justify-between items-center px-6 mb-6 gap-4">
-        <div className="relative w-full md:w-1/2 mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center px-4 sm:px-6 mb-6 gap-4">
+        <div className="relative w-full sm:w-1/2">
           <input
             type="text"
             placeholder="Search products..."
@@ -199,79 +199,65 @@ const Menu = () => {
             onChange={handleSearch}
             className="border border-gray-300 rounded-full px-4 py-2 w-full shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
-          <button
-            className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
-          >
+          <button className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700">
             <FiSearch size={20} />
           </button>
         </div>
 
         {/* Sort Dropdown */}
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="border border-gray-300 rounded px-4 py-2 bg-white flex items-center gap-2 focus:outline-none"
+            className="w-full sm:w-auto border border-gray-300 rounded px-4 py-2 bg-white flex items-center justify-between sm:justify-start gap-2 focus:outline-none"
           >
-            Sort By: {sortBy === "name" ? "Name" : "Price"}
-            <span className={`transform ${isDropdownOpen ? "rotate-180" : ""}`}>
-              ▼
-            </span>
+            <span className="flex-1 sm:flex-none">Sort By: {sortBy === "name" ? "Name" : sortBy === "price" ? "Price" : sortBy === "listed" ? "Listed Items" : "Unlisted Items"}</span>
+            <span className={`transform ${isDropdownOpen ? "rotate-180" : ""}`}>▼</span>
           </button>
 
           <AnimatePresence>
-  {isDropdownOpen && (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.2 }}
-      className="absolute left-0 mt-2 w-full bg-white border border-gray-300 rounded-lg shadow-lg z-10"
-    >
-      <ul>
-        <li
-          onClick={() => handleSort("name")}
-          className="px-4 py-2 hover:bg-blue-50 cursor-pointer"
-        >
-          By Name
-        </li>
-        <li
-          onClick={() => handleSort("price")}
-          className="px-4 py-2 hover:bg-blue-50 cursor-pointer"
-        >
-          By Price
-        </li>
-        <li
-          onClick={() => handleSort("listed")}
-          className="px-4 py-2 hover:bg-blue-50 cursor-pointer"
-        >
-          Listed Items
-        </li>
-        <li
-          onClick={() => handleSort("unlisted")}
-          className="px-4 py-2 hover:bg-blue-50 cursor-pointer"
-        >
-          Unlisted Items
-        </li>
-      </ul>
-    </motion.div>
-  )}
-</AnimatePresence>
-
+            {isDropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="absolute right-0 mt-2 w-full sm:w-48 bg-white border border-gray-300 rounded-lg shadow-lg z-10"
+              >
+                <ul>
+                  <li onClick={() => handleSort("name")} className="px-4 py-2 hover:bg-blue-50 cursor-pointer">
+                    By Name
+                  </li>
+                  <li onClick={() => handleSort("price")} className="px-4 py-2 hover:bg-blue-50 cursor-pointer">
+                    By Price
+                  </li>
+                  <li onClick={() => handleSort("listed")} className="px-4 py-2 hover:bg-blue-50 cursor-pointer">
+                    Listed Items
+                  </li>
+                  <li onClick={() => handleSort("unlisted")} className="px-4 py-2 hover:bg-blue-50 cursor-pointer">
+                    Unlisted Items
+                  </li>
+                </ul>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
       {/* Products */}
       {loading ? (
-        <div className="text-center">Loading...</div>
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading products...</p>
+        </div>
       ) : error ? (
-        <div className="text-center text-red-500">{error}</div>
+        <div className="text-center py-8 text-red-500">{error}</div>
       ) : filteredProducts.length === 0 ? (
         <div className="text-center py-8">
-          <h2 className="text-2xl font-semibold">No products found!</h2>
-          <p className="text-gray-500">Try adjusting your search or add new products.</p>
+          <h2 className="text-xl sm:text-2xl font-semibold">No products found!</h2>
+          <p className="text-gray-500 mt-2">Try adjusting your search or add new products.</p>
           <button
             onClick={() => navigate("/vendor/add-items")}
-            className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
           >
             Add a Product
           </button>
@@ -286,7 +272,7 @@ const Menu = () => {
               exit="exit"
               variants={pageVariants}
               transition={{ duration: 0.3 }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 px-6"
+              className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 px-2 sm:px-6"
             >
               {paginatedProducts.map((product) => (
                 <motion.div
@@ -300,9 +286,8 @@ const Menu = () => {
                     product={product}
                     onSave={handleProductUpdate}
                     onDelete={handleDelete}
-                    onListToggle={handleListToggle}
-                    onChangeImage={(id) => console.log(`Change Image ${id}`)}
-                    onOfferChange={handleProductOfferUpdate}
+                    onToggleList={handleListToggle}
+                    onUpdateOffer={handleProductOfferUpdate}
                     offers={offers}
                   />
                 </motion.div>
@@ -311,21 +296,45 @@ const Menu = () => {
           </AnimatePresence>
 
           {/* Pagination */}
-          <div className="flex justify-center items-center mt-6 space-x-2">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-6 px-4">
               <button
-                key={page}
-                className={`px-4 py-2 rounded ${
-                  page === currentPage
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 hover:bg-gray-300"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={`px-3 py-1 rounded ${
+                  currentPage === 1
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-blue-500 text-white hover:bg-blue-600"
                 }`}
-                onClick={() => handlePageChange(page)}
               >
-                {page}
+                Previous
               </button>
-            ))}
-          </div>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`px-3 py-1 rounded ${
+                    currentPage === page
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className={`px-3 py-1 rounded ${
+                  currentPage === totalPages
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-blue-500 text-white hover:bg-blue-600"
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>

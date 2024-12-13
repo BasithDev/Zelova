@@ -69,9 +69,9 @@ const VendorHome = () => {
             {/* Header */}
             <div className="bg-white shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
                         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-                        <div className="text-right">
+                        <div className="text-left sm:text-right">
                             <p className="text-sm text-gray-500">Today</p>
                             <p className="text-lg font-semibold text-gray-700">
                                 {new Date().toLocaleDateString('en-US', {
@@ -88,17 +88,17 @@ const VendorHome = () => {
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                     {/* Today's Orders */}
                     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
                         <div className="p-6">
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm font-medium text-gray-600">Total Orders Today</p>
-                                    <p className="text-3xl font-bold text-gray-900 mt-2">{getOrdersByStatus('pending')}</p>
+                                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">{getOrdersByStatus('pending')}</p>
                                 </div>
-                                <div className="p-3 bg-blue-100 rounded-full">
-                                    <FaShoppingBag className="w-6 h-6 text-blue-600" />
+                                <div className="p-2 sm:p-3 bg-blue-100 rounded-full">
+                                    <FaShoppingBag className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
                                 </div>
                             </div>
                         </div>
@@ -110,10 +110,10 @@ const VendorHome = () => {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm font-medium text-gray-600">Pending Orders</p>
-                                    <p className="text-3xl font-bold text-gray-900 mt-2">{getOrdersByStatus('pending')}</p>
+                                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">{getOrdersByStatus('pending')}</p>
                                 </div>
-                                <div className="p-3 bg-yellow-100 rounded-full">
-                                    <FaClock className="w-6 h-6 text-yellow-600" />
+                                <div className="p-2 sm:p-3 bg-yellow-100 rounded-full">
+                                    <FaClock className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600" />
                                 </div>
                             </div>
                         </div>
@@ -125,12 +125,12 @@ const VendorHome = () => {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                                    <p className="text-3xl font-bold text-gray-900 mt-2">₹{Array.isArray(orders) ? 
+                                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">₹{Array.isArray(orders) ? 
                                         orders.reduce((acc, order) => acc + (order?.billDetails?.finalAmount || 0), 0).toFixed(2)
                                     : '0.00'}</p>
                                 </div>
-                                <div className="p-3 bg-green-100 rounded-full">
-                                    <FaMoneyBillWave className="w-6 h-6 text-green-600" />
+                                <div className="p-2 sm:p-3 bg-green-100 rounded-full">
+                                    <FaMoneyBillWave className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
                                 </div>
                             </div>
                         </div>
@@ -147,17 +147,19 @@ const VendorHome = () => {
                         {Array.isArray(orders) && orders.length > 0 ? (
                             orders.map((order) => (
                                 <div key={order.orderId} className="p-6 hover:bg-gray-50 transition-colors duration-200">
-                                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                         <div className="flex-1">
-                                            <div className="flex items-center gap-4 mb-4">
+                                            <div className="flex flex-wrap items-center gap-4 mb-4">
                                                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
                                                     ${order?.status?.toUpperCase() === 'PENDING' ? 'bg-purple-100 text-purple-800' : ''}
+                                                    ${order?.status?.toUpperCase() === 'PAID' ? 'bg-purple-100 text-purple-800' : ''}
                                                     ${order?.status?.toUpperCase() === 'PREPARING' ? 'bg-yellow-100 text-yellow-800' : ''}
                                                     ${order?.status?.toUpperCase() === 'ON THE WAY' ? 'bg-blue-100 text-blue-800' : ''}
                                                     ${order?.status?.toUpperCase() === 'DELIVERED' ? 'bg-green-100 text-green-800' : ''}
                                                     ${order?.status?.toUpperCase() === 'NOT RECEIVED BY CUSTOMER' ? 'bg-red-100 text-red-800' : ''}
                                                 `}>
                                                     {order?.status?.toUpperCase() === 'PENDING' ? <FaClock className="w-4 h-4 mr-2" /> : ''}
+                                                    {order?.status?.toUpperCase() === 'PAID' ? <FaMoneyBillWave className="w-4 h-4 mr-2" /> : ''}
                                                     {order?.status?.toUpperCase() === 'PREPARING' ? <FaSpinner className="w-4 h-4 mr-2 animate-spin" /> : ''}
                                                     {order?.status?.toUpperCase() === 'ON THE WAY' ? <FaTruck className="w-4 h-4 mr-2" /> : ''}
                                                     {order?.status?.toUpperCase() === 'DELIVERED' ? <FaCheckCircle className="w-4 h-4 mr-2" /> : ''}
@@ -194,7 +196,6 @@ const VendorHome = () => {
                                                                 <span className="text-gray-900 font-medium">
                                                                     ₹{(item.price * item.quantity).toFixed(2)}
                                                                 </span>
-                                                                
                                                             </li>
                                                         ))}
                                                     </ul>
@@ -216,11 +217,11 @@ const VendorHome = () => {
                                             </div>
                                         </div>
 
-                                        <div className="flex-shrink-0 self-start mt-4 md:mt-0">
+                                        <div className="flex-shrink-0 w-full sm:w-auto">
                                             <select 
                                                 value={order.status} 
                                                 onChange={(e) => handleStatusChange(order.orderId, e.target.value, order.user.name)} 
-                                                className="block w-full md:w-48 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                                                className="block w-full sm:w-48 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
                                             >
                                                 <option value="PENDING">Pending</option>
                                                 <option value="PREPARING">Preparing</option>
@@ -254,20 +255,20 @@ const VendorHome = () => {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
                             transition={{ duration: 0.2 }}
-                            className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-xl"
+                            className="bg-white rounded-2xl p-6 sm:p-8 max-w-sm w-full mx-4 shadow-xl"
                         >
                             <div className="flex flex-col items-center text-center">
                                 <div className="mb-4 p-3 rounded-full bg-blue-100">
-                                    <FaSpinner className="w-8 h-8 text-blue-600 animate-spin" />
+                                    <FaSpinner className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 animate-spin" />
                                 </div>
-                                <h3 className="text-xl font-semibold text-gray-900 mb-2">Update Order Status</h3>
-                                <p className="text-gray-600 mb-2">
-                                    Order ID: <span className="font-semibold">{confirmDialog.orderId}</span>
+                                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Update Order Status</h3>
+                                <p className="text-sm sm:text-base text-gray-600 mb-2">
+                                    Order ID: <span className="font-semibold">#{confirmDialog.orderId}</span>
                                 </p>
-                                <p className="text-gray-600 mb-2">
+                                <p className="text-sm sm:text-base text-gray-600 mb-2">
                                     Customer: <span className="font-semibold">{confirmDialog.customerName}</span>
                                 </p>
-                                <p className="text-gray-600 mb-8">
+                                <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">
                                     Are you sure you want to change the order status to{' '}
                                     <span className="font-semibold text-blue-600">{confirmDialog.newStatus}</span>?
                                 </p>

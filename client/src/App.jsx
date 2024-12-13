@@ -47,7 +47,6 @@ import GetSupplies from './Pages/Users/GetSupplies';
 import GoogleResponse from './Routers/GoogleResponse';
 import CouponMng from './Pages/Admins/CouponMng';
 import Cart from './Pages/Users/Cart';
-import ConfirmPayment from './Pages/Users/ConfirmPayment';
 import OrderSuccess from './Pages/Users/OrderSuccess';
 import SendMail from './Pages/Admins/SendMail';
 import Report from './Pages/Users/Report';
@@ -99,7 +98,6 @@ function App() {
                     <Route path='address-manage' element={<AddressMng/>}/>
                     <Route path='/restaurant/:id/menu' element={<Menu/>}/>
                     <Route path='cart' element={<Cart/>} />
-                    <Route path='confirm-payment' element={<ConfirmPayment/>}/>
                     <Route path='report' element={<Report/> }/>
                     <Route element={<OrderProtectedRoute />}>
                       <Route path='order-success' element={<OrderSuccess/>}/>
