@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import { AnimatePresence, motion } from 'framer-motion';
 import { MdEdit } from 'react-icons/md';
 import { FaStar, FaPhoneAlt } from 'react-icons/fa';
-import InputField from '../../../Components/InputField';
+import InputField from '../../../Components/Common/InputField';
 import { useState, useEffect } from "react";
 import { openOrCloseShop, updateRestaurantPic } from "../../../Services/apiServices";
 import { IoIosCloseCircle } from "react-icons/io";

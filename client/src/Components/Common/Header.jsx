@@ -152,9 +152,9 @@ const Header = ({ placeholderText = "Search..." }) => {
     };
 
     return (
-        <div className="sticky top-0 z-50 bg-white transition-all duration-300 border-b-2 pt-1">
-            <div className="container mx-auto px-4 py-3">
-                <div className="flex items-center justify-between">
+        <div className="sticky top-0 z-40 bg-white transition-all duration-300 border-b-2 pt-1">
+            <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-3">
+                <div className="flex items-center justify-between gap-2 sm:gap-4">
                     <div className="flex-1 max-w-3xl">
                         <div className="relative search-container">
                             <input
@@ -162,9 +162,9 @@ const Header = ({ placeholderText = "Search..." }) => {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder={placeholderText}
-                                className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 placeholder-gray-400"
+                                className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 text-sm sm:text-base bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 placeholder-gray-400"
                             />
-                            <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                            <div className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
                                 <FaSearch size={16} />
                             </div>
 
@@ -175,7 +175,7 @@ const Header = ({ placeholderText = "Search..." }) => {
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: -10 }}
                                         transition={{ duration: 0.1 }}
-                                        className="absolute w-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-y-auto z-50 scrollbar-hide"
+                                        className="absolute w-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 max-h-[80vh] sm:max-h-96 overflow-y-auto z-50 scrollbar-hide"
                                     >
                                         <AnimatePresence>
                                         {searchResults.length > 0 ? (
@@ -187,9 +187,9 @@ const Header = ({ placeholderText = "Search..." }) => {
                                                     exit={{ opacity: 0, y: -100 }}
                                                     transition={{ duration: 0.2 }}
                                                     onClick={() => handleSearchItemClick(item)}
-                                                    className="flex items-center p-3 transition-all duration-200 cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-orange-50 hover:shadow-lg"
+                                                    className="flex items-center p-2 sm:p-3 transition-all duration-200 cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-orange-50 hover:shadow-lg"
                                                 >
-                                                    <div className="w-12 h-12 rounded-lg overflow-hidden mr-3">
+                                                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg overflow-hidden mr-2 sm:mr-3">
                                                         <AnimatePresence>
                                                         <motion.img
                                                             initial={{ scale: 0.8 }}
@@ -200,18 +200,19 @@ const Header = ({ placeholderText = "Search..." }) => {
                                                         />
                                                         </AnimatePresence>
                                                     </div>
-                                                    <div className="flex-1">
-                                                        <h3 className="font-semibold text-lg text-gray-800">{item.name}</h3>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3 className="font-semibold text-base sm:text-lg text-gray-800 truncate">{item.name}</h3>
                                                         <div className="flex items-center justify-between">
-                                                            <span className="text-sm text-orange-500">
-                                                               From: <span className="text-md font-semibold text-gray-500 ">{item.restaurantId?.name} <span className="text-gray-400 ms-1 font-normal">{item.restaurantId?.address}</span></span> 
+                                                            <span className="text-xs sm:text-sm text-orange-500 truncate">
+                                                               From: <span className="text-gray-500 font-semibold">{item.restaurantId?.name} 
+                                                               <span className="hidden sm:inline text-gray-400 ms-1 font-normal">{item.restaurantId?.address}</span></span> 
                                                             </span>
                                                             <motion.span 
-                                                                className="text-sm font-medium text-orange-500"
+                                                                className="text-sm font-medium text-orange-500 ml-2 whitespace-nowrap"
                                                                 initial={{ opacity: 0 }}
                                                                 animate={{ opacity: 1 }}
                                                                 exit={{ opacity: 0 }}
-                                                                >
+                                                            >
                                                                 ₹{item.price}
                                                             </motion.span>
                                                         </div>
@@ -219,7 +220,7 @@ const Header = ({ placeholderText = "Search..." }) => {
                                                 </motion.div>
                                             ))
                                         ) : (
-                                            <div className="p-3 text-center text-gray-500">
+                                            <div className="p-3 text-center text-gray-500 text-sm sm:text-base">
                                                 {`No results found for "${searchQuery}"`}
                                             </div>
                                         )}
@@ -230,15 +231,15 @@ const Header = ({ placeholderText = "Search..." }) => {
                         </div>
                     </div>
 
-                    <div className="relative ml-4">
+                    <div className="relative">
                         <button
                             onMouseEnter={() => setShowCartDropdown(true)}
                             onClick={() => navigate('/cart')}
-                            className="flex items-center justify-center w-12 h-12 bg-orange-50 hover:bg-orange-100 rounded-full transition-all duration-300 group"
+                            className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-orange-50 hover:bg-orange-100 rounded-full transition-all duration-300 group"
                         >
-                            <FaShoppingCart className="text-orange-500 group-hover:text-orange-600 transition-colors" size={20} />
+                            <FaShoppingCart className="text-orange-500 group-hover:text-orange-600 transition-colors" size={18} />
                             {totalItemsCount > 0 && (
-                                <span className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                                <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-orange-500 text-white text-[10px] sm:text-xs font-bold rounded-full flex items-center justify-center">
                                     {totalItemsCount}
                                 </span>
                             )}

@@ -1,7 +1,7 @@
 import { toast } from 'react-toastify';
-import { addOffer,getOffers,deleteOffer } from '../../Services/apiServices';
+import { addOffer,getOffers,deleteOffer } from '../../../Services/apiServices';
 import { useState,useEffect,useCallback } from "react";
-import PrimaryBtn from '../../Components/Buttons/PrimaryBtn';
+import PrimaryBtn from '../../../Components/Buttons/PrimaryBtn';
 const AddOffers = () => {
     const [offerName, setOfferName] = useState('');
     const [requiredQuantity, setRequiredQuantity] = useState('');

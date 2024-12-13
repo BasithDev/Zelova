@@ -2,16 +2,13 @@ import PrimaryBtn from '../../Components/Buttons/PrimaryBtn';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { AiOutlineClose } from 'react-icons/ai';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import AddFoodCategories from './AddFoodCategories';
-import AddOffers from './AddOffers';
+import AddFoodCategories from './ItemOffersMng/AddFoodCategories';
+import AddOffers from './ItemOffersMng/AddOffers';
 import { addProduct, getOffers, getSubCategories } from '../../Services/apiServices';
 import { MdEdit } from 'react-icons/md';
-import FormField from './FormField';
+import FormField from './ItemOffersMng/FormField';
 import Cropper from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
-import 'react-toastify/dist/ReactToastify.css';
 import { toast } from "react-toastify";
 import { uploadImageToCloud } from '../../Helpers/uploadImageToCloud';
 import { BeatLoader } from 'react-spinners';
@@ -180,7 +177,6 @@ const AddItem = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 py-10 px-4">
-            <ToastContainer position="top-right" />
             <div className="space-y-8">
                 <h1 className='text-center font-bold text-5xl'>Add Items</h1>
                 <AddFoodCategories />

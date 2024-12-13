@@ -80,74 +80,76 @@ const Home = () => {
                     </div>
                 ) : (
                     <> 
-                        <div className="mb-6 flex justify-between">
-                        <h2 className="text-3xl font-bold mb-5 text-gray-900">Restaurants Near You</h2>
-                            <div className="relative flex-shrink-0">
-                                <button 
-                                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                    className="flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 rounded-lg shadow-sm"
-                                >
-                                    <span className="text-gray-700">Sort By: </span>
-                                    <span className="font-medium text-orange-500">
-                                        {sortType === 'none' ? 'Select Option' : 
-                                         sortType === 'nearest' ? 'Nearest' :
-                                         sortType === 'farthest' ? 'Farthest' :
-                                         sortType === 'offers' ? 'Offers Only' :
-                                         sortType === 'rating' ? 'Rating' : ''}
-                                    </span>
-                                    <svg 
-                                        className={`w-5 h-5 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} 
-                                        fill="none" 
-                                        stroke="currentColor" 
-                                        viewBox="0 0 24 24"
+                        <div className="mb-6 px-4 sm:px-0">
+                            <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-gray-900">Restaurants Near You</h2>
+                            <div className="flex justify-end">
+                                <div className="relative w-48">
+                                    <button 
+                                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                        className="flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 rounded-lg shadow-sm w-full"
                                     >
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </button>
+                                        <span className="text-gray-700">Sort By: </span>
+                                        <span className="font-medium text-orange-500">
+                                            {sortType === 'none' ? 'Select Option' : 
+                                             sortType === 'nearest' ? 'Nearest' :
+                                             sortType === 'farthest' ? 'Farthest' :
+                                             sortType === 'offers' ? 'Offers Only' :
+                                             sortType === 'rating' ? 'Rating' : ''}
+                                        </span>
+                                        <svg 
+                                            className={`w-5 h-5 transition-transform ml-auto ${isDropdownOpen ? 'rotate-180' : ''}`} 
+                                            fill="none" 
+                                            stroke="currentColor" 
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
 
-                                <motion.div
-                                    initial={{ opacity: 0, y: -20 }}
-                                    animate={{ 
-                                        opacity: isDropdownOpen ? 1 : 0,
-                                        y: isDropdownOpen ? 0 : -20,
-                                        display: isDropdownOpen ? 'block' : 'none'
-                                    }}
-                                    transition={{ duration: 0.1 }}
-                                    className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50"
-                                >
-                                    <div className="py-1">
-                                        {[
-                                            { value: 'nearest', label: 'Nearest' },
-                                            { value: 'farthest', label: 'Farthest' },
-                                            { value: 'offers', label: 'Offers Only' },
-                                            { value: 'rating', label: 'Rating' }
-                                        ].map((option) => (
-                                            <motion.button
-                                                key={option.value}
-                                                whileHover={{ backgroundColor: '#FFF7ED' }}
-                                                onClick={() => {
-                                                    handleSort(option.value);
-                                                    setIsDropdownOpen(false);
-                                                }}
-                                                className={`w-full text-left px-4 py-2.5 text-sm transition-colors duration-150 ${
-                                                    sortType === option.value 
-                                                        ? 'text-orange-500 bg-orange-50 font-medium' 
-                                                        : 'text-gray-700 hover:bg-orange-50'
-                                                }`}
-                                            >
-                                                {option.label}
-                                            </motion.button>
-                                        ))}
-                                    </div>
-                                </motion.div>
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -20 }}
+                                        animate={{ 
+                                            opacity: isDropdownOpen ? 1 : 0,
+                                            y: isDropdownOpen ? 0 : -20,
+                                            display: isDropdownOpen ? 'block' : 'none'
+                                        }}
+                                        transition={{ duration: 0.1 }}
+                                        className="absolute right-0 top-full mt-2 w-full bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50"
+                                    >
+                                        <div className="py-1">
+                                            {[
+                                                { value: 'nearest', label: 'Nearest' },
+                                                { value: 'farthest', label: 'Farthest' },
+                                                { value: 'offers', label: 'Offers Only' },
+                                                { value: 'rating', label: 'Rating' }
+                                            ].map((option) => (
+                                                <button
+                                                    key={option.value}
+                                                    onClick={() => {
+                                                        handleSort(option.value);
+                                                        setIsDropdownOpen(false);
+                                                    }}
+                                                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors duration-150 ${
+                                                        sortType === option.value 
+                                                            ? 'text-orange-500 bg-orange-50 font-medium' 
+                                                            : 'text-gray-700 hover:bg-orange-50'
+                                                    }`}
+                                                >
+                                                    {option.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </motion.div>
+                                </div>
                             </div>
                         </div>
                         <motion.div 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.5 }}
+                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-4 sm:px-0"
+                        >
                             {restaurantData.length === 0 ? (
                                 <div className="flex flex-col justify-center items-center">
                                     <RingLoader size={50} color="#FF5733" className="mb-5" />
@@ -157,26 +159,29 @@ const Home = () => {
                                 restaurantData.map((restaurant) => {
                                     const { distanceInKm, timeInMinutes } = calculateDistanceAndTime(restaurant.distance);
                                     return (
-                                        <div
+                                        <motion.div
                                             key={restaurant._id}
-                                            className="bg-white w-[80%] rounded-lg shadow-md overflow-hidden hover:shadow-2xl hover:scale-[1.01] hover:bg-orange-50 transform transition-all duration-300 cursor-pointer"
+                                            initial={{ opacity: 0, y: 50 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.1 }}
+                                            className="bg-white w-full sm:w-[90%] rounded-lg shadow-md overflow-hidden hover:shadow-2xl hover:scale-[1.01] hover:bg-orange-50 transform transition-all duration-300 cursor-pointer"
                                             onClick={() => handleRestaurantClick(restaurant._id)}
                                         >
                                             <div className="relative">
                                                 <img
                                                     src={restaurant.image}
                                                     alt={restaurant.name}
-                                                    className="w-full h-64 object-cover"
+                                                    className="w-full h-48 sm:h-56 lg:h-64 object-cover"
                                                 />
                                                 {restaurant.offerName && (
-                                                    <div className="absolute bottom-2 left-2 bg-blue-500 text-white text-md font-semibold px-3 py-1 rounded-md shadow-md">
+                                                    <div className="absolute bottom-2 left-2 bg-blue-500 text-white text-sm sm:text-md font-semibold px-3 py-1 rounded-md shadow-md">
                                                         {restaurant.offerName}
                                                     </div>
                                                 )}
                                             </div>
 
                                             <div className="p-4">
-                                                <h3 className="text-xl font-bold text-gray-900 mb-1">
+                                                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">
                                                     {restaurant.name}
                                                 </h3>
 
@@ -187,14 +192,15 @@ const Home = () => {
                                                             {restaurant?.avgRating ? Number(restaurant.avgRating).toFixed(1) : "No Rating Yet"}
                                                         </span>
                                                     </div>
-                                                    <span className="ml-3 text-sm font-medium text-gray-600">
+
+                                                    <span className="ml-3 text-xs sm:text-sm font-medium text-gray-600">
                                                         {distanceInKm} Km • {timeInMinutes} Mins
                                                     </span>
                                                 </div>
 
-                                                <p className="text-sm text-gray-600">{restaurant.address}</p>
+                                                <p className="text-xs sm:text-sm text-gray-600">{restaurant.address}</p>
                                             </div>
-                                        </div>
+                                        </motion.div>
                                     );
                                 })
                             )}

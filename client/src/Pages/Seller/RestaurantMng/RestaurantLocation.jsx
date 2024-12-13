@@ -5,7 +5,7 @@ import "react-tooltip/dist/react-tooltip.css";
 import { toast } from "react-toastify";
 import { BeatLoader } from "react-spinners";
 import Map from "../../../Components/Map/Map";
-import InputField from "../../../Components/InputField";
+import InputField from "../../../Components/Common/InputField";
 import { setLocation } from "../../../Services/apiServices";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchRestaurantData } from "../../../Redux/slices/seller/restaurantDataSlice";

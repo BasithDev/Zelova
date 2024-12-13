@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import Cookies from 'js-cookie';
 import {jwtDecode} from 'jwt-decode'; // Fixed incorrect import
 import { useDispatch } from 'react-redux';
-import { setUserAuth, logoutUser } from '../Redux/slices/user/authUserSlice';
+import { setUserAuth, logoutUser } from '../../Redux/slices/user/authUserSlice';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios'; // Or your API handler
 
