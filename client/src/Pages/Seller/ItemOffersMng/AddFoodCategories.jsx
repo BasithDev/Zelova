@@ -60,14 +60,14 @@ const AddFoodCategories = () => {
         }
     };
     return (
-        <div className="bg-white shadow-lg rounded-lg p-8 max-w-5xl mx-auto space-y-6">
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">Food Categories managment</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex flex-col">
-                    <label className="text-lg font-medium text-gray-700 mb-2">Add Main Food Category</label>
+        <div className="bg-white shadow-lg rounded-lg p-4 sm:p-8 max-w-5xl mx-auto space-y-4 sm:space-y-6">
+            <h2 className="text-xl sm:text-3xl font-bold text-gray-800 mb-2 sm:mb-4">Food Categories Management</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <div className="flex flex-col space-y-3 sm:space-y-4">
+                    <label className="text-base sm:text-lg font-medium text-gray-700">Add Main Food Category</label>
                     <input
                         type="text"
-                        className="text-xl p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="text-base sm:text-xl p-2 sm:p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
                         placeholder="Enter main category"
                         value={mainCategory}
                         onChange={(e) => setMainCategory(e.target.value)}
@@ -75,27 +75,28 @@ const AddFoodCategories = () => {
                     <PrimaryBtn
                         text="Add Main Category"
                         onClick={handleAddCategory}
-                        className="mt-4 px-6 py-3 text-xl font-semibold text-white bg-orange-500 rounded-md hover:bg-orange-600"
+                        className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 text-base sm:text-xl font-semibold text-white bg-orange-500 rounded-md hover:bg-orange-600 transition-colors"
                     />
                 </div>
-                <div className="flex flex-col">
-                    <label className="text-lg font-medium text-gray-700 mb-2">Select Main Food Category</label>
+                <div className="flex flex-col space-y-3 sm:space-y-4">
+                    <label className="text-base sm:text-lg font-medium text-gray-700">Select Main Food Category</label>
                     <select
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
-                        className="text-xl p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="text-base sm:text-xl p-2 sm:p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
                     >
                         <option value="">Select a category</option>
                         {categories.map((category) => (
-                            <option key={category?._id} value={category?.name || 'loading...'}>
+                            <option key={category?._id} value={category?.name || 'loading...'}
+                            >
                                 {category?.name || 'loading..'}
                             </option>
                         ))}
                     </select>
-                    <label className="text-lg font-medium text-gray-700 mb-2 mt-4">Add Subcategory</label>
+                    <label className="text-base sm:text-lg font-medium text-gray-700">Add Subcategory</label>
                     <input
                         type="text"
-                        className="text-xl p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="text-base sm:text-xl p-2 sm:p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
                         placeholder="Enter subcategory"
                         value={subCategory}
                         onChange={(e) => setSubCategory(e.target.value)}
@@ -103,7 +104,7 @@ const AddFoodCategories = () => {
                     <PrimaryBtn
                         text="Add Subcategory"
                         onClick={handleAddSubCategory}
-                        className="mt-4 px-6 py-3 text-xl font-semibold text-white bg-orange-500 rounded-md hover:bg-orange-600"
+                        className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 text-base sm:text-xl font-semibold text-white bg-orange-500 rounded-md hover:bg-orange-600 transition-colors"
                     />
                 </div>
             </div>
