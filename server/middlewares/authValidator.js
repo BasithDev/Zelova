@@ -7,28 +7,39 @@ const protectApi = (req, res, next) => {
     const xRequestedWith = req.get('X-Requested-With');
     const allowedOrigin = process.env.CLIENT_URL || 'http://localhost:5173';
 
-    // 2. Block if not XMLHttpRequest
-    if (xRequestedWith !== 'XMLHttpRequest') {
-        return res.status(403).json({
-            success: false,
-            message: 'Direct API access not allowed'
-        });
+    // Check if this is a Google auth related endpoint
+    const isGoogleAuthEndpoint = req.path.includes('/auth/google') || req.path.includes('/oauth');
+    
+    if (!isGoogleAuthEndpoint) {
+        // 2. Block if not XMLHttpRequest (skip for Google auth)
+        if (xRequestedWith !== 'XMLHttpRequest') {
+            return res.status(403).json({
+                success: false,
+                message: 'Direct API access not allowed'
+            });
+        }
+
+        // 4. Check for custom application header (skip for Google auth)
+        const appToken = req.get('X-App-Token');
+        if (!appToken || appToken !== process.env.APP_SECRET) {
+            return res.status(403).json({
+                success: false,
+                message: 'Invalid application token'
+            });
+        }
     }
 
     // 3. Validate origin in production only
-    if (origin && !origin.startsWith(allowedOrigin)) {
+    const allowedOrigins = [
+        allowedOrigin,
+        'https://accounts.google.com',
+        'https://oauth2.googleapis.com'
+    ];
+
+    if (origin && !allowedOrigins.some(allowed => origin.startsWith(allowed))) {
         return res.status(403).json({
             success: false,
             message: 'Unauthorized origin'
-        });
-    }
-
-    // 4. Check for custom application header
-    const appToken = req.get('X-App-Token');
-    if (!appToken || appToken !== process.env.APP_SECRET) {
-        return res.status(403).json({
-            success: false,
-            message: 'Invalid application token'
         });
     }
 
@@ -53,10 +64,9 @@ const verifyToken = (role) => (req, res, next) => {
         req.user = decoded;
         next();
     } catch (error) {
-        console.error('Token verification failed:', error.message);
-        res.status(401).json({
+        return res.status(401).json({
             success: false,
-            message: 'Invalid or expired token'
+            message: 'Invalid token'
         });
     }
 };
