@@ -189,23 +189,28 @@ const OrderCard = ({ order, setShowDeliveryPopup, setSelectedOrderId, isPrevious
           </div>
           <p className="text-xs sm:text-sm text-gray-600 ml-6 sm:ml-7">{localOrder.user.address}</p>
         </div>
+        {isPreviousOrder && !fromSeller && (
+          <div className="p-4 sm:p-6 border-t border-gray-100">
+            {localOrder.restaurantRate?.status ? (
+              <div className="bg-yellow-200 rounded-lg p-2 flex items-center justify-center gap-2">
+                <span className="font-semibold text-yellow-600 text-sm">You rated this restaurant:</span>
+                <div className="flex items-center">
+                  <span className="font-semibold text-yellow-500">{localOrder.restaurantRate.value}</span>
+                  <FaStar className="text-yellow-500 ml-1" />
+                </div>
+              </div>
+            ) : (
+              <button
+                className="w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-all duration-300 flex items-center justify-center gap-2"
+                onClick={openModal}
+              >
+                <FaStar className="text-yellow-300" />
+                Rate the Restaurant
+              </button>
+            )}
+          </div>
+        )}
       </div>
-      {isPreviousOrder && !fromSeller && (
-        <div className="mt-2 sm:mt-4 p-4 sm:p-6">
-          {localOrder.restaurantRate?.status ? (
-            <button className="w-full sm:w-auto font-semibold text-white px-4 py-2 flex items-center justify-center gap-2 bg-yellow-500 rounded-md cursor-not-allowed text-sm sm:text-base">
-              Restaurant Rated <FaStar />
-            </button>
-          ) : (
-            <button
-              className="w-full sm:w-auto bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-all duration-300 text-sm sm:text-base"
-              onClick={openModal}
-            >
-              Rate the Restaurant
-            </button>
-          )}
-        </div>
-      )}
 
       <AnimatePresence>
         {isModalOpen && (

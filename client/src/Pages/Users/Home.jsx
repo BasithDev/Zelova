@@ -74,10 +74,57 @@ const Home = () => {
             />
             <div className="p-6">
                 {!locationAvailable ? (
-                    <div className="flex flex-col justify-center items-center">
-                        <RingLoader size={30} color="#FF5733" className="mb-5" />
-                        <p className="text-lg text-gray-600 mt-4 animate-pulse">Finding restaurants nearby...</p>
-                    </div>
+                    <motion.div
+                        className="flex flex-col items-center"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        <motion.div
+                            animate={{
+                                scale: [1, 1.2, 1],
+                                rotate: [0, 180, 360]
+                            }}
+                            transition={{
+                                duration: 2,
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                            }}
+                        >
+                            <RingLoader size={50} color="#FF5733" />
+                        </motion.div>
+                        <motion.div
+                            className="flex flex-col items-center gap-2 mt-6"
+                            initial={{ y: 20 }}
+                            animate={{ y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                        >
+                            <motion.p 
+                                className="text-xl font-semibold text-gray-800"
+                                animate={{ opacity: [0.5, 1, 0.5] }}
+                                transition={{ duration: 1.5, repeat: Infinity }}
+                            >
+                                Finding Restaurants Nearby
+                            </motion.p>
+                            <motion.div className="flex gap-1">
+                                {[0, 1, 2].map((i) => (
+                                    <motion.span
+                                        key={i}
+                                        className="w-2 h-2 bg-orange-500 rounded-full"
+                                        animate={{ 
+                                            y: ["0%", "-50%", "0%"],
+                                            opacity: [1, 0.5, 1]
+                                        }}
+                                        transition={{
+                                            duration: 0.8,
+                                            repeat: Infinity,
+                                            delay: i * 0.2
+                                        }}
+                                    />
+                                ))}
+                            </motion.div>
+                        </motion.div>
+                    </motion.div>
                 ) : (
                     <> 
                         <div className="mb-6 px-4 sm:px-0">
@@ -151,9 +198,14 @@ const Home = () => {
                             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-4 sm:px-0"
                         >
                             {restaurantData.length === 0 ? (
-                                <div className="flex flex-col justify-center items-center">
-                                    <RingLoader size={50} color="#FF5733" className="mb-5" />
-                                    <p className="text-lg text-gray-600 mt-4 animate-ping">Finding restaurants nearby...</p>
+                                <div className="col-span-full flex flex-col justify-center items-center p-8">
+                                    <img 
+                                        src="/no-restaurant.svg" 
+                                        alt="No restaurants" 
+                                        className="w-48 h-48 mb-4 opacity-50"
+                                    />
+                                    <h3 className="text-xl font-semibold text-gray-800 mb-2">No Restaurants Found</h3>
+                                    <p className="text-gray-600 text-center">{`Sorry, our service is currently unavailable in your area. We're working on expanding our reach!`}</p>
                                 </div>
                             ) : (
                                 restaurantData.map((restaurant) => {

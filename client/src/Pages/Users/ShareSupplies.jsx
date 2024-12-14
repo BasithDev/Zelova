@@ -208,7 +208,7 @@ const ShareSupplies = () => {
           {/* Supplies List Section */}
           <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">Your Shared Supplies</h2>
-            <div className="overflow-y-auto max-h-[60vh] sm:max-h-[65vh] pr-2">
+            <div className="overflow-y-auto max-h-[60vh] scrollbar-hide sm:max-h-[45vh] pr-2">
               <div className="space-y-3">
                 {loading ? (
                   <div className="flex justify-center items-center py-8">
