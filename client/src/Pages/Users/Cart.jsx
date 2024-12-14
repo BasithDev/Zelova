@@ -158,21 +158,73 @@ const Cart = () => {
 
     if (!cartData || !cartData.items || cartData.items.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh]">
-                <img
-                    src="/empty-cart.svg"
-                    alt="Empty Cart"
-                    className="w-64 h-64 mb-4"
-                    onError={(e) => {
-                        e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='9' cy='21' r='1'%3E%3C/circle%3E%3Ccircle cx='20' cy='21' r='1'%3E%3C/circle%3E%3Cpath d='M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6'%3E%3C/path%3E%3C/svg%3E";
+            <motion.div 
+                className="flex flex-col justify-center items-center min-h-[70vh]"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+            >
+                <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{
+                        type: "spring",
+                        stiffness: 260,
+                        damping: 20
                     }}
-                />
-                <h2 className="text-2xl font-semibold text-gray-800 mb-2">Your Cart is Empty</h2>
-                <p className="text-gray-600 mb-4">Add some delicious items to your cart!</p>
-                <button onClick={() => navigate('/')} className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition">
-                    Browse Menu
-                </button>
-            </div>
+                >
+                    <motion.img
+                        src="/empty-cart.svg"
+                        alt="Empty Cart"
+                        className="w-48 h-48 me-8"
+                        animate={{ 
+                            y: [0, -10, 0],
+                        }}
+                        transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                        }}
+                        onError={(e) => {
+                            e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='9' cy='21' r='1'%3E%3C/circle%3E%3Ccircle cx='20' cy='21' r='1'%3E%3C/circle%3E%3Cpath d='M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6'%3E%3C/path%3E%3C/svg%3E";
+                        }}
+                    />
+                </motion.div>
+                <motion.div
+                    className="flex flex-col items-center space-y-4 mt-6"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.5 }}
+                >
+                    <motion.h2 
+                        className="text-2xl font-semibold text-gray-800"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.3, duration: 0.5 }}
+                    >
+                        Your Cart is Empty
+                    </motion.h2>
+                    <motion.p 
+                        className="text-gray-600"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.4, duration: 0.5 }}
+                    >
+                        Add some delicious items to your cart!
+                    </motion.p>
+                    <motion.button 
+                        onClick={() => navigate('/')} 
+                        className="bg-orange-500 text-white px-8 py-3 rounded-lg hover:bg-orange-600 transition-colors duration-300 transform hover:scale-105 mt-2"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5, duration: 0.5 }}
+                    >
+                        Browse Menu
+                    </motion.button>
+                </motion.div>
+            </motion.div>
         );
     }
 

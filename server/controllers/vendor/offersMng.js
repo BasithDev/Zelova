@@ -1,5 +1,6 @@
 const getRestaurantId = require('../../helpers/getRestaurantId');
 const Offers = require('../../models/offers');
+const foodItems = require('../../models/foodItem');
 const statusCodes = require('../../config/statusCodes');
 
 const addOffer = async (req, res, next) => {
@@ -44,6 +45,12 @@ const deleteOffer = async (req, res, next) => {
     try {
         const offer = await Offers.findByIdAndDelete(offerId);
         if (!offer) return res.status(statusCodes.NOT_FOUND).json({ message: 'Offer not found' });
+
+        await foodItems.updateMany(
+            { offer: offerId },
+            { $set: { offer: null } }
+        );
+
         res.status(statusCodes.OK).json({ message: 'Offer deleted successfully' });
     } catch (error) {
         console.error('Error deleting offer:', error);

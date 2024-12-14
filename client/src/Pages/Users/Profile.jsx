@@ -2,6 +2,7 @@ import { FaEdit, FaKey, FaStore, FaAddressCard, FaUserEdit, FaExclamationTriangl
 import PropTypes from "prop-types";
 import { useSelector } from 'react-redux';
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const Profile = () => {
   const navigate = useNavigate()
@@ -9,7 +10,13 @@ const Profile = () => {
 
   return (
     <div className="flex bg-slate-50 items-center justify-center min-h-screen">
-      <div className="bg-white rounded-xl p-8 w-full sm:max-w-4xl text-center shadow-none sm:shadow-2xl transition-transform transform">
+      <motion.div 
+        initial={{ y: 50 }}
+        animate={{ y: 0 }}
+        exit={{ y: 50 }}
+        transition={{ duration: 0.1 }}
+        className="bg-white rounded-xl p-8 w-full sm:max-w-4xl text-center shadow-none sm:shadow-2xl transition-transform transform"
+      >
         <h1 className="text-4xl font-extrabold mb-8 text-gray-800">Your Profile</h1>
         
         <div className="flex flex-col items-center mb-8">
@@ -51,7 +58,7 @@ const Profile = () => {
             onClick={()=>navigate('/report')}
             icon={<FaExclamationTriangle />} color="text-red-500" label="Report a Problem" />
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
