@@ -2,6 +2,7 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { LuUsers } from "react-icons/lu";
 import { MdDashboard, MdShoppingBasket, MdLocalOffer, MdEmail, MdReportProblem } from "react-icons/md";
 import { FaStoreAlt } from 'react-icons/fa';
+import { BiSolidMegaphone } from "react-icons/bi";
 import { HiOutlineLogout } from 'react-icons/hi';
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,6 +19,7 @@ const navItems = [
   { name: "User Issues", icon: <MdReportProblem className="text-3xl" />, path: "/admin/user-issues" },
   { name: "Coupons", icon: <MdLocalOffer className="text-3xl" />, path: "/admin/coupon-manage" },
   { name: "Send Mail", icon: <MdEmail className="text-3xl" />, path: "/admin/send-mail" },
+  {name: "Announcement", icon: <BiSolidMegaphone className="text-3xl" />, path: "/admin/announcement"},
 ];
 
 const AdminLayout = () => {
