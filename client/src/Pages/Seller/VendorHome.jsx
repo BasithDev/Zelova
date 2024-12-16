@@ -1,8 +1,10 @@
-import { FaShoppingBag, FaClock, FaMoneyBillWave, FaCheckCircle, FaTruck, FaSpinner } from "react-icons/fa";
+import { FaShoppingBag, FaClock, FaMoneyBillWave, FaCheckCircle, FaTruck, FaSpinner,FaBoxes } from "react-icons/fa";
 import { getCurrentOrdersForVendor, updateOrderStatus } from "../../Services/apiServices";
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState,useEffect} from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getDashboardDataForVendor, getVendorReports, exportVendorReportToPDF, exportVendorReportToExcel } from '../../Services/apiServices';
+import AnalyticsDashboard from '../../Components/AnalyticsDashboard';
 
 const VendorHome = () => {
     const { data: response = {}, isLoading, isError } = useQuery({
@@ -11,14 +13,29 @@ const VendorHome = () => {
         refetchInterval: 5000,
     });
 
-    const orders = response?.data || [];
+    const [dashboardData, setDashboardData] = useState({
+        todaysOrdersCount: 0,
+        todaysOrdersPendingCount: 0,
+        totalOrders: 0,
+        totalSales: 0,
+        totalProfit: 0
+    });
 
-    const getOrdersByStatus = (status) => {
-        if (!Array.isArray(orders)) return 0;
-        return orders.filter(order => 
-            order?.status?.toUpperCase() === status.toUpperCase()
-        ).length;
-    };
+
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            try {
+                const response = await getDashboardDataForVendor();
+                setDashboardData(response.data);
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+            }
+        };
+    
+        fetchDashboardData();
+    }, []);
+
+    const orders = response?.data || [];
 
     const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, orderId: null, newStatus: null, customerName: null });
     const queryClient = useQueryClient();
@@ -87,55 +104,71 @@ const VendorHome = () => {
             </div>
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 sm:gap-8 lg:gap-12 mb-12">
                     {/* Today's Orders */}
                     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                        <div className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">Total Orders Today</p>
-                                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">{getOrdersByStatus('pending')}</p>
-                                </div>
-                                <div className="p-2 sm:p-3 bg-blue-100 rounded-full">
-                                    <FaShoppingBag className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
-                                </div>
+                        <div className="p-4 sm:p-6 flex flex-col items-center justify-center">
+                            <div className="p-2 sm:p-3 bg-blue-100 rounded-full mb-4">
+                                <FaShoppingBag className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
                             </div>
+                            <p className="text-sm font-medium text-gray-600">Total Orders Today</p>
+                            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mt-2">{dashboardData.todaysOrdersCount}</p>
                         </div>
                     </div>
 
                     {/* Pending Orders */}
                     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                        <div className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">Pending Orders</p>
-                                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">{getOrdersByStatus('pending')}</p>
-                                </div>
-                                <div className="p-2 sm:p-3 bg-yellow-100 rounded-full">
-                                    <FaClock className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600" />
-                                </div>
+                        <div className="p-4 sm:p-6 flex flex-col items-center justify-center">
+                            <div className="p-2 sm:p-3 bg-yellow-100 rounded-full mb-4">
+                                <FaClock className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600" />
                             </div>
+                            <p className="text-sm font-medium text-gray-600">Pending Orders</p>
+                            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mt-2">{dashboardData.todaysOrdersPendingCount}</p>
                         </div>
                     </div>
 
-                    {/* Total Revenue */}
+                    {/* Total Orders Placed */}
                     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                        <div className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">₹{Array.isArray(orders) ? 
-                                        orders.reduce((acc, order) => acc + (order?.billDetails?.finalAmount || 0), 0).toFixed(2)
-                                    : '0.00'}</p>
-                                </div>
-                                <div className="p-2 sm:p-3 bg-green-100 rounded-full">
-                                    <FaMoneyBillWave className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
-                                </div>
+                        <div className="p-4 sm:p-6 flex flex-col items-center justify-center">
+                            <div className="p-2 sm:p-3 bg-purple-100 rounded-full mb-4">
+                                <FaBoxes className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
                             </div>
+                            <p className="text-sm font-medium text-gray-600">Total Orders Placed</p>
+                            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mt-2">{dashboardData.totalOrders}</p>
+                        </div>
+                    </div>
+
+                    {/* Total Sales */}
+                    <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                        <div className="p-4 sm:p-6 flex flex-col items-center justify-center">
+                            <div className="p-2 sm:p-3 bg-green-100 rounded-full mb-4">
+                                <FaMoneyBillWave className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+                            </div>
+                            <p className="text-sm font-medium text-gray-600">Total Sales</p>
+                            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mt-2">₹{dashboardData.totalSales.toFixed(2)}</p>
+                        </div>
+                    </div>
+
+                    {/* Total Profit */}
+                    <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                        <div className="p-4 sm:p-6 flex flex-col items-center justify-center">
+                            <div className="p-2 sm:p-3 bg-red-100 rounded-full mb-4">
+                                <FaCheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-600" />
+                            </div>
+                            <p className="text-sm font-medium text-gray-600">Total Profit</p>
+                            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mt-2">₹{dashboardData.totalProfit.toFixed(2)}</p>
                         </div>
                     </div>
                 </div>
+
+                {/* Analytics Dashboard */}
+                <AnalyticsDashboard 
+                    fetchReports={getVendorReports} 
+                    exportReportToPDF={exportVendorReportToPDF} 
+                    exportReportToExcel={exportVendorReportToExcel} 
+                />
 
                 {/* Live Orders */}
                 <div className="bg-white rounded-xl shadow-md overflow-hidden">

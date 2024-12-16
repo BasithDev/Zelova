@@ -28,6 +28,7 @@ const offerRouter = require('./routes/vendor/offerMng')
 const categoriesRouter = require('./routes/vendor/categoriesMng')
 const productMngRouter = require('./routes/vendor/productMng')
 const vendorOrderRouter = require('./routes/vendor/orderMngRoute') 
+const vendorDashboardRouter = require('./routes/vendor/vendorDashboardRoute')
 
 const suppliesRoutes = require('./routes/user/supplies');
 
@@ -82,7 +83,17 @@ app.use('/api/vendor',categoriesRouter)
 app.use('/api/vendor',productMngRouter)
 app.use('/api/vendor/offer',offerRouter)
 app.use('/api/vendor/orders',vendorOrderRouter)
+app.use('/api/vendor/dashboard',vendorDashboardRouter)
 
-app.use(errorMiddleware);
+app.use(errorMiddleware); 
 
-app.listen(port, () => console.log(`Server is listening on port ${port}!`))
+const server = app.listen(port, () => console.log(`Server is listening on port ${port}!`));
+
+server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+        console.error(`Port ${port} is already in use. Please use a different port.`);
+        process.exit(1);
+    } else {
+        console.error('Server error:', err);
+    }
+});
