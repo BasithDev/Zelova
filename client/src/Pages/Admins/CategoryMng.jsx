@@ -14,6 +14,9 @@ const ItemsAndCategoryMng = () => {
     const [subCategories, setSubCategories] = useState([]);
     const [categorySearchTerm, setCategorySearchTerm] = useState("");
     const [subCategorySearchTerm, setSubCategorySearchTerm] = useState("");
+    const [categoryPage, setCategoryPage] = useState(1);
+    const [subCategoryPage, setSubCategoryPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(5);
 
     const itemVariants = {
         hidden: { opacity: 0, scale: 0.9 },
@@ -66,6 +69,21 @@ const ItemsAndCategoryMng = () => {
         subCategory.name.toLowerCase().includes(subCategorySearchTerm.toLowerCase())
     );
 
+    // Pagination calculations for categories
+    const indexOfLastCategory = categoryPage * itemsPerPage;
+    const indexOfFirstCategory = indexOfLastCategory - itemsPerPage;
+    const currentCategories = filteredCategories.slice(indexOfFirstCategory, indexOfLastCategory);
+    const totalCategoryPages = Math.ceil(filteredCategories.length / itemsPerPage);
+
+    // Pagination calculations for subcategories
+    const indexOfLastSubCategory = subCategoryPage * itemsPerPage;
+    const indexOfFirstSubCategory = indexOfLastSubCategory - itemsPerPage;
+    const currentSubCategories = filteredSubCategories.slice(indexOfFirstSubCategory, indexOfLastSubCategory);
+    const totalSubCategoryPages = Math.ceil(filteredSubCategories.length / itemsPerPage);
+
+    const paginateCategories = (pageNumber) => setCategoryPage(pageNumber);
+    const paginateSubCategories = (pageNumber) => setSubCategoryPage(pageNumber);
+
     return (
         <div className="bg-gray-100 min-h-screen">
             <ToastContainer position="top-right" autoClose={2000} />
@@ -93,38 +111,97 @@ const ItemsAndCategoryMng = () => {
                         <h2 className="text-2xl font-semibold text-gray-700">
                             Categories
                         </h2>
-                        <input
-                            type="text"
-                            placeholder="Search categories..."
-                            value={categorySearchTerm}
-                            onChange={(e) => setCategorySearchTerm(e.target.value)}
-                            className="p-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition"
-                        />
+                        <div className="flex items-center gap-4">
+                            <select
+                                value={itemsPerPage}
+                                onChange={(e) => {
+                                    setItemsPerPage(Number(e.target.value));
+                                    setCategoryPage(1);
+                                    setSubCategoryPage(1);
+                                }}
+                                className="p-2 border border-gray-300 rounded-lg outline-none"
+                            >
+                                <option value={5}>5 per page</option>
+                                <option value={10}>10 per page</option>
+                                <option value={20}>20 per page</option>
+                            </select>
+                            <input
+                                type="text"
+                                placeholder="Search categories..."
+                                value={categorySearchTerm}
+                                onChange={(e) => {
+                                    setCategorySearchTerm(e.target.value);
+                                    setCategoryPage(1);
+                                }}
+                                className="p-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition"
+                            />
+                        </div>
                     </div>
                     <AnimatePresence>
                         {filteredCategories.length > 0 ? (
-                            <ul className="divide-y divide-gray-200">
-                                {filteredCategories.map((category) => (
-                                    <motion.li
-                                        variants={itemVariants}
-                                        initial="hidden"
-                                        animate="visible"
-                                        exit="exit"
-                                        key={category._id}
-                                        className="flex justify-between items-center py-3"
-                                    >
-                                        <span className="text-gray-700 text-lg">
-                                            {category.name}
-                                        </span>
-                                        <button
-                                            onClick={() => handleDeleteCategory(category._id)}
-                                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg transition"
+                            <>
+                                <ul className="divide-y divide-gray-200">
+                                    {currentCategories.map((category) => (
+                                        <motion.li
+                                            variants={itemVariants}
+                                            initial="hidden"
+                                            animate="visible"
+                                            exit="exit"
+                                            key={category._id}
+                                            className="flex justify-between items-center py-3"
                                         >
-                                            Delete
+                                            <span className="text-gray-700 text-lg">
+                                                {category.name}
+                                            </span>
+                                            <button
+                                                onClick={() => handleDeleteCategory(category._id)}
+                                                className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg transition"
+                                            >
+                                                Delete
+                                            </button>
+                                        </motion.li>
+                                    ))}
+                                </ul>
+                                {totalCategoryPages > 1 && (
+                                    <div className="mt-4 flex justify-center gap-2">
+                                        <button
+                                            onClick={() => paginateCategories(categoryPage - 1)}
+                                            disabled={categoryPage === 1}
+                                            className={`px-3 py-1 rounded ${
+                                                categoryPage === 1
+                                                    ? 'bg-gray-200 cursor-not-allowed'
+                                                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                                            }`}
+                                        >
+                                            Previous
                                         </button>
-                                    </motion.li>
-                                ))}
-                            </ul>
+                                        {[...Array(totalCategoryPages)].map((_, index) => (
+                                            <button
+                                                key={index + 1}
+                                                onClick={() => paginateCategories(index + 1)}
+                                                className={`px-3 py-1 rounded ${
+                                                    categoryPage === index + 1
+                                                        ? 'bg-blue-500 text-white'
+                                                        : 'bg-gray-200 hover:bg-gray-300'
+                                                }`}
+                                            >
+                                                {index + 1}
+                                            </button>
+                                        ))}
+                                        <button
+                                            onClick={() => paginateCategories(categoryPage + 1)}
+                                            disabled={categoryPage === totalCategoryPages}
+                                            className={`px-3 py-1 rounded ${
+                                                categoryPage === totalCategoryPages
+                                                    ? 'bg-gray-200 cursor-not-allowed'
+                                                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                                            }`}
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
+                                )}
+                            </>
                         ) : (
                             <p className="text-gray-600 text-center py-4">No categories found.</p>
                         )}
@@ -148,34 +225,78 @@ const ItemsAndCategoryMng = () => {
                             type="text"
                             placeholder="Search sub-categories..."
                             value={subCategorySearchTerm}
-                            onChange={(e) => setSubCategorySearchTerm(e.target.value)}
+                            onChange={(e) => {
+                                setSubCategorySearchTerm(e.target.value);
+                                setSubCategoryPage(1);
+                            }}
                             className="p-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition"
                         />
                     </div>
                     <AnimatePresence>
                         {filteredSubCategories.length > 0 ? (
-                            <ul className="divide-y divide-gray-200">
-                                {filteredSubCategories.map((subCategory) => (
-                                    <motion.li
-                                        key={subCategory._id}
-                                        variants={itemVariants}
-                                        initial="hidden"
-                                        animate="visible"
-                                        exit="exit"
-                                        className="flex justify-between items-center py-3"
-                                    >
-                                        <span className="text-gray-700 text-lg">
-                                            {`${subCategory.name} - `} <span className="text-gray-500">{`${subCategory.categoryName}`}</span>
-                                        </span>
-                                        <button
-                                            onClick={() => handleDeleteSubCategory(subCategory._id)}
-                                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg transition"
+                            <>
+                                <ul className="divide-y divide-gray-200">
+                                    {currentSubCategories.map((subCategory) => (
+                                        <motion.li
+                                            key={subCategory._id}
+                                            variants={itemVariants}
+                                            initial="hidden"
+                                            animate="visible"
+                                            exit="exit"
+                                            className="flex justify-between items-center py-3"
                                         >
-                                            Delete
+                                            <span className="text-gray-700 text-lg">
+                                                {`${subCategory.name} - `} <span className="text-gray-500">{`${subCategory.categoryName}`}</span>
+                                            </span>
+                                            <button
+                                                onClick={() => handleDeleteSubCategory(subCategory._id)}
+                                                className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg transition"
+                                            >
+                                                Delete
+                                            </button>
+                                        </motion.li>
+                                    ))}
+                                </ul>
+                                {totalSubCategoryPages > 1 && (
+                                    <div className="mt-4 flex justify-center gap-2">
+                                        <button
+                                            onClick={() => paginateSubCategories(subCategoryPage - 1)}
+                                            disabled={subCategoryPage === 1}
+                                            className={`px-3 py-1 rounded ${
+                                                subCategoryPage === 1
+                                                    ? 'bg-gray-200 cursor-not-allowed'
+                                                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                                            }`}
+                                        >
+                                            Previous
                                         </button>
-                                    </motion.li>
-                                ))}
-                            </ul>
+                                        {[...Array(totalSubCategoryPages)].map((_, index) => (
+                                            <button
+                                                key={index + 1}
+                                                onClick={() => paginateSubCategories(index + 1)}
+                                                className={`px-3 py-1 rounded ${
+                                                    subCategoryPage === index + 1
+                                                        ? 'bg-blue-500 text-white'
+                                                        : 'bg-gray-200 hover:bg-gray-300'
+                                                }`}
+                                            >
+                                                {index + 1}
+                                            </button>
+                                        ))}
+                                        <button
+                                            onClick={() => paginateSubCategories(subCategoryPage + 1)}
+                                            disabled={subCategoryPage === totalSubCategoryPages}
+                                            className={`px-3 py-1 rounded ${
+                                                subCategoryPage === totalSubCategoryPages
+                                                    ? 'bg-gray-200 cursor-not-allowed'
+                                                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                                            }`}
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
+                                )}
+                            </>
                         ) : (
                             <p className="text-gray-600 text-center py-4">
                                 No subcategories found.

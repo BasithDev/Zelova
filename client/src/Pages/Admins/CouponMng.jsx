@@ -10,6 +10,8 @@ const CouponMng = () => {
   const [coupons, setCoupons] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [currentCoupon, setCurrentCoupon] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   const [form, setForm] = useState({
     name: "",
     code: "",
@@ -192,93 +194,135 @@ const CouponMng = () => {
 
   return (
     <div>
-      <AdminSearchBar/>
+      <AdminSearchBar />
       <ToastContainer />
       <h1 className="text-3xl ms-4 font-bold text-gray-800">Manage Coupons</h1>
-      {coupons.length > 0 && (
-        <button
-        onClick={openAddModal}
-        className="bg-gradient-to-r mt-4 from-blue-500 to-indigo-600 text-white ms-4 px-6 py-2 rounded-lg shadow hover:opacity-90 transition"
-      >
-        + Add New Coupon
-      </button>
-      )}
-      
-
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6 ms-4">
-        {coupons.length > 0 ? (
-          coupons.map((coupon) => (
-            <motion.div
-              key={coupon._id}
-              className="p-5 bg-white border border-gray-200 rounded-lg shadow-md flex justify-between items-start hover:shadow-2xl transition-all"
-              initial={{ opacity: 0, y: 60 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{ scale: 1.02}}
-              transition={{
-                type: "tween",
-                duration: 0.1
-              }}
-            >
-              <div>
-                <h2 className="text-lg font-semibold text-gray-700">{coupon.name}</h2>
-                <p className="text-sm text-gray-500">
-                  Code: <span className="font-mono">{coupon.code}</span>
-                </p>
-                <p className="text-gray-500">Description: {coupon.description}</p>
-                <p className="text-gray-500">
-                  Discount: {coupon.type === "percentage" ? `${coupon.discount}%` : `₹${coupon.discount}`}
-                </p>
-                <p className="text-gray-500">
-                  Min. Order: {coupon.minPrice ? `₹${coupon.minPrice}` : "No minimum"}
-                </p>
-                <p className="text-gray-500">
-                  Expires: {coupon.expiry ? new Date(coupon.expiry).toLocaleString() : "No expiry"}
-                </p>
-              </div>
-              <div className="flex space-x-1">
-                <button
-                  onClick={() => openEditModal(coupon)}
-                  className="text-blue-500 hover:bg-gray-200 p-2 rounded-full transition-all duration-200 hover:text-blue-600"
-                >
-                  <FiEdit size={20} />
-                </button>
-                <button
-                  onClick={() => handleDeleteCoupon(coupon._id)}
-                  className="text-red-500 hover:bg-gray-200 p-2 rounded-full transition-all duration-200 hover:text-red-600"
-                >
-                  <FiTrash size={20} />
-                </button>
-              </div>
-            </motion.div>
-          ))
-        ) : (
-          <motion.div 
-            className="col-span-full flex flex-col items-center justify-center p-12 bg-white rounded-lg shadow-md"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: "tween", duration: 0.2 }}
+      <div className="flex justify-between items-center px-4 mt-4">
+        <select
+          value={itemsPerPage}
+          onChange={(e) => {
+            setItemsPerPage(Number(e.target.value));
+            setCurrentPage(1);
+          }}
+          className="p-2 border border-gray-300 rounded-lg outline-none"
+        >
+          <option value={5}>5 per page</option>
+          <option value={10}>10 per page</option>
+          <option value={20}>20 per page</option>
+        </select>
+        {coupons.length > 0 && (
+          <button
+            onClick={openAddModal}
+            className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-2 rounded-lg shadow hover:opacity-90 transition"
           >
-            <img 
-              src="/no-coupons.svg" 
-              alt="No Coupons" 
-              className="w-48 h-48 mb-6 opacity-75"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'%3E%3C/path%3E%3Cpolyline points='3.27 6.96 12 12.01 20.73 6.96'%3E%3C/polyline%3E%3Cline x1='12' y1='22.08' x2='12' y2='12'%3E%3C/line%3E%3C/svg%3E";
-              }}
-            />
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">No Coupons Available</h3>
-            <p className="text-gray-500 text-center mb-6">You haven t created any coupons yet. Start by adding your first coupon!</p>
+            Add New Coupon
+          </button>
+        )}
+      </div>
+
+      <div className="p-4">
+        {coupons.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-600 mb-4">No coupons available</p>
             <button
               onClick={openAddModal}
-              className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-2 rounded-lg shadow hover:opacity-90 transition flex items-center space-x-2"
+              className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-2 rounded-lg shadow hover:opacity-90 transition"
             >
-              <span>Create First Coupon</span>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-              </svg>
+              Add New Coupon
             </button>
-          </motion.div>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <AnimatePresence>
+                {coupons
+                  .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                  .map((coupon) => (
+                    <motion.div
+                      key={coupon._id}
+                      className="p-5 bg-white border border-gray-200 rounded-lg shadow-md flex justify-between items-start hover:shadow-2xl transition-all"
+                      initial={{ opacity: 0, y: 60 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      whileHover={{ scale: 1.02 }}
+                      transition={{
+                        type: "tween",
+                        duration: 0.1
+                      }}
+                    >
+                      <div>
+                        <h2 className="text-lg font-semibold text-gray-700">{coupon.name}</h2>
+                        <p className="text-sm text-gray-500">
+                          Code: <span className="font-mono">{coupon.code}</span>
+                        </p>
+                        <p className="text-gray-500">Description: {coupon.description}</p>
+                        <p className="text-gray-500">
+                          Discount: {coupon.type === "percentage" ? `${coupon.discount}%` : `₹${coupon.discount}`}
+                        </p>
+                        <p className="text-gray-500">
+                          Min. Order: {coupon.minPrice ? `₹${coupon.minPrice}` : "No minimum"}
+                        </p>
+                        <p className="text-gray-500">
+                          Expires: {coupon.expiry ? new Date(coupon.expiry).toLocaleString() : "No expiry"}
+                        </p>
+                      </div>
+                      <div className="flex space-x-1">
+                        <button
+                          onClick={() => openEditModal(coupon)}
+                          className="text-blue-500 hover:bg-gray-200 p-2 rounded-full transition-all duration-200 hover:text-blue-600"
+                        >
+                          <FiEdit size={20} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCoupon(coupon._id)}
+                          className="text-red-500 hover:bg-gray-200 p-2 rounded-full transition-all duration-200 hover:text-red-600"
+                        >
+                          <FiTrash size={20} />
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+              </AnimatePresence>
+            </div>
+            {Math.ceil(coupons.length / itemsPerPage) > 1 && (
+              <div className="flex justify-center gap-2 mt-6">
+                <button
+                  onClick={() => setCurrentPage(prev => prev - 1)}
+                  disabled={currentPage === 1}
+                  className={`px-3 py-1 rounded ${
+                    currentPage === 1
+                      ? 'bg-gray-200 cursor-not-allowed'
+                      : 'bg-blue-500 text-white hover:bg-blue-600'
+                  }`}
+                >
+                  Previous
+                </button>
+                {[...Array(Math.ceil(coupons.length / itemsPerPage))].map((_, index) => (
+                  <button
+                    key={index + 1}
+                    onClick={() => setCurrentPage(index + 1)}
+                    className={`px-3 py-1 rounded ${
+                      currentPage === index + 1
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-200 hover:bg-gray-300'
+                    }`}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  disabled={currentPage === Math.ceil(coupons.length / itemsPerPage)}
+                  className={`px-3 py-1 rounded ${
+                    currentPage === Math.ceil(coupons.length / itemsPerPage)
+                      ? 'bg-gray-200 cursor-not-allowed'
+                      : 'bg-blue-500 text-white hover:bg-blue-600'
+                  }`}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 

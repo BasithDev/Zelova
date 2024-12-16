@@ -21,7 +21,7 @@ const Login = () => {
 
     const handleLogin = async () => {
         if (!passwordRegex.test(password)) {
-            console.error('Password does not meet the required criteria.');
+            toast.error('Password does not meet the required criteria.');
             return;
         }
         try {
@@ -37,7 +37,6 @@ const Login = () => {
             }
         } catch (error) {
             toast.error(error.response.data.message);
-            console.error("Login error:", error);
         }
     };
 
