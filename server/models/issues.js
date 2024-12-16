@@ -21,8 +21,13 @@ const issueSchema = new mongoose.Schema({
         required: true,
         trim: true,
     },
+    orderId: {
+        type: String,
+        trim: true,
+    },
     description: {
         type: String,
+        required: true,
         trim: true,
     },
     refund:{

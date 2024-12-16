@@ -5,7 +5,10 @@ import { IoMdRefresh } from "react-icons/io";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import AdminSearchBar from '../../Components/SearchBar/AdminSearchBar';
 import { toast } from 'react-toastify';
-import { getUserIssues, resolveUserIssues, ignoreUserIssues, refundUserIssues } from '../../Services/apiServices';
+import { getUserIssues, resolveUserIssues, ignoreUserIssues, refundUserIssues, getOrderDetails } from '../../Services/apiServices';
+import { FaTimes } from 'react-icons/fa';
+import { MdContentCopy } from 'react-icons/md';
+import PropTypes from 'prop-types';
 
 const UserIssues = () => {
   const [issues, setIssues] = useState([]);
@@ -16,6 +19,9 @@ const UserIssues = () => {
   const [refundAmount, setRefundAmount] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [orderDetails, setOrderDetails] = useState(null);
+  const [loadingOrder, setLoadingOrder] = useState(false);
 
   const handleRefresh = async () => {
     setIsLoading(true);
@@ -106,6 +112,134 @@ const UserIssues = () => {
     }
   };
 
+  const handleCopyOrderId = (orderId) => {
+    navigator.clipboard.writeText(orderId)
+      .then(() => toast.success('Order ID copied!'))
+      .catch(() => toast.error('Failed to copy Order ID'));
+  };
+
+  const fetchOrderDetails = async (orderId) => {
+    try {
+      setLoadingOrder(true);
+      const response = await getOrderDetails(orderId);
+      if (response.data.success) {
+        setOrderDetails(response.data.orderDetails);
+      }
+    } catch (error) {
+      console.error('Error fetching order details:', error);
+      toast.error('Failed to fetch order details');
+    } finally {
+      setLoadingOrder(false);
+    }
+  };
+
+  const handleViewOrderDetails = (issue) => {
+    setSelectedIssue(issue);
+    setShowOrderModal(true);
+    fetchOrderDetails(issue.orderId);
+  };
+
+  const OrderDetailsModal = ({ issue, onClose }) => (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-bold text-gray-900">Order Details</h3>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <FaTimes className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+
+        {loadingOrder ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+          </div>
+        ) : orderDetails ? (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="text-gray-600 font-medium">Order ID:</span>
+              <span className="text-gray-800">{issue.orderId}</span>
+              <button
+                onClick={() => handleCopyOrderId(issue.orderId)}
+                className="text-gray-500 hover:text-gray-700 transition-colors p-1 rounded-full hover:bg-gray-100"
+                title="Copy Order ID"
+              >
+                <MdContentCopy className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div>
+              <span className="text-gray-600 font-medium">Restaurant:</span>
+              <span className="ml-2 text-gray-800">{orderDetails.restaurantName}</span>
+            </div>
+
+            <div>
+              <span className="text-gray-600 font-medium">Restaurant Address:</span>
+              <span className="ml-2 text-gray-800">{orderDetails.restaurantAddress}</span>
+            </div>
+
+            <div>
+              <span className="text-gray-600 font-medium">Order Date:</span>
+              <span className="ml-2 text-gray-800">{orderDetails.orderDate}</span>
+            </div>
+
+            <div>
+              <span className="text-gray-600 font-medium">Order Status:</span>
+              <span className="ml-2 text-gray-800">{orderDetails.status}</span>
+            </div>
+
+            <div>
+              <span className="text-gray-600 font-medium">Items:</span>
+              <div className="mt-2 space-y-2">
+                {orderDetails.items.map((item, index) => (
+                  <div key={index} className="flex justify-between items-center bg-gray-50 p-2 rounded">
+                    <span className="text-gray-800">{item.name} x{item.quantity}</span>
+                    <span className="text-gray-600">₹{item.price * item.quantity}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <span className="text-gray-600 font-medium">Total Amount:</span>
+              <span className="ml-2 text-gray-800">₹{orderDetails.totalAmount.toFixed(2)}</span>
+            </div>
+
+            <div>
+              <span className="text-gray-600 font-medium">Delivery Address:</span>
+              <p className="mt-1 text-gray-800">{orderDetails.deliveryAddress}</p>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            Failed to load order details
+          </div>
+        )}
+      </motion.div>
+    </motion.div>
+  );
+
+  OrderDetailsModal.propTypes = {
+    issue: PropTypes.shape({
+      orderId: PropTypes.string.isRequired,
+    }).isRequired,
+    onClose: PropTypes.func.isRequired,
+  };
+
   return (
     <div>
       <AdminSearchBar/>
@@ -177,6 +311,10 @@ const UserIssues = () => {
                         <span className="text-gray-600 font-medium">Description:</span>
                         <p className="text-gray-800 mt-1">{issue.description}</p>
                       </div>
+                      <div>
+                        <span className="text-gray-600 font-medium">Order ID:</span>
+                        <span className="ml-2 text-gray-800">{issue.orderId}</span>
+                      </div>
                       {issue.refundAmount > 0 && (
                         <div>
                           <span className="text-gray-600 font-medium">Requested Refund:</span>
@@ -184,6 +322,17 @@ const UserIssues = () => {
                         </div>
                       )}
                     </div>
+
+                    {issue.orderId && (
+                          <>
+                            <button
+                              onClick={() => handleViewOrderDetails(issue)}
+                              className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                              View Order Details
+                            </button>
+                          </>
+                        )}
 
                     <div className="flex space-x-3 mt-4">
                       <button
@@ -322,6 +471,19 @@ const UserIssues = () => {
               </div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showOrderModal && selectedIssue && (
+          <OrderDetailsModal
+            issue={selectedIssue}
+            onClose={() => {
+              setShowOrderModal(false);
+              setSelectedIssue(null);
+              setOrderDetails(null);
+            }}
+          />
         )}
       </AnimatePresence>
     </div>

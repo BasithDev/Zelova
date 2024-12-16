@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaStar } from 'react-icons/fa';
+import { MdContentCopy } from 'react-icons/md';
 import { rateRestaurant } from '../../Services/apiServices';
 import { toast } from 'react-toastify';
 
@@ -54,7 +55,6 @@ const OrderCard = ({ order, setShowDeliveryPopup, setSelectedOrderId, isPrevious
       await rateRestaurant({orderId, restaurantId, rating});
       toast.success('Restaurant rated successfully!');
 
-      // Update local state to reflect the rating immediately
       setSelectedRating(rating);
       setOrder(prevOrder => ({
         ...prevOrder,
@@ -72,6 +72,16 @@ const OrderCard = ({ order, setShowDeliveryPopup, setSelectedOrderId, isPrevious
     }
   };
 
+  const handleCopyOrderId = () => {
+    navigator.clipboard.writeText(localOrder.orderId)
+      .then(() => {
+        toast.success('Order ID copied to clipboard!');
+      })
+      .catch(() => {
+        toast.error('Failed to copy Order ID');
+      });
+  };
+
   return (
     <motion.div 
       className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden"
@@ -84,7 +94,16 @@ const OrderCard = ({ order, setShowDeliveryPopup, setSelectedOrderId, isPrevious
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 sm:gap-0">
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-              <h3 className="text-lg sm:text-xl font-bold text-gray-800">Order #{localOrder.orderId}</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800">Order #{localOrder.orderId}</h3>
+                <button
+                  onClick={handleCopyOrderId}
+                  className="text-gray-500 hover:text-gray-700 transition-colors p-1.5 rounded-full hover:bg-gray-100"
+                  title="Copy Order ID"
+                >
+                  <MdContentCopy className="w-5 h-5" />
+                </button>
+              </div>
               {isPreviousOrder ? (
                 <span className="text-sm sm:text-md font-semibold text-green-700 bg-green-100 px-2 py-1 rounded w-fit">{localOrder.status}</span>
               ) : (
