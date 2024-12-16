@@ -9,6 +9,7 @@ const Report = () => {
   const [issueType, setIssueType] = useState('');
   const [issueDescription, setIssueDescription] = useState('');
   const [refundAmount, setRefundAmount] = useState('');
+  const [orderId, setOrderId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const userData = useSelector((state) => state.userData.data);
@@ -24,6 +25,10 @@ const Report = () => {
         toast.error('Please describe your issue');
         return;
       }
+      if (showOrderIdField && !orderId.trim()) {
+        toast.error('Please enter the Order ID');
+        return;
+      }
 
       setIsSubmitting(true);
 
@@ -33,7 +38,8 @@ const Report = () => {
         userEmail: userData.email,
         problemOn: issueType,
         description: issueDescription,
-        refund: refundAmount ? Number(refundAmount) : 0
+        refund: refundAmount ? Number(refundAmount) : 0,
+        orderId: orderId || undefined
       };
 
       const response = await raiseIssue(issueData);
@@ -42,6 +48,7 @@ const Report = () => {
         setIssueType('');
         setIssueDescription('');
         setRefundAmount('');
+        setOrderId('');
         setShowSuccessModal(true);
       }
     } catch (error) {
@@ -58,6 +65,7 @@ const Report = () => {
   };
 
   const showRefundField = ['food', 'delivery', 'restaurant'].includes(issueType);
+  const showOrderIdField = ['food', 'delivery', 'restaurant'].includes(issueType);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 md:p-8">
@@ -85,6 +93,23 @@ const Report = () => {
               <option value="others">Others</option>
             </select>
           </div>
+
+          {showOrderIdField && (
+            <div>
+              <label className="block text-base md:text-lg font-semibold text-gray-800">Order ID</label>
+              <input
+                type="text"
+                value={orderId}
+                onChange={(e) => setOrderId(e.target.value)}
+                className="mt-2 border-2 w-full p-2.5 md:p-3 text-base md:text-lg border-gray-300 rounded-lg shadow-md focus:ring-2 focus:ring-indigo-500"
+                placeholder="Enter your Order ID"
+                disabled={isSubmitting}
+              />
+              <p className="mt-1 text-sm text-gray-500">
+                You can find the Order ID in your orders history
+              </p>
+            </div>
+          )}
 
           <div>
             <label className="block text-base md:text-lg font-semibold text-gray-800">Issue Description</label>

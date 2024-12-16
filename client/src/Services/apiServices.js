@@ -72,6 +72,7 @@ export const getUserIssues = () => api.get('/admin/user-issues')
 export const resolveUserIssues = (issueId) => api.delete(`/admin/user-issues/resolve?issueId=${issueId}`)
 export const ignoreUserIssues = (issueId) => api.delete(`/admin/user-issues/ignore?issueId=${issueId}`)
 export const refundUserIssues = (data) => api.put('/admin/user-issues/refund',data)
+export const getOrderDetails = (orderId) => api.get(`/admin/user-issues/getOrderDetails/${orderId}`)
 
 
 //user routes

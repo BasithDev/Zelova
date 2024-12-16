@@ -190,7 +190,7 @@ function App() {
             </Router>
           </QueryClientProvider>
         </GoogleOAuthProvider>
-        <ToastContainer />
+        <ToastContainer position='top-right'/>
       </div>
     </ErrorBoundary>
   );

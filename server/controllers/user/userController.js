@@ -252,7 +252,7 @@ const updateAddress = async (req,res,next)=>{
 
 const raiseIssue = async (req, res) => {
   try {
-      const { userId, username, userEmail, problemOn, description ,refund } = req.body;
+      const { userId, username, userEmail, problemOn, description ,refund ,orderId} = req.body;
       const issue = new Issues({
           userId,
           username,
@@ -260,6 +260,7 @@ const raiseIssue = async (req, res) => {
           problemOn,
           description,
           refund,
+          orderId
       });
       await issue.save();
       return res.status(statusCodes.OK).json({

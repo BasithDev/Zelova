@@ -1,6 +1,7 @@
 const Issues = require('../../models/issues');
 const Zcoin = require('../../models/zcoin');
 const User = require('../../models/user');
+const Order = require('../../models/orders');
 const statusCodes = require('../../config/statusCodes');
 const {sendEmail} = require('../../utils/emailService');
 
@@ -124,9 +125,56 @@ const refundUser = async (req, res) => {
     }
 };
 
+const getOrderDetails = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        
+        const order = await Order.findOne({ orderId })
+            .populate('restaurantId', 'name address');
+
+        if (!order) {
+            return res.status(statusCodes.NOT_FOUND).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+
+        const orderDetails = {
+            orderId: order.orderId,
+            restaurantName: order.restaurantId.name,
+            restaurantAddress: order.restaurantId.address,
+            orderDate: new Date(order.createdAt).toLocaleDateString('en-IN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            }),
+            status: order.status,
+            items: order.items.map(item => ({
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price
+            })),
+            totalAmount: order.billDetails.finalAmount,
+            deliveryAddress: order.user.address
+        };
+
+        return res.status(statusCodes.OK).json({
+            success: true,
+            orderDetails
+        });
+    } catch (error) {
+        console.error('Error fetching order details:', error);
+        return res.status(statusCodes.INTERNAL_SERVER_ERROR).json({
+            success: false,
+            message: 'Failed to fetch order details'
+        });
+    }
+};
+
 module.exports = {
     getIssues,
     resolveIssue,
     IgnoreIssue,
-    refundUser
+    refundUser,
+    getOrderDetails
 };
