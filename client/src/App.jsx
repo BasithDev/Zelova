@@ -52,6 +52,7 @@ const CategoryMng = lazy(() => import('./Pages/Admins/CategoryMng'));
 const CouponMng = lazy(() => import('./Pages/Admins/CouponMng'));
 const SendMail = lazy(() => import('./Pages/Admins/SendMail'));
 const UserIssues = lazy(() => import('./Pages/Admins/UserIssues'));
+const Announcement = lazy(() => import('./Pages/Admins/Announcement'));
 
 // Vendor Pages
 const AddItem = lazy(() => import('./Pages/Seller/AddItem'));
@@ -183,6 +184,7 @@ function App() {
                       <Route path='coupon-manage' element={<CouponMng />} />
                       <Route path="send-mail" element={<SendMail />} />
                       <Route path='user-issues' element={<UserIssues />} />
+                      <Route path='announcement' element={<Announcement />} />
                     </Route>
                   </Route>
                 </Routes>

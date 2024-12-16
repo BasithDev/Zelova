@@ -34,9 +34,16 @@ export const getSubCategoriesToMng = ()=>api.get('/admin/manage/subcategories')
 export const deleteCategory = (id)=>api.delete(`/admin/manage/category/delete/${id}`)
 export const deleteSubCategory = (id)=>api.delete(`/admin/manage/subcategory/delete/${id}`)
 export const sendMail = (data) => api.post('/admin/send-mail',data)
+export const deleteAnnouncementTemp = (id) => api.delete(`/admin/announcement-temp/delete/${id}`)
+export const getAnnouncementTemp = () => api.get('/admin/announcement-temp')
+export const addAnnouncementTemp = (data) => api.post('/admin/announcement-temp/add',data)
+export const sendAnnouncement = (data) => api.post('/admin/send-mail/announcement',data)
+export const getAnnouncementStatus = (jobId) => api.get(`/admin/send-mail/announcement/status/${jobId}`)
 export const getRestaurants = () => api.get('/admin/restaurants')
 export const blockUnblockRestaurant = (id) => api.patch(`/admin/restaurant/block-unblock/${id}`)
 export const getDashboardData = () => api.get('/admin/dashboard')
+
+//admin routes - reports
 export const getReports = (type, getBy, startDate, endDate) => {
     let url = `admin/reports?type=${type}&getBy=${getBy}`;
     if (getBy === 'custom' && startDate && endDate) {
