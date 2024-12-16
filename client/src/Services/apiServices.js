@@ -133,12 +133,12 @@ export const updateRestaurantPic = (data) => api.patch(`vendor/restaurant/image`
 export const setLocation = (locationData) => api.patch(`vendor/restaurant/location`, locationData);
 
 //vendor routes - products management
-export const addProduct = (data) => api.post('vendor/product',data)
+export const addProduct = (data) => api.post('/vendor/product',data)
 export const getProducts = () => api.get('/vendor/products')
 export const listOrUnlistProduct = (id,isActive) => api.patch(`/vendor/product/${id}/list-or-unlist`,{isActive})
 export const deleteProduct = (id) => api.delete(`/vendor/product/${id}/delete`)
-export const updateProduct = (data) => api.put(`/vendor/product/update`,data)
-export const updateProductOffer = (data) => api.patch(`/vendor/product/offer/update`,data)
+export const updateProduct = (data) => api.put('/vendor/product/update',data)
+export const updateProductOffer = (data) => api.patch('/vendor/product/offer/update',data)
 
 //vendor routes - categories management
 export const addCategory = (data) => api.post('vendor/category/add',data)

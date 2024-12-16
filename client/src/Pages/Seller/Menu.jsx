@@ -1,11 +1,21 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import ProductCard from "./ProductCard";
 import { FiSearch } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { getProducts, getOffers, listOrUnlistProduct ,deleteProduct , updateProduct, updateProductOffer } from "../../Services/apiServices";
+import { 
+  getProducts , 
+  getOffers , 
+  listOrUnlistProduct ,
+  deleteProduct , 
+  updateProduct, 
+  updateProductOffer 
+} from "../../Services/apiServices";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
+import Cropper from 'react-cropper';
+import 'cropperjs/dist/cropper.css';
+import { uploadImageToCloud } from '../../Helpers/uploadImageToCloud';
 
 const Menu = () => {
   const navigate = useNavigate();
@@ -18,6 +28,11 @@ const Menu = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isCropperVisible, setIsCropperVisible] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [tempImage, setTempImage] = useState(null);
+  const [isUpdatingImage, setIsUpdatingImage] = useState(false);
+  const cropperRef = useRef(null);
 
   const itemsPerPage = 4;
 
@@ -138,7 +153,14 @@ const Menu = () => {
 
   const handleProductUpdate = async (updatedProduct)=>{
     try {
-      const response = await updateProduct(updatedProduct)
+      const updateData = {
+        id: updatedProduct._id,
+        name: updatedProduct.name,
+        price: updatedProduct.price,
+        description: updatedProduct.description,
+        image: updatedProduct.image
+      };
+      const response = await updateProduct(updateData);
       setProducts((prev) => {
         const index = prev.findIndex((product) => product._id === updatedProduct._id);
         if (index === -1) return prev;
@@ -150,6 +172,7 @@ const Menu = () => {
       toast.success("Product Updated Successfully!")
     } catch (error) {
       console.log(error)
+      toast.error("Failed to update product!")
     }
   }
 
@@ -175,8 +198,50 @@ const Menu = () => {
       toast.error("Failed to update product offer.");
     }
   };
-  
-  
+
+  const handleImageChange = (e, product) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setTempImage(reader.result);
+        setSelectedProduct(product);
+        setIsCropperVisible(true);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDoneCrop = async () => {
+    if (cropperRef.current && selectedProduct) {
+      try {
+        setIsUpdatingImage(true);
+        const croppedData = cropperRef.current.cropper.getCroppedCanvas().toDataURL();
+        const uploadedImage = await uploadImageToCloud(croppedData);
+        
+        const updatedProduct = {
+          ...selectedProduct,
+          image: uploadedImage.secure_url
+        };
+        
+        await handleProductUpdate(updatedProduct);
+        setIsCropperVisible(false);
+        setSelectedProduct(null);
+        setTempImage(null);
+      } catch (error) {
+        console.error('Error updating image:', error);
+        toast.error('Failed to update image. Please try again.');
+      } finally {
+        setIsUpdatingImage(false);
+      }
+    }
+  };
+
+  const handleCancelCrop = () => {
+    setIsCropperVisible(false);
+    setSelectedProduct(null);
+    setTempImage(null);
+  };
 
   const pageVariants = {
     initial: { opacity: 0, x: "5%" },
@@ -289,6 +354,7 @@ const Menu = () => {
                     onToggleList={handleListToggle}
                     onUpdateOffer={handleProductOfferUpdate}
                     offers={offers}
+                    onImageChange={handleImageChange}
                   />
                 </motion.div>
               ))}
@@ -337,6 +403,50 @@ const Menu = () => {
           )}
         </>
       )}
+      <AnimatePresence>
+        {isCropperVisible && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          >
+            <div className="bg-white rounded-lg p-4 max-w-2xl w-full">
+              <h3 className="text-lg font-semibold mb-4">Crop Image</h3>
+              <Cropper
+                ref={cropperRef}
+                src={tempImage}
+                style={{ height: 400, width: "100%" }}
+                aspectRatio={1}
+                guides={true}
+              />
+              <div className="flex justify-end gap-4 mt-4">
+                <button
+                  onClick={handleCancelCrop}
+                  disabled={isUpdatingImage}
+                  className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDoneCrop}
+                  disabled={isUpdatingImage}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {isUpdatingImage ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Updating...</span>
+                    </>
+                  ) : (
+                    'Update Image'
+                  )}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
