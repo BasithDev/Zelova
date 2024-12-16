@@ -8,7 +8,7 @@ const ProductCard = ({
   product,
   onDelete,
   onToggleList,
-  onChangeImage,
+  onImageChange,
   onUpdateOffer,
   offers,
   onSave,
@@ -79,7 +79,13 @@ const ProductCard = ({
             onLoad={() => setIsImageLoading(false)}
           />
           <button
-            onClick={() => onChangeImage(product._id)}
+            onClick={() => {
+              const input = document.createElement('input');
+              input.type = 'file';
+              input.accept = 'image/*';
+              input.onchange = (e) => onImageChange(e, product);
+              input.click();
+            }}
             className="absolute bottom-2 right-2 bg-gray-800 text-white text-xs sm:text-sm px-2 py-1.5 rounded shadow hover:bg-gray-700"
           >
             Change Image
@@ -188,42 +194,25 @@ ProductCard.propTypes = {
   product: PropTypes.shape({
     _id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
+    description: PropTypes.string,
     price: PropTypes.number.isRequired,
     image: PropTypes.string,
+    isActive: PropTypes.bool.isRequired,
     offers: PropTypes.shape({
       _id: PropTypes.string,
       offerName: PropTypes.string,
       discountAmount: PropTypes.number,
       requiredQuantity: PropTypes.number,
     }),
-    isActive: PropTypes.bool.isRequired,
     customizable: PropTypes.bool,
-    customizations: PropTypes.arrayOf(
-      PropTypes.shape({
-        _id: PropTypes.string.isRequired,
-        fieldName: PropTypes.string.isRequired,
-        options: PropTypes.arrayOf(
-          PropTypes.shape({
-            name: PropTypes.string.isRequired,
-            price: PropTypes.number.isRequired,
-            _id: PropTypes.string.isRequired,
-          })
-        ),
-      })
-    ),
+    customizations: PropTypes.array,
   }).isRequired,
-  offers: PropTypes.arrayOf(
-    PropTypes.shape({
-      _id: PropTypes.string.isRequired,
-      offerName: PropTypes.string.isRequired,
-    })
-  ).isRequired,
   onDelete: PropTypes.func.isRequired,
-  onSave: PropTypes.func.isRequired,
   onToggleList: PropTypes.func.isRequired,
-  onChangeImage: PropTypes.func.isRequired,
+  onImageChange: PropTypes.func.isRequired,
   onUpdateOffer: PropTypes.func.isRequired,
+  offers: PropTypes.array.isRequired,
+  onSave: PropTypes.func,
 };
 
 export default ProductCard;

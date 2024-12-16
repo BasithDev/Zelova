@@ -160,11 +160,11 @@ const deleteProduct = async (req, res, next) => {
 
 const updateProduct = async (req, res, next) => {
     try {
-        const { id, name, price, description } = req.body;
+        const { id, name, price, description, image } = req.body;
 
         const update = {};
-        if (id || name || price || description) {
-            Object.assign(update, { name, price, description });
+        if (id || name || price || description || image) {
+            Object.assign(update, { name, price, description, image });
         }
 
         const updatedProduct = await FoodItem.findByIdAndUpdate(
