@@ -14,6 +14,8 @@ const UserIssues = () => {
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState(null);
   const [refundAmount, setRefundAmount] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   const handleRefresh = async () => {
     setIsLoading(true);
@@ -109,16 +111,30 @@ const UserIssues = () => {
       <AdminSearchBar/>
       <div className="flex justify-between items-center px-6 mb-6">
         <h2 className="text-4xl font-bold text-gray-800">User Issues</h2>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={handleRefresh}
-          disabled={isLoading}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
-        >
-          <IoMdRefresh className={isLoading ? "animate-spin" : ""} size={20} />
-          Refresh
-        </motion.button>
+        <div className="flex items-center gap-4">
+          <select
+            value={itemsPerPage}
+            onChange={(e) => {
+              setItemsPerPage(Number(e.target.value));
+              setCurrentPage(1);
+            }}
+            className="p-2 border border-gray-300 rounded-lg outline-none"
+          >
+            <option value={5}>5 per page</option>
+            <option value={10}>10 per page</option>
+            <option value={20}>20 per page</option>
+          </select>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleRefresh}
+            disabled={isLoading}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+          >
+            <IoMdRefresh className={isLoading ? "animate-spin" : ""} size={20} />
+            Refresh
+          </motion.button>
+        </div>
       </div>
       
       {issues.length === 0 ? (
@@ -134,74 +150,117 @@ const UserIssues = () => {
           </p>
         </motion.div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ms-6">
-          <AnimatePresence>
-            {issues.map((issue) => (
-              <motion.div
-                key={issue._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white rounded-lg shadow-lg p-6 space-y-4"
-              >
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-800">{issue.userName}</h3>
-                  <p className="text-gray-600 text-sm">{issue.email}</p>
-                </div>
-
-                <div className="space-y-2">
-                  <div>
-                    <span className="text-gray-600 font-medium">Problem On:</span>
-                    <span className="ml-2 text-gray-800">{issue.problemType}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600 font-medium">Description:</span>
-                    <p className="text-gray-800 mt-1">{issue.description}</p>
-                  </div>
-                  {issue.refundAmount > 0 && (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ms-6">
+            <AnimatePresence>
+              {issues
+                .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                .map((issue) => (
+                  <motion.div
+                    key={issue._id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="bg-white rounded-lg shadow-lg p-6 space-y-4"
+                  >
                     <div>
-                      <span className="text-gray-600 font-medium">Requested Refund:</span>
-                      <span className="ml-2 text-gray-800">₹{issue.refundAmount}</span>
+                      <h3 className="text-xl font-semibold text-gray-800">{issue.userName}</h3>
+                      <p className="text-gray-600 text-sm">{issue.email}</p>
                     </div>
-                  )}
-                </div>
 
-                <div className="flex space-x-3 mt-4">
-                  <button
-                    onClick={() => handleResolve(issue._id)}
-                    disabled={loadingStates[`resolve_${issue._id}`]}
-                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {loadingStates[`resolve_${issue._id}`] ? (
-                      <AiOutlineLoading3Quarters className="animate-spin" />
-                    ) : (
-                      'Resolve'
-                    )}
-                  </button>
-                  {issue.refundAmount > 0 && (
-                    <button
-                      onClick={() => openRefundModal(issue)}
-                      className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                    >
-                      Refund
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleIgnore(issue._id)}
-                    disabled={loadingStates[`ignore_${issue._id}`]}
-                    className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {loadingStates[`ignore_${issue._id}`] ? (
-                      <AiOutlineLoading3Quarters className="animate-spin" />
-                    ) : (
-                      'Ignore'
-                    )}
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
+                    <div className="space-y-2">
+                      <div>
+                        <span className="text-gray-600 font-medium">Problem On:</span>
+                        <span className="ml-2 text-gray-800">{issue.problemType}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-600 font-medium">Description:</span>
+                        <p className="text-gray-800 mt-1">{issue.description}</p>
+                      </div>
+                      {issue.refundAmount > 0 && (
+                        <div>
+                          <span className="text-gray-600 font-medium">Requested Refund:</span>
+                          <span className="ml-2 text-gray-800">₹{issue.refundAmount}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex space-x-3 mt-4">
+                      <button
+                        onClick={() => handleResolve(issue._id)}
+                        disabled={loadingStates[`resolve_${issue._id}`]}
+                        className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      >
+                        {loadingStates[`resolve_${issue._id}`] ? (
+                          <AiOutlineLoading3Quarters className="animate-spin" />
+                        ) : (
+                          'Resolve'
+                        )}
+                      </button>
+                      {issue.refundAmount > 0 && (
+                        <button
+                          onClick={() => openRefundModal(issue)}
+                          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                        >
+                          Refund
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleIgnore(issue._id)}
+                        disabled={loadingStates[`ignore_${issue._id}`]}
+                        className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      >
+                        {loadingStates[`ignore_${issue._id}`] ? (
+                          <AiOutlineLoading3Quarters className="animate-spin" />
+                        ) : (
+                          'Ignore'
+                        )}
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+            </AnimatePresence>
+          </div>
+          {Math.ceil(issues.length / itemsPerPage) > 1 && (
+            <div className="flex justify-center gap-2 mt-6 mb-6">
+              <button
+                onClick={() => setCurrentPage(prev => prev - 1)}
+                disabled={currentPage === 1}
+                className={`px-3 py-1 rounded ${
+                  currentPage === 1
+                    ? 'bg-gray-200 cursor-not-allowed'
+                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                }`}
+              >
+                Previous
+              </button>
+              {[...Array(Math.ceil(issues.length / itemsPerPage))].map((_, index) => (
+                <button
+                  key={index + 1}
+                  onClick={() => setCurrentPage(index + 1)}
+                  className={`px-3 py-1 rounded ${
+                    currentPage === index + 1
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-gray-200 hover:bg-gray-300'
+                  }`}
+                >
+                  {index + 1}
+                </button>
+              ))}
+              <button
+                onClick={() => setCurrentPage(prev => prev + 1)}
+                disabled={currentPage === Math.ceil(issues.length / itemsPerPage)}
+                className={`px-3 py-1 rounded ${
+                  currentPage === Math.ceil(issues.length / itemsPerPage)
+                    ? 'bg-gray-200 cursor-not-allowed'
+                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Refund Modal */}

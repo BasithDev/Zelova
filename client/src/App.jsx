@@ -47,7 +47,7 @@ const AdminLogin = lazy(() => import('./Pages/Admins/Login'));
 const Dashboard = lazy(() => import('./Pages/Admins/Dashboard'));
 const Requests = lazy(() => import('./Pages/Admins/Requests'));
 const UserManagement = lazy(() => import('./Pages/Admins/UserManagement'));
-const SellerManagement = lazy(() => import('./Pages/Admins/SellerManagement'));
+const VendorManagement = lazy(() => import('./Pages/Admins/VendorManagement'));
 const CategoryMng = lazy(() => import('./Pages/Admins/CategoryMng'));
 const CouponMng = lazy(() => import('./Pages/Admins/CouponMng'));
 const SendMail = lazy(() => import('./Pages/Admins/SendMail'));
@@ -177,7 +177,7 @@ function App() {
                     <Route path="/admin" element={<AdminLayout />}>
                       <Route index element={<Dashboard />} />
                       <Route path="user-manage" element={<UserManagement />} />
-                      <Route path="vendor-manage" element={<SellerManagement />} />
+                      <Route path="vendor-manage" element={<VendorManagement />} />
                       <Route path="requests" element={<Requests />} />
                       <Route path='category-manage' element={<CategoryMng />} />
                       <Route path='coupon-manage' element={<CouponMng />} />

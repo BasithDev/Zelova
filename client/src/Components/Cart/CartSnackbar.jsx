@@ -18,7 +18,7 @@ const CartSnackbar = () => {
 
     const handleClose = () => {
         setIsVisible(false);
-        setTimeout(() => setIsVisible(true), 8000);
+        setTimeout(() => setIsVisible(true), 30000);
     };
 
     return (

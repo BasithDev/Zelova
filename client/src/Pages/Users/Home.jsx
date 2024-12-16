@@ -30,8 +30,6 @@ const Home = () => {
     useEffect(() => {
         if (lat !== undefined && lon !== undefined) {
             fetchRestaurants()
-        } else {
-            console.error("Please enable location services to view nearby restaurants")
         }
     }, [lat, lon, fetchRestaurants])
 
