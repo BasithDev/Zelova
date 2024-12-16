@@ -163,3 +163,19 @@ export const deleteOffer = (offerId) => api.delete(`/vendor/offer/delete/${offer
 export const getCurrentOrdersForVendor = () => api.get(`/vendor/orders/current`)
 export const updateOrderStatus = (data) => api.patch(`/vendor/orders/update-status`,data)
 export const getPreviousOrdersOnDateForVendor = (date) => api.get(`/vendor/orders/previous/${date}`)
+
+//vendor routes - dashboard management
+export const getDashboardDataForVendor = () => api.get(`/vendor/dashboard`)
+export const getVendorReports = (type, getBy, startDate, endDate) => {
+    let url = `vendor/dashboard/reports?type=${type}&getBy=${getBy}`;
+    if (getBy === 'custom' && startDate && endDate) {
+        url += `&startDate=${startDate}&endDate=${endDate}`;
+    }
+    return api.get(url);
+}
+export const exportVendorReportToPDF = (reportData) => api.post('/vendor/dashboard/reports/export/pdf', reportData, {
+    responseType: 'blob'
+});
+export const exportVendorReportToExcel = (reportData) => api.post('/vendor/dashboard/reports/export/excel', reportData, {
+    responseType: 'blob'
+});
