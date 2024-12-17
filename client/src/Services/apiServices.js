@@ -1,17 +1,5 @@
-import axios from 'axios';
 import cloudinaryInstance from './cloudnaryApi'
-
-//authentication
-const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL,
-    withCredentials: true,
-    headers: {
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-App-Token': 'dfkjdskkdvkdkfdfdcnmklxckdkdnkdnfkdfakslkldfkdfkldfkj4534tf8fuy83riehf8y49hrt',
-        'APP_SECRET': 'dfkjdskkdvkdkfdfdcnmklxckdkdnkdnfkdfakslkldfkdfkldfkj4534tf8fuy83riehf8y49hrt'
-    }
-});
+import api from './api'
 
 
 export const loginUser = (data) => api.post('/auth/login',data)

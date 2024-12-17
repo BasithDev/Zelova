@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getVendorReports, exportVendorReportPDF, exportVendorReportExcel, getVendorDashboardData } = require('../../controllers/vendor/vendorDashboard');
+const { getVendorReports, exportVendorReportPDF, exportVendorReportExcel, getVendorDashboardData } = require('../../controllers/vendor/vendorDashboardController');
 
 router.get('/reports', getVendorReports);
 router.post('/reports/export/pdf', exportVendorReportPDF);
