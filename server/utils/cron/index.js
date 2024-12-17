@@ -1,5 +1,5 @@
 const cron = require('node-cron');
-const cronConfig = require('../../config/cronConfig');
+const cronConfig = require('../../config/taskSchedulerConfig');
 const handleExpiredCoupons = require('./jobs/couponExpiry');
 
 const initCronJobs = () => {
