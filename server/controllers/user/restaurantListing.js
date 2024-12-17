@@ -1,10 +1,17 @@
 const Restaurant = require('../../models/restaurant')
 const FoodItem = require('../../models/foodItem');
-const mongoose = require('mongoose');
+const mongoose = require('mongoose'); 
 const statusCodes = require('../../config/statusCodes');
 
 const getNearbyRestaurantsFromDB = async (userLat, userLong, maxDistance = 50000) => {
     try {
+        const currentTime = new Date().toLocaleTimeString('en-IN', { 
+            hour12: false, 
+            hour: '2-digit', 
+            minute: '2-digit',
+            timeZone: 'Asia/Kolkata'
+        });
+
         const nearbyRestaurants = await Restaurant.aggregate([
             {
                 $geoNear: {
@@ -13,6 +20,32 @@ const getNearbyRestaurantsFromDB = async (userLat, userLong, maxDistance = 50000
                     maxDistance: maxDistance,
                     spherical: true,
                     query: { isActive: true }
+                }
+            },
+            {
+                $addFields: {
+                    isOpenNow: {
+                        $cond: {
+                            if: { $gt: ["$openingTime", "$closingTime"] },
+                            then: {
+                                $or: [
+                                    { $lte: ["$openingTime", currentTime] },
+                                    { $gte: ["$closingTime", currentTime] }
+                                ]
+                            },
+                            else: {
+                                $and: [
+                                    { $lte: ["$openingTime", currentTime] },
+                                    { $gte: ["$closingTime", currentTime] }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $match: {
+                    isOpenNow: true
                 }
             },
             {
@@ -30,7 +63,18 @@ const getNearbyRestaurantsFromDB = async (userLat, userLong, maxDistance = 50000
             },
             {
                 $project: {
-                    offers: 0
+                    name: 1,
+                    description: 1,
+                    location: 1,
+                    address: 1,
+                    image: 1,
+                    openingTime: 1,
+                    closingTime: 1,
+                    isOpenNow: 1,
+                    distance: 1,
+                    offerName: 1,
+                    phone: 1,
+                    avgRating: 1
                 }
             }
         ]);
