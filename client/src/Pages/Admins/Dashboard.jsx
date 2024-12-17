@@ -4,7 +4,7 @@ import { GiProfit } from "react-icons/gi";
 import { FaStoreAlt } from 'react-icons/fa';
 import {AiOutlineStock} from 'react-icons/ai'
 import AdminSearchBar from "../../Components/SearchBar/AdminSearchBar";
-import AnalyticsDashboard from '../../Components/AnalyticsDashboard';
+import AnalyticsDashboard from '../../Components/AnalyticsDashboard/AnalyticsDashboard';
 import { getReports, getRestaurants, exportReportToPDF, exportReportToExcel , blockUnblockRestaurant, getDashboardData} from "../../Services/apiServices";
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";

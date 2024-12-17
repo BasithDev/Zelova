@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState,useEffect} from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getDashboardDataForVendor, getVendorReports, exportVendorReportToPDF, exportVendorReportToExcel } from '../../Services/apiServices';
-import AnalyticsDashboard from '../../Components/AnalyticsDashboard';
+import AnalyticsDashboard from '../../Components/AnalyticsDashboard/AnalyticsDashboard';
 
 const VendorHome = () => {
     const { data: response = {}, isLoading, isError } = useQuery({
