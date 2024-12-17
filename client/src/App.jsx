@@ -14,7 +14,7 @@ import PublicRoutes from './Routers/PublicRoutes';
 import AdminRoutes from './Routers/AdminRoutes';
 import UserRoutes from './Routers/UserRoutes';
 import VendorRoutes from './Routers/VendorRoutes';
-import ErrorBoundary from './components/ErrorBoundary';
+import ErrorBoundary from './Components/ErrorHandling/ErrorBoundary';
 
 const queryClient = new QueryClient({
   defaultOptions: {
