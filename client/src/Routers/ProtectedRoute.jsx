@@ -1,22 +1,57 @@
-import PropTypes from 'prop-types';
+// ProtectedRoute.js
 import { Navigate, Outlet } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import PropTypes from 'prop-types';
+import Cookies from 'js-cookie';
 
-const ProtectedRoute = ({ forAdmin }) => {
-  const { isAuthenticated, userRole } = useSelector((state) => state.auth);
+// User protected route, checking for authenticated user
+export function UserProtectedRoute({ children }) {
+  const isUserAuthenticated = useSelector((state) => state.authUser.isAuthenticated);
+  const userStatus = useSelector((state) => state.authUser.status)
 
-  if (forAdmin) {
-    // Allow access to admin routes if authenticated as admin
-    return isAuthenticated && userRole === 'admin' ? <Outlet /> : <Navigate to="/admin/login" />;
-  } else {
-    // Allow access to user routes if authenticated as user
-    return isAuthenticated && userRole === 'user' ? <Outlet /> : <Navigate to="/login" />;
+  if (!isUserAuthenticated || userStatus === 'blocked') {
+    Cookies.remove('user_token');
+    Cookies.remove('is_vendor');
+    return <Navigate to="/login" replace />;
   }
+
+  return children ? children : <Outlet />;
+}
+UserProtectedRoute.propTypes = {
+  children: PropTypes.node,
 };
 
-// Define prop types
-ProtectedRoute.propTypes = {
-  forAdmin: PropTypes.bool.isRequired,
+// User role protected route, checking for specific roles
+export function UserRoleProtectedRoute({ allowedRoles }) {
+  const isUserAuthenticated = useSelector((state) => state.authUser.isAuthenticated);
+  const isVendor = useSelector((state) => state.authUser.isVendor) || Cookies.get('is_vendor')
+  const userStatus = useSelector((state) => state.authUser.status)
+
+  const userRole = isVendor ? 'vendor' : 'user';
+
+  if (!isUserAuthenticated || userStatus === 'blocked') {
+    Cookies.remove('user_token');
+    Cookies.remove('is_vendor');
+    return <Navigate to="/login" replace />;
+  }
+
+  if (isUserAuthenticated && allowedRoles.includes(userRole)) {
+    return <Outlet />;
+  }
+
+  return <Navigate to="/" replace />;
+}
+UserRoleProtectedRoute.propTypes = {
+  allowedRoles: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
-export default ProtectedRoute;
+// Admin role protected route, checking for authenticated admin
+export function AdminRoleProtectedRoute() {
+  const isAdminAuthenticated = useSelector((state) => state.authAdmin.isAuthenticated);
+
+  if (!isAdminAuthenticated) {
+    return <Navigate to="/admin/login" replace />;
+  }
+
+  return <Outlet />;
+}

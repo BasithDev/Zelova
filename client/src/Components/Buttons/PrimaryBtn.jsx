@@ -1,5 +1,3 @@
-import PropTypes from 'prop-types';
-
 const PrimaryBtn = ({ text, onClick, className = '' }) => {
   return (
     <button
@@ -12,10 +10,5 @@ const PrimaryBtn = ({ text, onClick, className = '' }) => {
   );
 };
 
-PrimaryBtn.propTypes = {
-  text: PropTypes.string.isRequired,
-  onClick: PropTypes.func,
-  className: PropTypes.string
-};
 
 export default PrimaryBtn;

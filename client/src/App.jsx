@@ -1,69 +1,64 @@
-//imports for helpers
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import UserLayout from './Components/Layouts/UserLayout';
-import AdminLayout from './Components/Layouts/AdminLayout'
+import { BrowserRouter as Router, Routes } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import { ToastContainer } from 'react-toastify';
+import { Suspense } from 'react';
+import 'react-toastify/dist/ReactToastify.css';
 
-//route imports
-import AuthRoute from './Routers/AuthRoute'
-import ProtectedRoute from './Routers/ProtectedRoute'
+// Auth Components
+import AuthChecker from './Components/Common/AuthChecker';
+import AdminAuthChecker from './Components/Common/AdminAuthChecker';
 
-//imports for user
-import Home from './Pages/Users/Home';
-import Login from './Pages/Users/Login';
-import Register from './Pages/Users/Register'
-import Otp from './Pages/Users/Otp';
+//Routes
+import PublicRoutes from './Routers/PublicRoutes';
+import AdminRoutes from './Routers/AdminRoutes';
+import UserRoutes from './Routers/UserRoutes';
+import VendorRoutes from './Routers/VendorRoutes';
+import ErrorRoutes from './Routers/ErrorRoutes';
+import ErrorBoundary from './Components/ErrorHandling/ErrorBoundary';
 
-//imports for admin
-import AdminLogin from './Pages/Admins/Login'
-import Dashboard from './Pages/Admins/Dashboard';
-import Requests from './Pages/Admins/Requests';
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
-//imports for vendor
-import VendorLayout from './Components/Layouts/VendorLayout'
-import AddItem from './Pages/Seller/AddItem'
-import AuthChecker from './Components/AuthChecker';
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+  </div>
+);
+
+const GoogleClientID = import.meta.env.VITE_GOOGLE_CLIENT_ID
+
 function App() {
   return (
-    <Router>
-      <AuthChecker/>
-      <Routes>
-        {/* Public Routes (only accessible if NOT authenticated) */}
-        <Route element={<AuthRoute forAdmin={false}/>}>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/otp" element={<Otp />} />
-          
-        </Route>
-
-        <Route element={<AuthRoute forAdmin={true}/>}>
-          <Route path="/admin/login" element={<AdminLogin />} />
-        </Route>
-
-        {/* User Routes*/}
-        <Route element={<ProtectedRoute forAdmin={false}/>}>
-          <Route path="/" element={<UserLayout />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Route>
-
-
-        {/* Admin Routes*/}
-        <Route element={<ProtectedRoute forAdmin={true}/>}>
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="requests" element={<Requests />} />
-          </Route>
-        </Route>
-
-        {/* Vendor Routes*/}
-        <Route element={<ProtectedRoute forAdmin={false}/>}>
-          <Route path="/vendor" element={<VendorLayout />}>
-            <Route path="additem" element={<AddItem />} />
-          </Route>
-        </Route>
-      </Routes>
-    </Router>
-  )
+    <ErrorBoundary>
+      <div className="App">
+        <GoogleOAuthProvider clientId={GoogleClientID}>
+          <QueryClientProvider client={queryClient}>
+            <Router>
+              <AuthChecker />
+              <AdminAuthChecker />
+              <Suspense fallback={<LoadingFallback />}>
+                <Routes>
+                  {PublicRoutes}
+                  {AdminRoutes}
+                  {UserRoutes}
+                  {VendorRoutes}
+                  {ErrorRoutes}
+                </Routes>
+              </Suspense>
+            </Router>
+          </QueryClientProvider>
+        </GoogleOAuthProvider>
+        <ToastContainer position='top-right'/>
+      </div>
+    </ErrorBoundary>
+  );
 }
 
-export default App
+export default App; 

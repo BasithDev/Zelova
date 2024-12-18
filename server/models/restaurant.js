@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 const restaurantSchema = new Schema({
-  ownerId: {
+  vendorId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
     required: true,
@@ -23,9 +23,10 @@ const restaurantSchema = new Schema({
     },
     coordinates: {
       type: [Number],
-      required: true,
-      index: "2dsphere",
     },
+  },
+  address:{
+    type: String,
   },
   image: {
     type: String,
@@ -34,10 +35,29 @@ const restaurantSchema = new Schema({
     type: Boolean,
     default: true,
   },
-  license: {
+  openingTime: {
     type: String,
-    required: true,
     trim: true,
+  },
+  closingTime: {
+    type: String,
+    trim: true,
+  },
+  phone: {
+    type: String,
+    trim: true,
+  },
+  totalRatingCount: {
+    type: Number,
+    default: 0,
+  },
+  totalRatings: {
+    type: Number,
+    default: 0,
+  },
+  avgRating: {
+    type: Number,
+    default: 0,
   },
 }, {
   timestamps: true,
