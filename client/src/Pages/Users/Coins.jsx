@@ -1,15 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { FaCoins, FaSearch, FaUserCircle } from 'react-icons/fa';
+import { FaCoins, FaSearch, FaUserCircle, FaRegFrown } from 'react-icons/fa';
 import { IoSend } from 'react-icons/io5';
 import Header from '../../Components/Common/Header';
+import { getZcoinsData, sendZcoins ,searchUsers } from '../../Services/apiServices';
+import {toast, ToastContainer} from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { motion } from 'framer-motion';
 
 const CoinBalance = ({ balance }) => {
   return (
     <div className="bg-gradient-to-br from-orange-400 to-orange-500 rounded-xl shadow-lg p-8 relative overflow-hidden text-white 
       hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer group">
       
-      {/* Decorative circles */}
       <div className="absolute top-0 right-0 w-40 h-40 transform translate-x-10 -translate-y-10
         group-hover:translate-x-8 group-hover:-translate-y-8 transition-all duration-300">
         <div className="w-full h-full bg-white/10 rounded-full"></div>
@@ -32,7 +35,7 @@ const CoinBalance = ({ balance }) => {
           <span className="text-xl opacity-90">coins</span>
         </div>
         <p className="text-sm text-white/80 group-hover:text-white transition-colors duration-300">
-          Use coins to get discounts on your next order
+          Use coins to pay on your next order
         </p>
       </div>
     </div>
@@ -51,10 +54,17 @@ const UserSearchResult = ({ user, onSelect, selected }) => {
         cursor-pointer transition-colors rounded-lg border-2 ${selected ? 'border-orange-400' : 'border-transparent'}`}
     >
       <div className={`w-12 h-12 rounded-full flex items-center justify-center ${selected ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-600'}`}>
-        <FaUserCircle className="text-2xl" />
+        {user.profilePicture ? (
+          <img 
+          referrerPolicy='no-referrer'
+          src={user?.profilePicture} alt={user.fullname} 
+          className="w-full h-full object-cover rounded-full" />
+        ) : (
+          <FaUserCircle className="text-2xl" />
+        )}
       </div>
       <div className="flex-1">
-        <h3 className="font-medium text-gray-800">{user.name}</h3>
+        <h3 className="font-medium text-gray-800">{user.fullname}</h3>
         <p className="text-sm text-gray-500">{user.email}</p>
       </div>
       {selected && (
@@ -66,12 +76,29 @@ const UserSearchResult = ({ user, onSelect, selected }) => {
 
 UserSearchResult.propTypes = {
   user: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
+    _id: PropTypes.string.isRequired,
+    fullname: PropTypes.string.isRequired,
     email: PropTypes.string.isRequired,
+    profilePicture: PropTypes.string,
   }).isRequired,
   onSelect: PropTypes.func.isRequired,
   selected: PropTypes.bool.isRequired,
+};
+
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
 };
 
 const Coins = () => {
@@ -79,32 +106,78 @@ const Coins = () => {
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
   const [amount, setAmount] = useState('');
+  const [balance, setBalance] = useState(0);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchResults, setSearchResults] = useState([]);
 
-  // Example data - replace with actual API calls
-  const balance = 500;
-  const users = [
-    { id: '1', name: 'John Doe', email: 'john@example.com' },
-    { id: '2', name: 'Jane Smith', email: 'jane@example.com' },
-    { id: '3', name: 'Mike Johnson', email: 'mike@example.com' },
-  ];
+  const debouncedSearchQuery = useDebounce(userSearchQuery, 500);
+  const fetchBalanceAndUsers = async () => {
+    try {
+      const response = await getZcoinsData();
+      setBalance(response.data.zcoins.balance);
+      const lastSentUsers = response.data.zcoins.lastSentUserIds;
+      if (lastSentUsers.length > 0) {
+        setUsers(lastSentUsers);
+      } else {
+        setUsers([]);
+      }
+    } catch (error) {
+      console.error('Error fetching coins or users:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchBalanceAndUsers();
+  }, []);
 
-  const filteredUsers = users.filter(user => 
-    user.name.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
-    user.email.toLowerCase().includes(userSearchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    const searchForUsers = async () => {
+      if (debouncedSearchQuery.trim()) {
+        try {
+          const response = await searchUsers(debouncedSearchQuery);
+          setSearchResults(response.data.users);
+        } catch (error) {
+          console.error('Error searching users:', error);
+          setSearchResults([]);
+        }
+      } else {
+        setSearchResults([]);
+      }
+    };
 
-  const handleShare = () => {
-    if (selectedUser && amount) {
-      console.log(`Sharing ${amount} coins with ${selectedUser.name}`);
-      // Implement sharing logic here
+    searchForUsers();
+  }, [debouncedSearchQuery]);
+
+  const handleSearchChange = (e) => {
+    setUserSearchQuery(e.target.value);
+  };
+
+  const handleShare = async () => {
+    try {
+      const amountNum = parseInt(amount);
+      if (selectedUser && amountNum) {
+        await sendZcoins({ receiverId: selectedUser._id, amountNum });
+        toast.success('Coins sent successfully');
+      }
       setAmount('');
-      setSelectedUser(null);
-      setUserSearchQuery('');
+      fetchBalanceAndUsers()
+      setSelectedUser(null)
+    } catch (error) {
+      console.error('Error sending coins:', error);
+      toast.error('Error sending coins');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <motion.div 
+      initial={{ y: 20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.4 }}
+      className="min-h-screen bg-gray-50"
+    >
+      <ToastContainer position='top-right'/>
       <Header 
         searchQuery={headerSearchQuery}
         onSearchChange={setHeaderSearchQuery}
@@ -114,7 +187,15 @@ const Coins = () => {
         <h1 className="text-2xl font-bold text-gray-800 mb-6">Coins</h1>
         
         {/* Coin Balance */}
-        <CoinBalance balance={balance} />
+        {loading ? (
+          <div className="bg-gradient-to-br from-orange-400 to-orange-500 rounded-xl shadow-lg p-8 relative overflow-hidden text-white">
+            <div className="flex items-center justify-center h-32">
+              <div className="animate-spin w-8 h-8 border-4 border-white border-t-transparent rounded-full" />
+            </div>
+          </div>
+        ) : (
+          <CoinBalance balance={balance} />
+        )}
 
         {/* Share Coins Section */}
         <div className="mt-8">
@@ -124,29 +205,44 @@ const Coins = () => {
           <div className="grid md:grid-cols-2 gap-6">
             {/* User Search */}
             <div className="bg-white rounded-xl shadow-md p-6">
-              <div className="relative mb-4">
+              <div className="relative mb-6">
                 <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  value={userSearchQuery}
-                  onChange={(e) => setUserSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400/20 focus:border-orange-400"
                   placeholder="Search users..."
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  value={userSearchQuery}
+                  onChange={handleSearchChange}
                 />
               </div>
               <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                {filteredUsers.map(user => (
-                  <UserSearchResult
-                    key={user.id}
-                    user={user}
-                    onSelect={setSelectedUser}
-                    selected={selectedUser?.id === user.id}
-                  />
-                ))}
+                {searchResults.length > 0 ? (
+                  searchResults.map(user => (
+                    <UserSearchResult
+                      key={user._id}
+                      user={user}
+                      onSelect={setSelectedUser}
+                      selected={selectedUser?._id === user._id}
+                    />
+                  ))
+                ) : users.length > 0 ? (
+                  users.map(user => (
+                    <UserSearchResult
+                      key={user._id}
+                      user={user}
+                      onSelect={setSelectedUser}
+                      selected={selectedUser?._id === user._id}
+                    />
+                  ))
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                    <FaRegFrown className="text-4xl mb-2" />
+                    <p>No recent transactions / search a user</p>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Amount Input and Share Button */}
             <div className="bg-white rounded-xl shadow-md p-6">
               <h3 className="font-medium text-gray-800 mb-4">Enter Amount</h3>
               <div className="space-y-4">
@@ -182,7 +278,7 @@ const Coins = () => {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

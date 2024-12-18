@@ -2,11 +2,10 @@ import { motion } from 'framer-motion';
 import { FaMinus, FaPlus, FaChevronDown, FaMapMarkerAlt } from 'react-icons/fa';
 import { useCart } from '../../Hooks/useCart';
 import { useNavigate} from 'react-router-dom';
-import { useState, useEffect,useCallback } from 'react';
+import { useState, useEffect,useCallback,useRef } from 'react';
 import { useSelector } from 'react-redux';
-import { getAddresses } from '../../Services/apiServices';
+import { getAddresses , getUserCoupons , getDeliveryFee } from '../../Services/apiServices';
 import { AnimatePresence } from 'framer-motion';
-import { getUserCoupons } from '../../Services/apiServices';
 import { calculateItemPrice, calculateItemTotal } from '../../utils/cartCalculations';
 import { useCartState } from '../../Hooks/useCartState';
 import RestaurantHeader from '../../components/Restaurant/RestaurantHeader';
@@ -31,29 +30,44 @@ const Cart = () => {
         isUsingCurrentLocation
     } = cartState;
 
+    const [deliveryFee, setDeliveryFee] = useState(10);
+    const userLocation = useSelector((state) => state?.userLocation);
+    const restaurantId = cart?.data?.cart?.restaurantId?._id;
+
+    const initialFetch = useRef(true);
+
+
     const fetchData = useCallback(async () => {
         try {
-            const [addressesResponse, couponsResponse] = await Promise.all([
+            const [addressesResponse, couponsResponse, deliveryFeeResponse] = await Promise.all([
                 getAddresses(),
-                getUserCoupons()
+                getUserCoupons(),
+                userLocation?.coordinates && restaurantId ? getDeliveryFee(userLocation?.coordinates?.lat, userLocation?.coordinates?.lng, restaurantId) : Promise.resolve({ data: { deliveryFee: 10 } })
             ]);
+
             setSavedAddresses(addressesResponse?.data || []);
             updateCartState({ coupons: couponsResponse?.data || [] });
+
+            if (deliveryFeeResponse && deliveryFeeResponse.data) {
+                setDeliveryFee(deliveryFeeResponse.data.deliveryFee);
+            }
         } catch (error) {
             console.error('Error fetching data:', error);
         }
-    }, [updateCartState]);
+    }, [updateCartState, userLocation, restaurantId]);
 
     useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+        if (initialFetch.current && userLocation?.coordinates && restaurantId) {
+            fetchData();
+            initialFetch.current = false; // Prevent further calls
+        }
+    }, [fetchData, userLocation?.coordinates, restaurantId]);
 
     const totalPrice = calculateItemTotal(cartData);
     const originalPrice = cartData?.items?.reduce((total, item) => total + (item.itemPrice * item.quantity), 0) || 0;
     const totalSavings = originalPrice - totalPrice;
     const tax = totalPrice * 0.05; // 5% tax
     const platformFee = 8;
-    const deliveryFee = 40; // Fixed delivery fee
 
     const handleQuantity = (itemId, action) => {
         const cartItem = cartData?.items?.find(
@@ -144,21 +158,73 @@ const Cart = () => {
 
     if (!cartData || !cartData.items || cartData.items.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh]">
-                <img
-                    src="/empty-cart.svg"
-                    alt="Empty Cart"
-                    className="w-64 h-64 mb-4"
-                    onError={(e) => {
-                        e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='9' cy='21' r='1'%3E%3C/circle%3E%3Ccircle cx='20' cy='21' r='1'%3E%3C/circle%3E%3Cpath d='M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6'%3E%3C/path%3E%3C/svg%3E";
+            <motion.div 
+                className="flex flex-col justify-center items-center min-h-[70vh]"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+            >
+                <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{
+                        type: "spring",
+                        stiffness: 260,
+                        damping: 20
                     }}
-                />
-                <h2 className="text-2xl font-semibold text-gray-800 mb-2">Your Cart is Empty</h2>
-                <p className="text-gray-600 mb-4">Add some delicious items to your cart!</p>
-                <button onClick={() => navigate('/')} className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition">
-                    Browse Menu
-                </button>
-            </div>
+                >
+                    <motion.img
+                        src="/empty-cart.svg"
+                        alt="Empty Cart"
+                        className="w-48 h-48 me-8"
+                        animate={{ 
+                            y: [0, -10, 0],
+                        }}
+                        transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                        }}
+                        onError={(e) => {
+                            e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='9' cy='21' r='1'%3E%3C/circle%3E%3Ccircle cx='20' cy='21' r='1'%3E%3C/circle%3E%3Cpath d='M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6'%3E%3C/path%3E%3C/svg%3E";
+                        }}
+                    />
+                </motion.div>
+                <motion.div
+                    className="flex flex-col items-center space-y-4 mt-6"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.5 }}
+                >
+                    <motion.h2 
+                        className="text-2xl font-semibold text-gray-800"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.3, duration: 0.5 }}
+                    >
+                        Your Cart is Empty
+                    </motion.h2>
+                    <motion.p 
+                        className="text-gray-600"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.4, duration: 0.5 }}
+                    >
+                        Add some delicious items to your cart!
+                    </motion.p>
+                    <motion.button 
+                        onClick={() => navigate('/')} 
+                        className="bg-orange-500 text-white px-8 py-3 rounded-lg hover:bg-orange-600 transition-colors duration-300 transform hover:scale-105 mt-2"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5, duration: 0.5 }}
+                    >
+                        Browse Menu
+                    </motion.button>
+                </motion.div>
+            </motion.div>
         );
     }
 
@@ -167,7 +233,7 @@ const Cart = () => {
             <h1 className='text-4xl font-bold text-gray-800 mb-6 text-center'>Checkout</h1>
             <RestaurantHeader restaurant={restaurant} />
 
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6">
                 <h2 className="text-xl font-bold mb-4">Your Cart</h2>
                 <ul className="divide-y divide-gray-200">
                     {cartData.items.map((cartItem) => (
@@ -178,10 +244,10 @@ const Cart = () => {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
                         >
-                            <div className="flex flex-col">
-                                <div className="flex justify-between items-start">
+                            <div className="flex flex-col space-y-3">
+                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                                     <div className="flex-1">
-                                        <h3 className="font-semibold text-gray-800 text-2xl">{cartItem.item.name}</h3>
+                                        <h3 className="font-semibold text-gray-800 text-lg sm:text-2xl">{cartItem.item.name}</h3>
                                         {cartItem.selectedCustomizations && cartItem.selectedCustomizations.length > 0 && (
                                             <div className="mt-1 space-y-1">
                                                 <div className="text-sm text-gray-600">
@@ -193,17 +259,17 @@ const Cart = () => {
                                                 </div>
                                             </div>
                                         )}
-    
+
                                         {cartItem.item.offers && (
-                                            <div className='bg-green-200 text-green-500 font-semibold text-md py-1 px-2 rounded-md mt-2 w-fit'>
+                                            <div className='bg-green-200 text-green-500 font-semibold text-sm sm:text-md py-1 px-2 rounded-md mt-2 w-fit'>
                                                 <p>{cartItem.item.offers.offerName}</p>
                                             </div>
-                                            
                                         )}
                                     </div>
-                                    <div className="flex items-center gap-4">
+                                    
+                                    <div className="flex justify-between sm:flex-col sm:items-end gap-4">
                                         <motion.div 
-                                            className="flex items-center bg-orange-50 rounded-lg overflow-hidden"
+                                            className="flex items-center bg-orange-50 rounded-lg overflow-hidden h-fit"
                                             whileTap={{ scale: 0.98 }}
                                         >
                                             <motion.button 
@@ -256,7 +322,7 @@ const Cart = () => {
                                                     );
                                                 })()}
                                             </div>
-                                            <div className="text-sm text-gray-500">
+                                            <div className="text-xs sm:text-sm text-gray-500">
                                                 ₹{cartItem.item.price} each
                                             </div>
                                         </motion.div>
@@ -327,7 +393,7 @@ const Cart = () => {
                             className="overflow-hidden border-t border-gray-100 pt-4 px-4"
                         >
                             <div className="space-y-3 hide-scrollbar max-h-56 overflow-y-auto">
-                                {coupons.map(coupon => (
+                                {coupons && coupons.map(coupon => (
                                     <div 
                                         key={coupon._id} 
                                         className="border border-gray-100 rounded-lg p-3 hover:border-orange-500 transition-colors bg-gray-50"
@@ -357,6 +423,9 @@ const Cart = () => {
                                         </div>
                                     </div>
                                 ))}
+                                {coupons.length === 0 && (
+                                    <p className="text-sm text-gray-600">No coupons available for you right now.</p>
+                                )}
                             </div>
                         </motion.div>
                     )}
@@ -364,14 +433,14 @@ const Cart = () => {
             </div>
 
             <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 mb-4">
                     <div className="flex items-center">
-                        <FaMapMarkerAlt className="text-orange-500 mr-2" />
-                        <h2 className="text-lg font-semibold">Confirm Delivery Details</h2>
+                        <FaMapMarkerAlt className="text-orange-500 mr-2 text-lg sm:text-xl" />
+                        <h2 className="text-base sm:text-lg font-semibold">Confirm Delivery Details</h2>
                     </div>
                     <motion.button
                         onClick={() => updateCartState({ showAddresses: !showAddresses })}
-                        className="flex items-center text-orange-500"
+                        className="flex items-center text-orange-500 text-sm sm:text-base"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                     >
@@ -392,7 +461,7 @@ const Cart = () => {
                             animate={{ opacity: 1, height: "auto" }}
                             exit={{ opacity: 0, height: 0 }}
                             transition={{ duration: 0.3 }}
-                            className="space-y-4 overflow-hidden"
+                            className="space-y-3 sm:space-y-4 overflow-hidden"
                         >
                             <motion.div
                                 className="grid grid-cols-1 gap-3"
@@ -408,10 +477,10 @@ const Cart = () => {
                                     }`}
                                     whileTap={{ scale: 0.98 }}
                                 >
-                                    <FaMapMarkerAlt className="text-orange-500 mr-2" />
-                                    <div className="text-left">
-                                        <p className="font-medium">Use Current Location</p>
-                                        <p className="text-gray-600 text-sm">{userAddress || 'No location available'}</p>
+                                    <FaMapMarkerAlt className="text-orange-500 mr-2 text-lg" />
+                                    <div className="text-left flex-1">
+                                        <p className="font-medium text-sm sm:text-base">Use Current Location</p>
+                                        <p className="text-gray-600 text-xs sm:text-sm line-clamp-2 sm:line-clamp-1">{userAddress || 'No location available'}</p>
                                     </div>
                                 </motion.button>
 
@@ -426,9 +495,9 @@ const Cart = () => {
                                         whileTap={{ scale: 0.98 }}
                                     >
                                         <div className="flex items-center justify-between">
-                                            <div>
-                                                <p className="text-gray-600">{address.address}</p>
-                                                <p className="text-gray-600 text-sm mt-1">{address.phone}</p>
+                                            <div className="flex-1">
+                                                <p className="text-gray-600 text-sm sm:text-base line-clamp-2 sm:line-clamp-1">{address.address}</p>
+                                                <p className="text-gray-600 text-xs sm:text-sm mt-1">{address.phone}</p>
                                             </div>
                                         </div>
                                     </motion.div>
@@ -437,7 +506,7 @@ const Cart = () => {
                                 {/* Add New Address Button */}
                                 <motion.button
                                     onClick={() => navigate('/address-manage')}
-                                    className="w-full py-2 text-orange-500 border border-orange-500 rounded-lg transition-all duration-300 hover:bg-orange-50 hover:border-orange-300 hover:shadow-sm"
+                                    className="w-full py-2 sm:py-3 text-sm sm:text-base text-orange-500 border border-orange-500 rounded-lg transition-all duration-300 hover:bg-orange-50 hover:border-orange-300 hover:shadow-sm"
                                     whileTap={{ scale: 0.98 }}
                                 >
                                     Add New Address
@@ -455,19 +524,19 @@ const Cart = () => {
                         transition={{ duration: 0.3 }}
                     >
                         <div>
-                            <p className="text-gray-600">{deliveryAddress || 'Please select a delivery address'}</p>
-                            <div className="flex items-center mt-2">
+                            <p className="text-gray-600 text-sm sm:text-base line-clamp-2 sm:line-clamp-1">{deliveryAddress || 'Please select a delivery address'}</p>
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-0 mt-2">
                                 <input
                                     type="text"
                                     value={phoneNumber}
                                     onChange={(e) => setPhoneNumber(e.target.value)}
                                     placeholder="Enter phone number"
-                                    className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-orange-500"
+                                    className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm sm:text-base focus:outline-none focus:border-orange-500"
                                 />
                                 {userPhoneNumber && (
                                     <motion.button
                                         onClick={handleUseRegisteredPhone}
-                                        className="ml-2 bg-orange-500 text-md text-white py-1 px-2 rounded-md hover:bg-orange-600 transition-all duration-300"
+                                        className="sm:ml-2 bg-orange-500 text-sm sm:text-base text-white py-2 px-3 rounded-lg hover:bg-orange-600 transition-all duration-300"
                                         whileTap={{ scale: 0.95 }}
                                     >
                                         Use registered
@@ -514,11 +583,11 @@ const Cart = () => {
                         <span className="flex items-center gap-2">
                             {totalPrice >= 500 ? (
                                 <>
-                                    <span className="text-gray-400 line-through">₹{deliveryFee}</span>
+                                    <span className="text-gray-400 line-through">₹{deliveryFee.toFixed(2)}</span>
                                     <span className="text-green-600">FREE</span>
                                 </>
                             ) : (
-                                `₹${deliveryFee}`
+                                `₹${deliveryFee.toFixed(2)}`
                             )}
                         </span>
                     </div>
@@ -549,7 +618,7 @@ const Cart = () => {
                             )}
                             {totalPrice >= 500 && (
                                 <div className="text-green-600 text-sm">
-                                    You saved ₹{deliveryFee} on delivery charges
+                                    You saved ₹{deliveryFee.toFixed(2)} on delivery charges
                                 </div>
                             )}
                             {(totalSavings > 0 || appliedCoupon || totalPrice >= 500) && (

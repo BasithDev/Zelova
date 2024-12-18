@@ -1,11 +1,21 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import ProductCard from "./ProductCard";
 import { FiSearch } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { getProducts, getOffers, listOrUnlistProduct ,deleteProduct , updateProduct, updateProductOffer } from "../../Services/apiServices";
+import { 
+  getProducts , 
+  getOffers , 
+  listOrUnlistProduct ,
+  deleteProduct , 
+  updateProduct, 
+  updateProductOffer 
+} from "../../Services/apiServices";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
+import Cropper from 'react-cropper';
+import 'cropperjs/dist/cropper.css';
+import { uploadImageToCloud } from '../../Helpers/uploadImageToCloud';
 
 const Menu = () => {
   const navigate = useNavigate();
@@ -18,6 +28,11 @@ const Menu = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isCropperVisible, setIsCropperVisible] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [tempImage, setTempImage] = useState(null);
+  const [isUpdatingImage, setIsUpdatingImage] = useState(false);
+  const cropperRef = useRef(null);
 
   const itemsPerPage = 4;
 
@@ -138,7 +153,14 @@ const Menu = () => {
 
   const handleProductUpdate = async (updatedProduct)=>{
     try {
-      const response = await updateProduct(updatedProduct)
+      const updateData = {
+        id: updatedProduct._id,
+        name: updatedProduct.name,
+        price: updatedProduct.price,
+        description: updatedProduct.description,
+        image: updatedProduct.image
+      };
+      const response = await updateProduct(updateData);
       setProducts((prev) => {
         const index = prev.findIndex((product) => product._id === updatedProduct._id);
         if (index === -1) return prev;
@@ -150,6 +172,7 @@ const Menu = () => {
       toast.success("Product Updated Successfully!")
     } catch (error) {
       console.log(error)
+      toast.error("Failed to update product!")
     }
   }
 
@@ -175,8 +198,50 @@ const Menu = () => {
       toast.error("Failed to update product offer.");
     }
   };
-  
-  
+
+  const handleImageChange = (e, product) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setTempImage(reader.result);
+        setSelectedProduct(product);
+        setIsCropperVisible(true);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDoneCrop = async () => {
+    if (cropperRef.current && selectedProduct) {
+      try {
+        setIsUpdatingImage(true);
+        const croppedData = cropperRef.current.cropper.getCroppedCanvas().toDataURL();
+        const uploadedImage = await uploadImageToCloud(croppedData);
+        
+        const updatedProduct = {
+          ...selectedProduct,
+          image: uploadedImage.secure_url
+        };
+        
+        await handleProductUpdate(updatedProduct);
+        setIsCropperVisible(false);
+        setSelectedProduct(null);
+        setTempImage(null);
+      } catch (error) {
+        console.error('Error updating image:', error);
+        toast.error('Failed to update image. Please try again.');
+      } finally {
+        setIsUpdatingImage(false);
+      }
+    }
+  };
+
+  const handleCancelCrop = () => {
+    setIsCropperVisible(false);
+    setSelectedProduct(null);
+    setTempImage(null);
+  };
 
   const pageVariants = {
     initial: { opacity: 0, x: "5%" },
@@ -187,11 +252,11 @@ const Menu = () => {
   return (
     <div className="container mx-auto p-4">
       <ToastContainer position="top-right" />
-      <h1 className="text-4xl font-bold mb-6 text-center">Menu</h1>
+      <h1 className="text-3xl sm:text-4xl font-bold mb-4 sm:mb-6 text-center">Menu</h1>
 
       {/* Search and Sort */}
-      <div className="flex flex-col md:flex-row justify-between items-center px-6 mb-6 gap-4">
-        <div className="relative w-full md:w-1/2 mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center px-4 sm:px-6 mb-6 gap-4">
+        <div className="relative w-full sm:w-1/2">
           <input
             type="text"
             placeholder="Search products..."
@@ -199,79 +264,65 @@ const Menu = () => {
             onChange={handleSearch}
             className="border border-gray-300 rounded-full px-4 py-2 w-full shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
-          <button
-            className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
-          >
+          <button className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700">
             <FiSearch size={20} />
           </button>
         </div>
 
         {/* Sort Dropdown */}
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="border border-gray-300 rounded px-4 py-2 bg-white flex items-center gap-2 focus:outline-none"
+            className="w-full sm:w-auto border border-gray-300 rounded px-4 py-2 bg-white flex items-center justify-between sm:justify-start gap-2 focus:outline-none"
           >
-            Sort By: {sortBy === "name" ? "Name" : "Price"}
-            <span className={`transform ${isDropdownOpen ? "rotate-180" : ""}`}>
-              ▼
-            </span>
+            <span className="flex-1 sm:flex-none">Sort By: {sortBy === "name" ? "Name" : sortBy === "price" ? "Price" : sortBy === "listed" ? "Listed Items" : "Unlisted Items"}</span>
+            <span className={`transform ${isDropdownOpen ? "rotate-180" : ""}`}>▼</span>
           </button>
 
           <AnimatePresence>
-  {isDropdownOpen && (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.2 }}
-      className="absolute left-0 mt-2 w-full bg-white border border-gray-300 rounded-lg shadow-lg z-10"
-    >
-      <ul>
-        <li
-          onClick={() => handleSort("name")}
-          className="px-4 py-2 hover:bg-blue-50 cursor-pointer"
-        >
-          By Name
-        </li>
-        <li
-          onClick={() => handleSort("price")}
-          className="px-4 py-2 hover:bg-blue-50 cursor-pointer"
-        >
-          By Price
-        </li>
-        <li
-          onClick={() => handleSort("listed")}
-          className="px-4 py-2 hover:bg-blue-50 cursor-pointer"
-        >
-          Listed Items
-        </li>
-        <li
-          onClick={() => handleSort("unlisted")}
-          className="px-4 py-2 hover:bg-blue-50 cursor-pointer"
-        >
-          Unlisted Items
-        </li>
-      </ul>
-    </motion.div>
-  )}
-</AnimatePresence>
-
+            {isDropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="absolute right-0 mt-2 w-full sm:w-48 bg-white border border-gray-300 rounded-lg shadow-lg z-10"
+              >
+                <ul>
+                  <li onClick={() => handleSort("name")} className="px-4 py-2 hover:bg-blue-50 cursor-pointer">
+                    By Name
+                  </li>
+                  <li onClick={() => handleSort("price")} className="px-4 py-2 hover:bg-blue-50 cursor-pointer">
+                    By Price
+                  </li>
+                  <li onClick={() => handleSort("listed")} className="px-4 py-2 hover:bg-blue-50 cursor-pointer">
+                    Listed Items
+                  </li>
+                  <li onClick={() => handleSort("unlisted")} className="px-4 py-2 hover:bg-blue-50 cursor-pointer">
+                    Unlisted Items
+                  </li>
+                </ul>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
       {/* Products */}
       {loading ? (
-        <div className="text-center">Loading...</div>
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading products...</p>
+        </div>
       ) : error ? (
-        <div className="text-center text-red-500">{error}</div>
+        <div className="text-center py-8 text-red-500">{error}</div>
       ) : filteredProducts.length === 0 ? (
         <div className="text-center py-8">
-          <h2 className="text-2xl font-semibold">No products found!</h2>
-          <p className="text-gray-500">Try adjusting your search or add new products.</p>
+          <h2 className="text-xl sm:text-2xl font-semibold">No products found!</h2>
+          <p className="text-gray-500 mt-2">Try adjusting your search or add new products.</p>
           <button
             onClick={() => navigate("/vendor/add-items")}
-            className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
           >
             Add a Product
           </button>
@@ -286,7 +337,7 @@ const Menu = () => {
               exit="exit"
               variants={pageVariants}
               transition={{ duration: 0.3 }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 px-6"
+              className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 px-2 sm:px-6"
             >
               {paginatedProducts.map((product) => (
                 <motion.div
@@ -300,10 +351,10 @@ const Menu = () => {
                     product={product}
                     onSave={handleProductUpdate}
                     onDelete={handleDelete}
-                    onListToggle={handleListToggle}
-                    onChangeImage={(id) => console.log(`Change Image ${id}`)}
-                    onOfferChange={handleProductOfferUpdate}
+                    onToggleList={handleListToggle}
+                    onUpdateOffer={handleProductOfferUpdate}
                     offers={offers}
+                    onImageChange={handleImageChange}
                   />
                 </motion.div>
               ))}
@@ -311,23 +362,91 @@ const Menu = () => {
           </AnimatePresence>
 
           {/* Pagination */}
-          <div className="flex justify-center items-center mt-6 space-x-2">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-6 px-4">
               <button
-                key={page}
-                className={`px-4 py-2 rounded ${
-                  page === currentPage
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 hover:bg-gray-300"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={`px-3 py-1 rounded ${
+                  currentPage === 1
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-blue-500 text-white hover:bg-blue-600"
                 }`}
-                onClick={() => handlePageChange(page)}
               >
-                {page}
+                Previous
               </button>
-            ))}
-          </div>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`px-3 py-1 rounded ${
+                    currentPage === page
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className={`px-3 py-1 rounded ${
+                  currentPage === totalPages
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-blue-500 text-white hover:bg-blue-600"
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          )}
         </>
       )}
+      <AnimatePresence>
+        {isCropperVisible && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          >
+            <div className="bg-white rounded-lg p-4 max-w-2xl w-full">
+              <h3 className="text-lg font-semibold mb-4">Crop Image</h3>
+              <Cropper
+                ref={cropperRef}
+                src={tempImage}
+                style={{ height: 400, width: "100%" }}
+                aspectRatio={1}
+                guides={true}
+              />
+              <div className="flex justify-end gap-4 mt-4">
+                <button
+                  onClick={handleCancelCrop}
+                  disabled={isUpdatingImage}
+                  className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDoneCrop}
+                  disabled={isUpdatingImage}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {isUpdatingImage ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Updating...</span>
+                    </>
+                  ) : (
+                    'Update Image'
+                  )}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -5,7 +5,7 @@ import { FaUser } from "react-icons/fa";
 import { RiLockPasswordFill } from "react-icons/ri";
 import { FcGoogle } from "react-icons/fc";
 import PrimaryBtn from '../../Components/Buttons/PrimaryBtn';
-import { ToastContainer } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useDispatch } from 'react-redux';
 import { setUserAuth } from '../../Redux/slices/user/authUserSlice';
@@ -17,7 +17,13 @@ const Login = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
     const handleLogin = async () => {
+        if (!passwordRegex.test(password)) {
+            toast.error('Password does not meet the required criteria.');
+            return;
+        }
         try {
             const response = await loginUser({ email, password });
             const { Id,token, isVendor,status } = response.data;
@@ -30,7 +36,7 @@ const Login = () => {
                 navigate('/');
             }
         } catch (error) {
-            console.error("Login error:", error);
+            toast.error(error.response.data.message);
         }
     };
 
@@ -87,7 +93,9 @@ const Login = () => {
                     </div>
                     
                     <div className="text-center mb-4">
-                        <a href="#" className="text-gray-500">Forgot Password? <span className="underline text-blue-500">Click Here</span></a>
+                        <Link replace to="/forgot-password">
+                            <span className="text-gray-500">Forgot Password? <span className="underline text-blue-500">Click Here</span></span>
+                        </Link>
                     </div>
                     
                     <PrimaryBtn

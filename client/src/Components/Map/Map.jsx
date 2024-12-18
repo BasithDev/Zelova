@@ -4,9 +4,8 @@ import { GoogleMap, MarkerF, useLoadScript } from "@react-google-maps/api";
 
 const containerStyle = {
     width: "100%",
-    height: "400px",
-    boxShadow: "0px 0px 8px",
-    borderRadius: "24px"
+    height: "100%",
+    borderRadius: "16px"
 };
 
 const Map = ({ lat, lng, onLocationSelect }) => {
@@ -49,20 +48,28 @@ const Map = ({ lat, lng, onLocationSelect }) => {
         setCurrentPosition({ lat, lng });
     }, [lat, lng]);
 
-    if (loadError) return <p>Error loading map</p>;
-    if (!isLoaded) return <p>Loading...</p>;
+    if (loadError) return <div className="text-red-500 text-center p-4">Error loading map</div>;
+    if (!isLoaded) return <div className="flex justify-center items-center p-4"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div></div>;
 
     return (
-        <div className="map-container mt-6 shadow-xl rounded-2xl bg-blue-100 p-4">
-            <GoogleMap
-                mapContainerStyle={containerStyle}
-                center={currentPosition}
-                zoom={15}
-                onClick={handleMapClick}
-                onLoad={handleOnLoad}
-            >
-                <MarkerF position={currentPosition} />
-            </GoogleMap>
+        <div className="map-container w-full h-full min-h-[300px] sm:min-h-[400px] md:min-h-[500px] lg:min-h-[600px] rounded-2xl bg-slate-50 p-2 sm:p-4 shadow-lg">
+            <div className="relative w-full h-full">
+                <GoogleMap
+                    mapContainerStyle={containerStyle}
+                    center={currentPosition}
+                    zoom={15}
+                    onClick={handleMapClick}
+                    onLoad={handleOnLoad}
+                    options={{
+                        zoomControl: true,
+                        streetViewControl: false,
+                        mapTypeControl: false,
+                        fullscreenControl: true,
+                    }}
+                >
+                    <MarkerF position={currentPosition} />
+                </GoogleMap>
+            </div>
         </div>
     );
 };

@@ -1,13 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
 import { FiMenu } from 'react-icons/fi';
 import { FaPlus, FaMinus } from "react-icons/fa";
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { getMenuForUser } from '../../Services/apiServices';
 import { useSelector, useDispatch } from "react-redux";
 import { calculateDistanceAndTime } from '../../utils/distanceUtils';
 import RestaurantCard from "../../Components/RestaurantCard/RestaurantCard";
 import { AnimatePresence, motion } from "framer-motion";
-import { toast } from 'react-toastify';
+import { toast,ToastContainer } from 'react-toastify';
 import Header from "../../Components/Common/Header";
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import debounce from 'lodash/debounce';
@@ -15,8 +15,24 @@ import LoadingSpinner from "../../Components/LoadingSpinner/LoadingSpinner";
 import MenuSearch from "../../Components/MenuSearch/MenuSearch";
 import CategoryMenu from "../../Components/CategoryMenu/CategoryMenu";
 import { useCart } from "../../Hooks/useCart";
+import { addFavorite, removeFavorite, getFavourites } from "../../Services/apiServices";
 
 const Menu = () => {
+
+    const { id } = useParams();
+    const [searchQuery, setSearchQuery] = useState("");
+    const [menuSearchQuery, setMenuSearchQuery] = useState("");
+    const [debouncedMenuSearch, setDebouncedMenuSearch] = useState("");
+    const [restaurant, setRestaurant] = useState(null);
+    const [menuItems, setMenuItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [isFabOpen, setIsFabOpen] = useState(false);
+    const [sortOrder, setSortOrder] = useState('none');
+    const [favorites, setFavorites] = useState(new Set());
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedCustomizations, setSelectedCustomizations] = useState({});
+    const [selectedItem, setSelectedItem] = useState(null);
+    const location = useLocation()
 
     const {
         cart,
@@ -32,30 +48,20 @@ const Menu = () => {
             action,
             selectedCustomizations: customizations
         };
-    
         updateCartMutation.mutate(payload);
     };
 
-    const { id } = useParams();
-    const [searchQuery, setSearchQuery] = useState("");
-    const [menuSearchQuery, setMenuSearchQuery] = useState("");
-    const [debouncedMenuSearch, setDebouncedMenuSearch] = useState("");
-    const [restaurant, setRestaurant] = useState(null);
-    const [menuItems, setMenuItems] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [isFabOpen, setIsFabOpen] = useState(false);
-    const [sortOrder, setSortOrder] = useState('none');
-    const [favorites, setFavorites] = useState(new Set());
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedCustomizations, setSelectedCustomizations] = useState({});
-    const [selectedItem, setSelectedItem] = useState(null);
+    useEffect(()=>{
+        if(location.state){
+            const {foodCategory} = location.state
+            handleCategoryClick(foodCategory)
+        }
+    },[location.state])
 
     const handleModalOpen = (item) => {
         setSelectedItem(item);
-        // Set default selections for each customization
         const defaultSelections = {};
         item.customizations.forEach(customization => {
-            // Select the first option as default for each customization
             defaultSelections[customization.fieldName] = customization.options[0];
         });
         setSelectedCustomizations(defaultSelections);
@@ -133,16 +139,25 @@ const Menu = () => {
         }
     };
 
-    const toggleFavorite = (itemId) => {
-        setFavorites(prev => {
-            const newFavorites = new Set(prev);
-            if (newFavorites.has(itemId)) {
-                newFavorites.delete(itemId);
+    const toggleFavorite = async (itemId) => {
+        try {
+            if (favorites.has(itemId)) {
+                await removeFavorite({ foodItemId: itemId });
+                setFavorites((prev) => {
+                    const newFavorites = new Set(prev);
+                    newFavorites.delete(itemId);
+                    return newFavorites;
+                });
+                toast.success("Item removed from favorites!");
             } else {
-                newFavorites.add(itemId);
+                await addFavorite({ foodItemId: itemId });
+                setFavorites((prev) => new Set(prev).add(itemId));
+                toast.success("Item added to favorites!");
             }
-            return newFavorites;
-        });
+        } catch (error) {
+            console.error("Error toggling favorite:", error);
+            toast.error("Failed to toggle favorite. Please try again.");
+        }
     };
 
     useEffect(() => {
@@ -166,8 +181,21 @@ const Menu = () => {
             }
         };
 
+        const fetchFavourites = async () => {
+            try {
+                const response = await getFavourites();
+                if (response?.data) {
+                    const favoriteIds = response.data.favorites.map((favorite) => favorite.item._id);
+                    setFavorites(new Set(favoriteIds));
+                }
+            } catch (error) {
+                console.error("Error fetching favorites:", error);
+            }
+        };
+
         if (id && lat && lon) {
             fetchMenu();
+            fetchFavourites();
         } else {
             toast.error("Invalid restaurant or location details");
             setLoading(false);
@@ -220,6 +248,7 @@ const Menu = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
+            <ToastContainer position="top-right" />
             <Header
                 searchQuery={searchQuery}
                 onSearchChange={(e) => setSearchQuery(e.target.value)}
@@ -244,7 +273,7 @@ const Menu = () => {
                 onSortChange={(e) => setSortOrder(e.target.value)}
             />
 
-            <div className="fixed bottom-4 right-4 z-50">
+            <div className="fixed bottom-24 lg:bottom-4 right-4 z-50">
                 <button
                     onClick={() => setIsFabOpen(!isFabOpen)}
                     className="bg-indigo-600 text-white p-3 rounded-full shadow-lg hover:bg-indigo-700 transition-all"
@@ -277,26 +306,40 @@ const Menu = () => {
                         <h3 className="text-3xl font-extrabold px-3 mb-6 text-gray-800">{categoryName}</h3>
 
                         {items.map((item) => (
-                            <div key={item._id} className="bg-white rounded-2xl shadow-lg p-6 mb-6 flex flex-col md:flex-row justify-between items-start hover:shadow-xl transition-shadow duration-300">
-                                <div className="flex-1 mb-4 md:mb-0">
-                                    <h4 className="text-2xl font-semibold mb-3 text-gray-900">{item.name}</h4>
-                                    <p className="text-gray-500 mb-3">{item.description}</p>
-                                    <p className="text-xl font-bold text-green-600 mb-3">₹{item.price}</p>
-                                    <p className={`text-lg font-semibold w-fit ${item?.offers?.offerName ? 'text-green-600 bg-green-200' : 'text-yellow-600 bg-yellow-200'} p-2 rounded-lg mb-3`}>{item.offers?.offerName || 'Buy For 500+ Get Free Delivery'}</p>
+                            <div key={item._id} className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-6 flex flex-col lg:flex-row justify-between items-start hover:shadow-xl transition-shadow duration-300">
+                                <div className="flex-1 mb-4 lg:mb-0 w-full lg:w-auto">
+                                    <div className="flex justify-between items-start mb-3">
+                                        <h4 className="text-xl sm:text-2xl font-semibold text-gray-900">{item.name}</h4>
+                                        <button
+                                            onClick={() => toggleFavorite(item._id)}
+                                            className="block lg:hidden p-2 bg-gray-100 rounded-full transition-colors duration-300 ml-2"
+                                        >
+                                            {favorites.has(item._id) ? (
+                                                <FaHeart className="text-red-500 text-xl sm:text-2xl" />
+                                            ) : (
+                                                <FaRegHeart className="text-gray-400 hover:text-red-500 text-xl sm:text-2xl" />
+                                            )}
+                                        </button>
+                                    </div>
+                                    <p className="text-gray-500 text-sm sm:text-base mb-3">{item.description}</p>
+                                    <p className="text-lg sm:text-xl font-bold text-green-600 mb-3">₹{item.price}</p>
+                                    <p className={`text-sm sm:text-lg font-semibold w-fit ${item?.offers?.offerName ? 'text-green-600 bg-green-200' : 'text-yellow-600 bg-yellow-200'} p-2 rounded-lg mb-3`}>
+                                        {item.offers?.offerName || 'Buy For 500+ Get Free Delivery'}
+                                    </p>
                                     <button
                                         onClick={() => toggleFavorite(item._id)}
-                                        className="w-fit p-2 bg-gray-100 rounded-full transition-colors duration-300"
+                                        className="hidden lg:block p-2 bg-gray-100 rounded-full transition-colors duration-300"
                                     >
                                         {favorites.has(item._id) ? (
-                                            <FaHeart className="text-red-500 text-2xl" />
+                                            <FaHeart className="text-red-500 text-xl sm:text-2xl" />
                                         ) : (
-                                            <FaRegHeart className="text-gray-400 hover:text-red-500 text-2xl" />
+                                            <FaRegHeart className="text-gray-400 hover:text-red-500 text-xl sm:text-2xl" />
                                         )}
                                     </button>
                                 </div>
-                                <div className="flex flex-col items-center gap-3">
+                                <div className="flex flex-col items-center gap-3 w-full lg:w-auto">
                                     {item.image && (
-                                        <div className="w-40 h-40">
+                                        <div className="w-full sm:w-40 h-40 mb-3">
                                             <img
                                                 src={item.image}
                                                 alt={item.name}
@@ -308,25 +351,27 @@ const Menu = () => {
                                         cart.data?.cart?.items?.find(
                                             (cartItem) => cartItem?.item._id === item._id
                                         )?.quantity > 0 ? (
-                                            <div className="flex bg-white rounded-lg shadow-md py-2 px-4 border-orange-500 border-2 items-center gap-6">
+                                            <div className="flex bg-white rounded-lg shadow-md py-2 px-4 border-orange-500 border-2 items-center gap-4 sm:gap-6 w-full lg:w-auto justify-center">
                                                 <button
                                                     onClick={() => handleCustomizableItemUpdate(item, 'remove')}
                                                     className="w-6 h-6 flex items-center justify-center hover:bg-gray-200 p-1 rounded-lg transition-colors duration-300"
                                                 >
-                                                    <FaMinus className="text-orange-500 text-xl" />
+                                                    <FaMinus className="text-orange-500 text-lg sm:text-xl" />
                                                 </button>
-                                                <p className="text-2xl text-orange-500 font-bold">{cart.data?.cart?.items?.find((cartItem) => cartItem?.item._id === item._id)?.quantity}</p>
+                                                <p className="text-xl sm:text-2xl text-orange-500 font-bold">
+                                                    {cart.data?.cart?.items?.find((cartItem) => cartItem?.item._id === item._id)?.quantity}
+                                                </p>
                                                 <button
                                                     onClick={() => handleCustomizableItemUpdate(item, 'add')}
                                                     className="w-6 h-6 flex items-center justify-center hover:bg-gray-200 p-1 rounded-lg transition-colors duration-300"
                                                 >
-                                                    <FaPlus className="text-orange-500 text-xl" />
+                                                    <FaPlus className="text-orange-500 text-lg sm:text-xl" />
                                                 </button>
                                             </div>
                                         ) : (
                                             <button
                                                 onClick={() => handleModalOpen(item)}
-                                                className="w-full px-4 py-2 text-2xl bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors duration-300"
+                                                className="w-full lg:w-auto px-4 py-2 text-xl sm:text-2xl bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors duration-300"
                                             >
                                                 Add
                                             </button>
@@ -335,127 +380,128 @@ const Menu = () => {
                                         cart.data?.cart?.items?.find(
                                             (cartItem) => cartItem?.item._id === item._id
                                         )?.quantity > 0 ? (
-                                            <div className="flex bg-white rounded-lg shadow-md py-2 px-4 border-orange-500 border-2 items-center gap-6">
+                                            <div className="flex bg-white rounded-lg shadow-md py-2 px-4 border-orange-500 border-2 items-center gap-4 sm:gap-6 w-full lg:w-auto justify-center">
                                                 <button
                                                     onClick={() => handleCartUpdation(item._id, 'remove')}
                                                     className="w-6 h-6 flex items-center justify-center hover:bg-gray-200 p-1 rounded-lg transition-colors duration-300"
                                                 >
-                                                    <FaMinus className="text-orange-500 text-xl" />
+                                                    <FaMinus className="text-orange-500 text-lg sm:text-xl" />
                                                 </button>
-                                                <p className="text-2xl text-orange-500 font-bold">{cart.data?.cart?.items?.find((cartItem) => cartItem?.item._id === item._id)?.quantity}</p>
+                                                <p className="text-xl sm:text-2xl text-orange-500 font-bold">
+                                                    {cart.data?.cart?.items?.find((cartItem) => cartItem?.item._id === item._id)?.quantity}
+                                                </p>
                                                 <button
                                                     onClick={() => handleCartUpdation(item._id, 'add')}
                                                     className="w-6 h-6 flex items-center justify-center hover:bg-gray-200 p-1 rounded-lg transition-colors duration-300"
                                                 >
-                                                    <FaPlus className="text-orange-500 text-xl" />
+                                                    <FaPlus className="text-orange-500 text-lg sm:text-xl" />
                                                 </button>
                                             </div>
                                         ) : (
                                             <button
                                                 onClick={() => handleCartUpdation(item._id, 'add')}
-                                                className="w-full px-4 py-2 text-2xl bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors duration-300"
+                                                className="w-full lg:w-auto px-4 py-2 text-xl sm:text-2xl bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors duration-300"
                                             >
                                                 Add
                                             </button>
                                         )
                                     )}
-                                    <AnimatePresence>
-                                    {isModalOpen && selectedItem && (
-                                            <motion.div 
-                                                className="fixed inset-0 flex items-center justify-center"
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                exit={{ opacity: 0 }}
-                                            >
-                                                <motion.div
-                                                    className="bg-white rounded-xl p-8 w-[28rem] relative shadow-[0_0_12px_0_rgba(0,0,0,0.3)]"
-                                                    initial={{ 
-                                                        opacity: 0,
-                                                        scale: 0.5,
-                                                        y: 100
-                                                    }}
-                                                    animate={{ 
-                                                        opacity: 1,
-                                                        scale: 1,
-                                                        y: 0,
-                                                        transition: {
-                                                            type: "spring",
-                                                            stiffness: 300,
-                                                            damping: 20
-                                                        }
-                                                    }}
-                                                    exit={{ 
-                                                        opacity: 0,
-                                                        scale: 0.5,
-                                                        y: 100,
-                                                        transition: { 
-                                                            duration: 0.1 
-                                                        }
-                                                    }}
-                                                >
-                                                    <h2 className="text-2xl font-bold mb-6">{selectedItem.name}</h2>
-                                                    <form onSubmit={handleOkClick}>
-                                                        {selectedItem.customizations.map((customization) => (
-                                                            <div key={customization._id} className="mb-6">
-                                                                <label className="block text-gray-700 text-sm font-bold mb-3">
-                                                                    {customization.fieldName}
-                                                                </label>
-                                                                <div className="flex flex-wrap gap-3">
-                                                                    {customization.options.map((option) => (
-                                                                        <motion.button
-                                                                            key={option._id}
-                                                                            type="button"
-                                                                            onClick={() => handleCustomizationChange(customization.fieldName, option)}
-                                                                            className={`px-4 py-2.5 rounded-lg shadow-sm ${
-                                                                                selectedCustomizations[customization.fieldName]?._id === option._id
-                                                                                    ? 'bg-blue-500 text-white shadow-blue-200' 
-                                                                                    : 'bg-white border border-gray-200 hover:border-blue-300'
-                                                                            }`}
-                                                                            whileHover={{ scale: 1.03, transition: { duration: 0.2 } }}
-                                                                            whileTap={{ scale: 0.97 }}
-                                                                        >
-                                                                            {option.name} - ₹{option.price}
-                                                                        </motion.button>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        ))}
-
-                                                        <div className="flex justify-end mt-8 gap-3">
-                                                            <motion.button
-                                                                type="button"
-                                                                onClick={closeModal}
-                                                                className="px-5 py-2.5 bg-white border border-gray-200 rounded-lg hover:border-gray-300"
-                                                                whileHover={{ scale: 1.03, transition: { duration: 0.2 } }}
-                                                                whileTap={{ scale: 0.97 }}
-                                                            >
-                                                                Cancel
-                                                            </motion.button>
-                                                            <motion.button
-                                                                type="submit"
-                                                                className="px-5 py-2.5 bg-green-500 text-white rounded-lg shadow-sm shadow-green-200"
-                                                                whileHover={{ 
-                                                                    scale: 1.03,
-                                                                    backgroundColor: "#22c55e",
-                                                                    transition: { duration: 0.2 }
-                                                                }}
-                                                                whileTap={{ scale: 0.97 }}
-                                                            >
-                                                                Add to Cart
-                                                            </motion.button>
-                                                        </div>
-                                                    </form>
-                                                </motion.div>
-                                            </motion.div>
-                                    )}
-                                    </AnimatePresence>
                                 </div>
                             </div>
                         ))}
                     </div>
                 ))}
             </div>
-            
+            <AnimatePresence>
+                {isModalOpen && selectedItem && (
+                    <motion.div 
+                        className="fixed inset-0 flex items-center justify-center z-50"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        <motion.div
+                            className="bg-white rounded-xl p-4 sm:p-8 w-[90%] sm:w-[28rem] relative shadow-[0_0_12px_0_rgba(0,0,0,0.3)] mx-4 sm:mx-0"
+                            initial={{ 
+                                opacity: 0,
+                                scale: 0.5,
+                                y: 100
+                            }}
+                            animate={{ 
+                                opacity: 1,
+                                scale: 1,
+                                y: 0,
+                                transition: {
+                                    type: "spring",
+                                    stiffness: 300,
+                                    damping: 20
+                                }
+                            }}
+                            exit={{ 
+                                opacity: 0,
+                                scale: 0.5,
+                                y: 100,
+                                transition: { 
+                                    duration: 0.1 
+                                }
+                            }}
+                        >
+                            <h2 className="text-xl sm:text-2xl font-bold mb-6">{selectedItem.name}</h2>
+                            <form onSubmit={handleOkClick}>
+                                {selectedItem.customizations.map((customization) => (
+                                    <div key={customization._id} className="mb-6">
+                                        <label className="block text-gray-700 text-sm font-bold mb-3">
+                                            {customization.fieldName}
+                                        </label>
+                                        <div className="flex flex-wrap gap-3">
+                                            {customization.options.map((option) => (
+                                                <motion.button
+                                                    key={option._id}
+                                                    type="button"
+                                                    onClick={() => handleCustomizationChange(customization.fieldName, option)}
+                                                    className={`px-3 sm:px-4 py-2 sm:py-2.5 text-sm sm:text-base rounded-lg shadow-sm ${
+                                                        selectedCustomizations[customization.fieldName]?._id === option._id
+                                                            ? 'bg-blue-500 text-white shadow-blue-200' 
+                                                            : 'bg-white border border-gray-200 hover:border-blue-300'
+                                                    }`}
+                                                    whileHover={{ scale: 1.03, transition: { duration: 0.2 } }}
+                                                    whileTap={{ scale: 0.97 }}
+                                                >
+                                                    {option.name} - ₹{option.price}
+                                                </motion.button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+
+                                <div className="flex justify-end mt-8 gap-3">
+                                    <motion.button
+                                        type="button"
+                                        onClick={closeModal}
+                                        className="px-4 sm:px-5 py-2 sm:py-2.5 text-sm sm:text-base bg-white border border-gray-200 rounded-lg hover:border-gray-300"
+                                        whileHover={{ scale: 1.03, transition: { duration: 0.2 } }}
+                                        whileTap={{ scale: 0.97 }}
+                                    >
+                                        Cancel
+                                    </motion.button>
+                                    <motion.button
+                                        type="submit"
+                                        className="px-4 sm:px-5 py-2 sm:py-2.5 text-sm sm:text-base bg-green-500 text-white rounded-lg shadow-sm shadow-green-200"
+                                        whileHover={{ 
+                                            scale: 1.03,
+                                            backgroundColor: "#22c55e",
+                                            transition: { duration: 0.2 }
+                                        }}
+                                        whileTap={{ scale: 0.97 }}
+                                    >
+                                        Add to Cart
+                                    </motion.button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </motion.div>
+                )} 
+            </AnimatePresence>
         </div>
     );
 };

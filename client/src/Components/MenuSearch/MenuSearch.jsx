@@ -5,7 +5,7 @@ const MenuSearch = ({ menuSearchQuery, onSearchChange, sortOrder, onSortChange }
     return (
         <div className="px-8 py-3">
             <div className="flex justify-between items-center gap-4">
-                <div className="relative w-72">
+                <div className="relative flex-1">
                     <input
                         type="text"
                         value={menuSearchQuery}
@@ -21,7 +21,7 @@ const MenuSearch = ({ menuSearchQuery, onSearchChange, sortOrder, onSortChange }
                 <select
                     value={sortOrder}
                     onChange={onSortChange}
-                    className="px-4 py-3 bg-white border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 shadow-sm cursor-pointer"
+                    className="w-32 px-4 py-3 bg-white border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 shadow-sm cursor-pointer"
                 >
                     <option value="none">Sort by</option>
                     <option value="lowToHigh">Price: Low to High</option>

@@ -5,7 +5,6 @@ import { useCallback, useEffect, useState } from "react";
 import { RingLoader } from 'react-spinners';
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import Header from "../../Components/Common/Header";
 import { calculateDistanceAndTime } from '../../utils/distanceUtils';
 
@@ -13,23 +12,24 @@ const Home = () => {
     const navigate = useNavigate();
     const [restaurantData, setRestaurantData] = useState([])
     const [locationAvailable, setLocationAvailable] = useState(false);
-    const userLocation = useSelector((state) => state.userLocation)
-    const { lat: lat, lng: lon } = userLocation.coordinates
+    const [sortType, setSortType] = useState('nearest');
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const userLocation = useSelector((state) => state?.userLocation)
+    const { lat, lng: lon } = userLocation.coordinates || {}
     const [searchQuery, setSearchQuery] = useState('');
 
     const fetchRestaurants = useCallback(async () => {
         const response = await getRestaurantsForUser(lat, lon)
         if (response?.data) {
-            setRestaurantData(response?.data)
+            const sortedData = [...response.data].sort((a, b) => a.distance - b.distance);
+            setRestaurantData(sortedData)
             setLocationAvailable(true)
         }
     }, [lat, lon])
 
     useEffect(() => {
-        if (lat && lon) {
+        if (lat !== undefined && lon !== undefined) {
             fetchRestaurants()
-        } else {
-            toast.error("Please enable location services to view nearby restaurants")
         }
     }, [lat, lon, fetchRestaurants])
 
@@ -37,97 +37,228 @@ const Home = () => {
         navigate(`restaurant/${restaurantId}/menu`);
     };
 
+    const handleSort = (type) => {
+        setSortType(type);
+        let sortedData = [...restaurantData];
+        
+        switch(type) {
+            case 'nearest':
+                sortedData.sort((a, b) => a.distance - b.distance);
+                break;
+            case 'farthest':
+                sortedData.sort((a, b) => b.distance - a.distance);
+                break;
+            case 'offers':
+                sortedData = sortedData.filter(restaurant => restaurant.offerName);
+                break;
+            case 'rating':
+                sortedData.sort((a, b) => b.avgRating - a.avgRating);
+                break;
+            default:
+                break;
+        }
+        
+        setRestaurantData(sortedData);
+    };
+
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
+        <div
             className="p-1"
         >
             <Header 
                 searchQuery={searchQuery}
                 onSearchChange={(e) => setSearchQuery(e.target.value)}
-                placeholderText="Search for restaurants or dishes..."
+                placeholderText="Search foods, restaurants, etc..."
             />
             <div className="p-6">
                 {!locationAvailable ? (
-                    <div className="flex flex-col justify-center items-center">
-                        <RingLoader size={30} color="#FF5733" className="mb-5" />
-                        <p className="text-lg text-gray-600 mt-4 animate-pulse">Finding restaurants nearby...</p>
-                    </div>
+                    <motion.div
+                        className="flex flex-col items-center"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        <motion.div
+                            animate={{
+                                scale: [1, 1.2, 1],
+                                rotate: [0, 180, 360]
+                            }}
+                            transition={{
+                                duration: 2,
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                            }}
+                        >
+                            <RingLoader size={50} color="#FF5733" />
+                        </motion.div>
+                        <motion.div
+                            className="flex flex-col items-center gap-2 mt-6"
+                            initial={{ y: 20 }}
+                            animate={{ y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                        >
+                            <motion.p 
+                                className="text-xl font-semibold text-gray-800"
+                                animate={{ opacity: [0.5, 1, 0.5] }}
+                                transition={{ duration: 1.5, repeat: Infinity }}
+                            >
+                                Finding Restaurants Nearby
+                            </motion.p>
+                            <motion.div className="flex gap-1">
+                                {[0, 1, 2].map((i) => (
+                                    <motion.span
+                                        key={i}
+                                        className="w-2 h-2 bg-orange-500 rounded-full"
+                                        animate={{ 
+                                            y: ["0%", "-50%", "0%"],
+                                            opacity: [1, 0.5, 1]
+                                        }}
+                                        transition={{
+                                            duration: 0.8,
+                                            repeat: Infinity,
+                                            delay: i * 0.2
+                                        }}
+                                    />
+                                ))}
+                            </motion.div>
+                        </motion.div>
+                    </motion.div>
                 ) : (
-                    <>
-                        <h2 className="text-3xl font-bold mb-5 text-gray-900">Restaurants Near You</h2>
-                        <p className="text-xl w-fit mb-4 font-bold bg-orange-100 text-orange-600 px-3 py-2 rounded-md shadow-sm">
-                            Most Sellings
-                        </p>
-                        <div className="mb-6 flex items-center gap-4 overflow-x-auto hide-scrollbar">
-                            {["Burger", "Cakes", "Pizza", "Mandi", "Biryani", "Shawarma", "Juices"].map((category, index) => (
-                                <button
-                                    key={index}
-                                    className="bg-gray-100 border-2 border-gray-200 font-medium rounded-md px-5 py-2 text-base text-gray-700 hover:bg-orange-500 hover:border-transparent hover:text-white transition-all duration-300 shadow-sm"
-                                >
-                                    {category}
-                                </button>
-                            ))}
+                    <> 
+                        <div className="mb-6 px-4 sm:px-0">
+                            <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-gray-900">Restaurants Near You</h2>
+                            <div className="flex justify-end">
+                                <div className="relative w-48">
+                                    <button 
+                                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                        className="flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 rounded-lg shadow-sm w-full"
+                                    >
+                                        <span className="text-gray-700">Sort By: </span>
+                                        <span className="font-medium text-orange-500">
+                                            {sortType === 'none' ? 'Select Option' : 
+                                             sortType === 'nearest' ? 'Nearest' :
+                                             sortType === 'farthest' ? 'Farthest' :
+                                             sortType === 'offers' ? 'Offers Only' :
+                                             sortType === 'rating' ? 'Rating' : ''}
+                                        </span>
+                                        <svg 
+                                            className={`w-5 h-5 transition-transform ml-auto ${isDropdownOpen ? 'rotate-180' : ''}`} 
+                                            fill="none" 
+                                            stroke="currentColor" 
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -20 }}
+                                        animate={{ 
+                                            opacity: isDropdownOpen ? 1 : 0,
+                                            y: isDropdownOpen ? 0 : -20,
+                                            display: isDropdownOpen ? 'block' : 'none'
+                                        }}
+                                        transition={{ duration: 0.1 }}
+                                        className="absolute right-0 top-full mt-2 w-full bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50"
+                                    >
+                                        <div className="py-1">
+                                            {[
+                                                { value: 'nearest', label: 'Nearest' },
+                                                { value: 'farthest', label: 'Farthest' },
+                                                { value: 'offers', label: 'Offers Only' },
+                                                { value: 'rating', label: 'Rating' }
+                                            ].map((option) => (
+                                                <button
+                                                    key={option.value}
+                                                    onClick={() => {
+                                                        handleSort(option.value);
+                                                        setIsDropdownOpen(false);
+                                                    }}
+                                                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors duration-150 ${
+                                                        sortType === option.value 
+                                                            ? 'text-orange-500 bg-orange-50 font-medium' 
+                                                            : 'text-gray-700 hover:bg-orange-50'
+                                                    }`}
+                                                >
+                                                    {option.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </motion.div>
+                                </div>
+                            </div>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.5 }}
+                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-4 sm:px-0"
+                        >
                             {restaurantData.length === 0 ? (
-                                <div className="flex flex-col justify-center items-center">
-                                    <RingLoader size={50} color="#FF5733" className="mb-5" />
-                                    <p className="text-lg text-gray-600 mt-4 animate-ping">Finding restaurants nearby...</p>
+                                <div className="col-span-full flex flex-col justify-center items-center p-8">
+                                    <img 
+                                        src="/no-restaurant.svg" 
+                                        alt="No restaurants" 
+                                        className="w-48 h-48 mb-4 opacity-50"
+                                    />
+                                    <h3 className="text-xl font-semibold text-gray-800 mb-2">No Restaurants Found</h3>
+                                    <p className="text-gray-600 text-center">{`Sorry, our service is currently unavailable in your area. We're working on expanding our reach!`}</p>
                                 </div>
                             ) : (
                                 restaurantData.map((restaurant) => {
                                     const { distanceInKm, timeInMinutes } = calculateDistanceAndTime(restaurant.distance);
                                     return (
-                                        <div
+                                        <motion.div
                                             key={restaurant._id}
-                                            className="bg-white w-[80%] rounded-lg shadow-md overflow-hidden hover:shadow-2xl hover:scale-[1.01] hover:bg-orange-50 transform transition-all duration-300 cursor-pointer"
+                                            initial={{ opacity: 0, y: 50 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.1 }}
+                                            className="bg-white w-full sm:w-[90%] rounded-lg shadow-md overflow-hidden hover:shadow-2xl hover:scale-[1.01] hover:bg-orange-50 transform transition-all duration-300 cursor-pointer"
                                             onClick={() => handleRestaurantClick(restaurant._id)}
                                         >
                                             <div className="relative">
                                                 <img
                                                     src={restaurant.image}
                                                     alt={restaurant.name}
-                                                    className="w-full h-64 object-cover"
+                                                    className="w-full h-48 sm:h-56 lg:h-64 object-cover"
                                                 />
                                                 {restaurant.offerName && (
-                                                    <div className="absolute bottom-2 left-2 bg-blue-500 text-white text-md font-semibold px-3 py-1 rounded-md shadow-md">
+                                                    <div className="absolute bottom-2 left-2 bg-blue-500 text-white text-sm sm:text-md font-semibold px-3 py-1 rounded-md shadow-md">
                                                         {restaurant.offerName}
                                                     </div>
                                                 )}
                                             </div>
 
                                             <div className="p-4">
-                                                <h3 className="text-xl font-bold text-gray-900 mb-1">
+                                                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">
                                                     {restaurant.name}
                                                 </h3>
 
                                                 <div className="flex items-center mb-3">
-                                                    <div className={`flex items-center px-2 py-1 rounded-md ${restaurant?.rating ? (restaurant.rating >= 3.5 ? 'bg-green-600' : 'bg-orange-500') : 'bg-orange-500'}`}>
+                                                    <div className={`flex items-center px-2 py-1 rounded-md ${restaurant?.avgRating ? (restaurant.avgRating >= 3.5 ? 'bg-green-600' : 'bg-orange-500') : 'bg-red-500'}`}>
                                                         <FaStar className="text-yellow-400 text-sm mr-1" />
                                                         <span className="text-sm font-bold text-white">
-                                                            {restaurant?.rating || "No Rating Yet"}
+                                                            {restaurant?.avgRating ? Number(restaurant.avgRating).toFixed(1) : "Not Rated Yet"}
                                                         </span>
                                                     </div>
-                                                    <span className="ml-3 text-sm font-medium text-gray-600">
+
+                                                    <span className="ml-3 text-xs sm:text-sm font-medium text-gray-600">
                                                         {distanceInKm} Km • {timeInMinutes} Mins
                                                     </span>
                                                 </div>
 
-                                                <p className="text-sm text-gray-600">{restaurant.address}</p>
+                                                <p className="text-xs sm:text-sm text-gray-600">{restaurant.address}</p>
                                             </div>
-                                        </div>
+                                        </motion.div>
                                     );
                                 })
                             )}
-                        </div>
+                        </motion.div>
                     </>
                 )}
             </div>
-        </motion.div>
+        </div>
     );
 };
 

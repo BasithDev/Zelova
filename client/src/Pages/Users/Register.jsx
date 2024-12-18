@@ -37,7 +37,9 @@ const Register = () => {
         validationSchema: Yup.object({
             fullname: Yup.string().required('Fullname is required'),
             email: Yup.string().email('Invalid email address').required('Email is required'),
-            password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
+            password: Yup.string()
+                .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, 'Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character')
+                .required('Password is required'),
             confirmPassword: Yup.string()
                 .oneOf([Yup.ref('password'), null], 'Passwords must match')
                 .required('Confirm Password is required'),
@@ -58,20 +60,20 @@ const Register = () => {
     });
 
     return (
-        <div className="flex h-screen">
+        <div className="flex flex-col lg:flex-row min-h-screen">
             <ToastContainer position="top-right" autoClose={2000} />
-            <div className="bg-orange-200 w-[480px] flex items-center justify-center rounded-r-xl">
-                <div className="text-9xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 text-transparent bg-clip-text">Z</div>
+            <div className="bg-orange-200 lg:w-[480px] w-full h-[120px] lg:h-auto flex items-center justify-center lg:rounded-r-xl">
+                <div className="text-7xl lg:text-9xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 text-transparent bg-clip-text">Z</div>
             </div>
 
             <motion.div
-                className="flex flex-col justify-center w-2/3 p-10 bg-white"
+                className="flex flex-col justify-center w-full lg:w-2/3 p-4 sm:p-6 lg:p-10 bg-white"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.5 }}
             >
-                <h1 className="text-4xl font-bold mb-2">Create an account</h1>
+                <h1 className="text-3xl lg:text-4xl font-bold mb-2">Create an account</h1>
                 <p className="text-gray-500 mb-6">Please create an account to continue</p>
                 
                 <form className="space-y-4" onSubmit={formik.handleSubmit}>
@@ -85,21 +87,21 @@ const Register = () => {
                     ].map((field, index) => (
                         <div key={index} className="flex flex-col space-y-2">
                             <div className="flex items-center space-x-2">
-                                <div className="bg-orange-200 p-3.5 rounded-lg">
+                                <div className="bg-orange-200 p-3 lg:p-3.5 rounded-lg">
                                     {field.icon}
                                 </div>
                                 <input
                                     type={field.type}
                                     name={field.name}
                                     placeholder={field.placeholder}
-                                    className="flex-1 p-2 border rounded-md focus:border-orange-500 focus:ring-2 focus:ring-orange-300"
+                                    className="flex-1 p-2 text-sm lg:text-base border rounded-md focus:border-orange-500 focus:ring-2 focus:ring-orange-300"
                                     onChange={formik.handleChange}
                                     onBlur={formik.handleBlur}
                                     value={formik.values[field.name]}
                                 />
                             </div>
                             {formik.touched[field.name] && formik.errors[field.name] && (
-                                <div className="text-red-500">{formik.errors[field.name]}</div>
+                                <div className="text-red-500 text-sm">{formik.errors[field.name]}</div>
                             )}
                         </div>
                     ))}
@@ -107,26 +109,26 @@ const Register = () => {
                     <PrimaryBtn
                         type="submit"
                         text={loading ? <BeatLoader color="#FFF" size={10} /> : "Sign Up"}
-                        className="bg-orange-500 hover:bg-orange-600 transition-all duration-300 font-bold text-2xl text-white w-full py-2 rounded-md"
+                        className="bg-orange-500 hover:bg-orange-600 transition-all duration-300 font-bold text-xl lg:text-2xl text-white w-full py-2 rounded-md"
                         disabled={loading}
                     />
                 </form>
 
                 <div className="flex items-center my-4">
                     <div className="flex-grow border-t border-gray-300"></div>
-                    <span className="mx-4 text-gray-500">OR</span>
+                    <span className="mx-4 text-gray-500 text-sm lg:text-base">OR</span>
                     <div className="flex-grow border-t border-gray-300"></div>
                 </div>
                 
                 <button
-                        onClick={handleGoogleLogin}
-                        className="w-full bg-white border border-gray-300 hover:bg-gray-100 transition-all duration-200 text-gray-700 py-2 rounded-lg flex items-center justify-center mb-4">
-                        <FcGoogle className="mr-2 text-2xl" />
-                        Sign In Using Google Account
-                    </button>
+                    onClick={handleGoogleLogin}
+                    className="w-full bg-white border border-gray-300 hover:bg-gray-100 transition-all duration-200 text-gray-700 py-2 rounded-lg flex items-center justify-center mb-4 text-sm lg:text-base">
+                    <FcGoogle className="mr-2 text-xl lg:text-2xl" />
+                    Sign In Using Google Account
+                </button>
                 
                 <Link to={'/login'}>
-                    <p className="text-center text-gray-500 mt-4">Already registered? <span className='underline text-blue-500'>Sign In</span></p>
+                    <p className="text-center text-gray-500 mt-4 text-sm lg:text-base">Already registered? <span className='underline text-blue-500'>Sign In</span></p>
                 </Link>
             </motion.div>
         </div>

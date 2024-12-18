@@ -17,11 +17,6 @@ const orderSchema = new Schema({
         ref: 'Restaurant',
         required: true
     },
-    cartId: {
-        type: Schema.Types.ObjectId,
-        ref: 'Cart',
-        required: true
-    },
     user: {
         name: {
             type: String,
@@ -114,15 +109,32 @@ const orderSchema = new Schema({
             enum: ['COD', 'RAZORPAY', 'ZCOINS']
         }
     },
+    paymentDetails: {
+        razorpay_order_id: {
+            type: String
+        },
+        razorpay_payment_id: {
+            type: String
+        },
+        razorpay_signature: {
+            type: String
+        }
+    },
     status: {
         type: String,
         required: true,
         default: 'PENDING'
     },
-    rating: {
-        type: Number,
-        min: 0,
-        max: 5
+    restaurantRate: {
+        value: {
+            type: Number,
+            min: 0,
+            max: 5
+        },
+        status: {
+            type: Boolean,
+            default: false,
+        }
     },
     usedCoupon: {
         code: {
@@ -138,14 +150,6 @@ const orderSchema = new Schema({
 orderSchema.index({ userId: 1, createdAt: -1 });
 
 orderSchema.pre('validate', function (next) {
-    if (!this.orderId) {
-        const date = new Date();
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-        this.orderId = `ZEL-${year}${month}${day}-${random}`;
-    }
     next();
 });
 

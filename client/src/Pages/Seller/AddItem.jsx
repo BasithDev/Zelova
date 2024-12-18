@@ -2,16 +2,13 @@ import PrimaryBtn from '../../Components/Buttons/PrimaryBtn';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { AiOutlineClose } from 'react-icons/ai';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import AddFoodCategories from './AddFoodCategories';
-import AddOffers from './AddOffers';
+import AddFoodCategories from './ItemOffersMng/AddFoodCategories';
+import AddOffers from './ItemOffersMng/AddOffers';
 import { addProduct, getOffers, getSubCategories } from '../../Services/apiServices';
 import { MdEdit } from 'react-icons/md';
-import FormField from './FormField';
+import FormField from './ItemOffersMng/FormField';
 import Cropper from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
-import 'react-toastify/dist/ReactToastify.css';
 import { toast } from "react-toastify";
 import { uploadImageToCloud } from '../../Helpers/uploadImageToCloud';
 import { BeatLoader } from 'react-spinners';
@@ -28,8 +25,8 @@ const AddItem = () => {
         image: null,
     });
 
-    const [croppedImage,setCroppedImage] = useState(null)
-    const [isAddingItem,setIsAddingItem] = useState(false)
+    const [croppedImage, setCroppedImage] = useState(null)
+    const [isAddingItem, setIsAddingItem] = useState(false)
 
     const [dropdownData, setDropdownData] = useState({ subCategories: [], offers: [] });
     const [isCropperVisible, setIsCropperVisible] = useState(false);
@@ -55,14 +52,13 @@ const AddItem = () => {
         const handleUpdate = () => {
             fetchDropdownData();
         };
-    
+
         window.addEventListener('updateDropdownData', handleUpdate);
-    
+
         return () => {
             window.removeEventListener('updateDropdownData', handleUpdate);
         };
     }, [fetchDropdownData]);
-    
 
     const handleFieldChange = (field, value) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
@@ -121,7 +117,7 @@ const AddItem = () => {
     };
 
     const validateForm = () => {
-        const { itemName, price, category,customFields } = formData;
+        const { itemName, price, category, customFields } = formData;
         if (!itemName || !price || !category || !croppedImage) {
             toast.error('Please fill in all required fields!');
             return false;
@@ -129,15 +125,15 @@ const AddItem = () => {
         if (customFields && customFields.length > 0) {
             for (let field of customFields) {
                 const { fieldName, options, price } = field;
-    
+
                 if (!fieldName || !options || !price) {
                     toast.error(`Custom field "${fieldName || 'Unnamed'}" is incomplete!`);
                     return false;
                 }
-    
+
                 const optionsArray = options.split(',');
                 const priceArray = price.split(',');
-    
+
                 if (optionsArray.length !== priceArray.length) {
                     toast.error(`Custom field "${fieldName}" has mismatched options and prices!`);
                     return false;
@@ -179,15 +175,14 @@ const AddItem = () => {
     const { subCategories, offers } = dropdownData;
 
     return (
-        <div className="min-h-screen bg-gray-50 py-10 px-4">
-            <ToastContainer position="top-right" />
-            <div className="space-y-8">
-                <h1 className='text-center font-bold text-5xl'>Add Items</h1>
+        <div className="min-h-screen bg-gray-50 py-6 sm:py-10 px-3 sm:px-4">
+            <div className="space-y-6 sm:space-y-8">
+                <h1 className='text-center font-bold text-3xl sm:text-5xl'>Add Items</h1>
                 <AddFoodCategories />
                 <AddOffers />
-                <div className="bg-white shadow-lg rounded-lg p-8 max-w-5xl mx-auto space-y-8">
-                    <h3 className="text-3xl font-bold text-gray-800 mb-4">Add New Food Item</h3>
-                    <form className="space-y-8">
+                <div className="bg-white shadow-lg rounded-lg p-4 sm:p-8 max-w-5xl mx-auto space-y-6 sm:space-y-8">
+                    <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4">Add New Food Item</h3>
+                    <form className="space-y-6 sm:space-y-8">
                         <FormField
                             label="Item Name"
                             placeholder="Enter item name"
@@ -195,10 +190,10 @@ const AddItem = () => {
                             onChange={(e) => handleFieldChange('itemName', e.target.value)}
                         />
                         <div>
-                            <label className="block text-lg font-medium text-gray-700 mb-2">Add Item Images</label>
-                            <div className="flex space-x-4 mt-4">
+                            <label className="block text-base sm:text-lg font-medium text-gray-700 mb-2">Add Item Images</label>
+                            <div className="flex flex-wrap gap-4 mt-4">
                                 {croppedImage ? (
-                                    <div className="relative w-52 h-60 border border-gray-300 rounded-md flex items-center justify-center group">
+                                    <div className="relative w-full sm:w-52 h-48 sm:h-60 border border-gray-300 rounded-md flex items-center justify-center group">
                                         <img
                                             src={croppedImage}
                                             alt="Cropped"
@@ -206,13 +201,13 @@ const AddItem = () => {
                                         />
                                         <MdEdit
                                             onClick={() => document.getElementById('image-upload').click()}
-                                            className="cursor-pointer text-4xl p-1 bottom-2 right-2 text-white absolute rounded-full bg-green-500 opacity-0 group-hover:opacity-100 transition-all duration-200"
+                                            className="cursor-pointer text-3xl sm:text-4xl p-1 bottom-2 right-2 text-white absolute rounded-full bg-green-500 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200"
                                         />
                                     </div>
                                 ) : (
                                     <div
                                         onClick={() => document.getElementById('image-upload').click()}
-                                        className="w-32 h-32 border border-gray-300 rounded-md flex items-center justify-center text-2xl text-gray-400 cursor-pointer"
+                                        className="w-full sm:w-32 h-32 border border-gray-300 rounded-md flex items-center justify-center text-2xl text-gray-400 cursor-pointer"
                                     >
                                         +
                                     </div>
@@ -266,10 +261,17 @@ const AddItem = () => {
                         />
                         {formData.isCustomizable && (
                             <div>
-                                <label className="block text-lg font-medium text-gray-700 mb-2">Custom Fields</label>
-                                <div className="space-y-6">
+                                <label className="block text-base sm:text-lg font-medium text-gray-700 mb-2">Custom Fields</label>
+                                <div className="space-y-4 sm:space-y-6">
                                     {formData.customFields.map((field, index) => (
-                                        <div key={index} className="space-y-4">
+                                        <div key={index} className="space-y-4 bg-gray-50 p-4 rounded-lg relative">
+                                            <button
+                                                type="button"
+                                                onClick={() => removeCustomField(index)}
+                                                className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                                            >
+                                                <AiOutlineClose className="text-xl" />
+                                            </button>
                                             <FormField
                                                 label="Custom Choice Name"
                                                 value={field.fieldName}
@@ -284,29 +286,22 @@ const AddItem = () => {
                                                 onChange={(e) =>
                                                     updateCustomField(index, 'options', e.target.value)
                                                 }
-                                                placeholder="Enter options separated by commas"
+                                                placeholder="Enter options (comma separated)"
                                             />
                                             <FormField
-                                                label="Custom Choice Price"
+                                                label="Custom Choice Prices"
                                                 value={field.price}
                                                 onChange={(e) =>
                                                     updateCustomField(index, 'price', e.target.value)
                                                 }
-                                                placeholder="Enter price for the choice"
+                                                placeholder="Enter prices (comma separated)"
                                             />
-                                            <button
-                                                type="button"
-                                                onClick={() => removeCustomField(index)}
-                                                className="text-red-600 hover:text-red-800"
-                                            >
-                                                Remove Custom Field
-                                            </button>
                                         </div>
                                     ))}
                                     <button
                                         type="button"
                                         onClick={addCustomField}
-                                        className="py-2 px-4 text-white bg-green-500 rounded-md hover:bg-green-600"
+                                        className="w-full sm:w-auto py-2 px-4 text-white bg-green-500 rounded-md hover:bg-green-600 transition-colors"
                                     >
                                         Add Custom Field
                                     </button>
@@ -314,10 +309,11 @@ const AddItem = () => {
                             </div>
                         )}
                         <div className="mt-6 flex justify-center">
-                            <PrimaryBtn 
-                            text={isAddingItem ? <BeatLoader size={10} color='white'/>:'Add Product'} 
-                            className="py-3 px-8 text-xl font-semibold text-white bg-orange-500 rounded-md hover:bg-orange-600"
-                            onClick={handleSubmit} />
+                            <PrimaryBtn
+                                text={isAddingItem ? <BeatLoader size={10} color='white' /> : 'Add Product'}
+                                className="w-full sm:w-auto py-3 px-8 text-lg sm:text-xl font-semibold text-white bg-orange-500 rounded-md hover:bg-orange-600 transition-colors"
+                                onClick={handleSubmit}
+                            />
                         </div>
                     </form>
                 </div>
@@ -325,14 +321,14 @@ const AddItem = () => {
             <AnimatePresence>
                 {isCropperVisible && (
                     <motion.div
-                        className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+                        className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.3 }}
                     >
                         <motion.div
-                            className="bg-white p-4 rounded-lg w-96 relative"
+                            className="bg-white p-4 rounded-lg w-full max-w-md relative"
                             initial={{ scale: 0.8 }}
                             animate={{ scale: 1 }}
                             exit={{ scale: 0.8 }}
@@ -340,29 +336,29 @@ const AddItem = () => {
                         >
                             <button
                                 onClick={() => setIsCropperVisible(false)}
-                                className="absolute top-2 right-2 text-xl bg-red-500 text-white hover:bg-red-700"
+                                className="absolute top-2 right-2 p-1 text-xl bg-red-500 text-white hover:bg-red-700 rounded-full"
                             >
                                 <AiOutlineClose />
                             </button>
                             <Cropper
-                            className='mt-6'
+                                className='mt-6'
                                 ref={cropperRef}
                                 src={formData.image}
-                                style={{ height: 400, width: '100%' }}
+                                style={{ height: 300, width: '100%' }}
                                 aspectRatio={1}
                                 guides={false}
                                 cropBoxResizable={false}
                             />
-                            <div className="mt-4 flex justify-between">
+                            <div className="mt-4 flex justify-between gap-4">
                                 <button
                                     onClick={handleSelectNewImage}
-                                    className="py-2 px-4 text-white bg-gray-500 rounded-md hover:bg-gray-600"
+                                    className="flex-1 py-2 px-4 text-white bg-gray-500 rounded-md hover:bg-gray-600 transition-colors"
                                 >
                                     Select New
                                 </button>
                                 <button
                                     onClick={handleDoneCrop}
-                                    className="py-2 px-4 text-white bg-blue-500 rounded-md hover:bg-blue-600"
+                                    className="flex-1 py-2 px-4 text-white bg-blue-500 rounded-md hover:bg-blue-600 transition-colors"
                                 >
                                     Done
                                 </button>

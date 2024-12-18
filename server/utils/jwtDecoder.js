@@ -15,4 +15,4 @@ const decodeToken = (token, secret) => {
     
 };
 
-module.exports = decodeToken;
+module.exports = decodeToken

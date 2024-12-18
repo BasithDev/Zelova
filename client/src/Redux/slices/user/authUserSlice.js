@@ -4,6 +4,7 @@ import Cookies from 'js-cookie';
 const userToken = Cookies.get('user_token');
 const isVendor = Cookies.get('is_vendor') === 'true';
 
+
 const authUserSlice = createSlice({
   name: 'authUser',
   initialState: {

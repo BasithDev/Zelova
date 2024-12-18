@@ -72,11 +72,14 @@ const EditUser = () => {
   };
 
   const validationSchema = Yup.object({
-    fullname: Yup.string().required('Full name is required'),
-    phoneNumber: Yup.string().required('Phone number is required'),
-    age: Yup.number().required('Age is required').min(1, 'Enter a valid age'),
+    fullname: Yup.string()
+      .trim()
+      .required('Full name is required')
+      .min(3, 'Full name must be at least 3 characters long')
+      .matches(/^[a-zA-Z\s]+$/, 'Full name must only contain letters and spaces'),
+    phoneNumber: Yup.string().trim().required('Phone number is required'),
+    age: Yup.number().required('Age is required').min(10, 'Enter a valid age (above 10 years)').max(115, 'Enter a valid age (below 115 years)'),
   });
-
 
   const initialValues = {
     fullname: userData.fullname || '',

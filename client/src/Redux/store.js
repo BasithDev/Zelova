@@ -5,6 +5,7 @@ import userDataReducer from './slices/user/userDataSlice';
 import adminDataReducer from './slices/admin/adminDataSlice'
 import restaurantReducer from './slices/seller/restaurantDataSlice'
 import userLocationReducer from './slices/user/userLocationSlice'
+import orderReducer from './slices/orderSlice'
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     adminData: adminDataReducer,
     restaurantData: restaurantReducer,
     userLocation: userLocationReducer,
+    order: orderReducer,
   },
 });
 
