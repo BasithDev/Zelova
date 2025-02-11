@@ -285,7 +285,6 @@ const AnalyticsDashboard = ({ fetchReports, exportReportToPDF, exportReportToExc
     );
 };
 AnalyticsDashboard.propTypes = {
-    reports: PropTypes.array.isRequired,
     fetchReports: PropTypes.func.isRequired,
     exportReportToPDF: PropTypes.func.isRequired,
     exportReportToExcel: PropTypes.func.isRequired,
