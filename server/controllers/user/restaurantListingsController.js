@@ -1,5 +1,5 @@
 const Restaurant = require('../../models/restaurant')
-const FoodItem = require('../../models/foodItem');
+const FoodItem = require('../../models/fooditem');
 const mongoose = require('mongoose'); 
 const statusCodes = require('../../config/statusCodes');
 

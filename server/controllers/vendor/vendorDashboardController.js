@@ -3,7 +3,7 @@ const Order = require('../../models/orders');
 const PDFDocument = require('pdfkit');
 const ExcelJS = require('exceljs');
 const Restaurant = require('../../models/restaurant');
-const getRestaurantId = require('../../helpers/getRestaurantId');
+const getRestaurantId = require('../../helpers/restaurantIdHelper');
 const mongoose = require("mongoose");
 
 const getVendorReports = async (req, res, next) => {

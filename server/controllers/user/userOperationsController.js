@@ -1,5 +1,5 @@
 const User = require('../../models/user');
-const Address = require('../../models/Address')
+const Address = require('../../models/address')
 const Issues = require('../../models/issues');
 const cloudinary = require('cloudinary').v2;
 const Otp = require('../../models/otp')

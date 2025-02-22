@@ -8,8 +8,8 @@ import { getAddresses , getUserCoupons , getDeliveryFee } from '../../Services/a
 import { AnimatePresence } from 'framer-motion';
 import { calculateItemPrice, calculateItemTotal } from '../../utils/cartCalculations';
 import { useCartState } from '../../Hooks/useCartState';
-import RestaurantHeader from '../../components/Restaurant/RestaurantHeader';
-import PaymentConfirmation from '../../components/Cart/PaymentConfirmation';
+import RestaurantHeader from '../../Components/Restaurant/RestaurantHeader';
+import PaymentConfirmation from '../../Components/Cart/PaymentConfirmation';
 
 const Cart = () => {
     const navigate = useNavigate();

@@ -1,4 +1,4 @@
-const foodItems = require('../../models/foodItem');
+const foodItems = require('../../models/fooditem');
 const statusCodes = require('../../config/statusCodes');
 
 const getProducts = async (req, res, next) => {

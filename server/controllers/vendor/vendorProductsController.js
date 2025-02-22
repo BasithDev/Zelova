@@ -1,4 +1,4 @@
-const FoodItem = require('../../models/foodItem');
+const FoodItem = require('../../models/fooditem');
 const getRestaurantId = require('../../helpers/restaurantIdHelper');
 const statusCodes = require('../../config/statusCodes');
 
